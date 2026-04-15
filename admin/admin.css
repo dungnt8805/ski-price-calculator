@@ -390,6 +390,110 @@
 }
 .spcu-range-lbl strong { color: var(--spcu-admin-ink); }
 
+.spcu-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0 12px;
+    color: var(--spcu-admin-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.spcu-breadcrumb a {
+    color: #1d4f8a;
+    text-decoration: none;
+}
+
+.spcu-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.spcu-breadcrumb .current {
+    color: var(--spcu-admin-ink);
+}
+
+.spcu-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.spcu-header-row h1 {
+    margin-bottom: 0;
+}
+
+.spcu-split {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(500px, 550px) minmax(0, 1fr);
+    align-items: start;
+}
+
+.spcu-col-list .spcu-table,
+.spcu-col-form .spcu-table {
+    margin-top: 0;
+}
+
+.spcu-info-card {
+    background: linear-gradient(180deg, #ffffff, #f8fcff);
+    border: 1px solid var(--spcu-admin-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 8px 22px rgba(16, 42, 67, .08);
+}
+
+.spcu-info-card h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: var(--spcu-admin-ink);
+}
+
+.spcu-info-card p {
+    margin: 4px 0;
+    font-size: 13px;
+    color: var(--spcu-admin-text);
+}
+
+.spcu-toast-stack {
+    position: fixed;
+    top: 40px;
+    right: 22px;
+    z-index: 100001;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.spcu-toast {
+    min-width: 260px;
+    max-width: 420px;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 12px 14px;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity .2s, transform .2s;
+    box-shadow: 0 12px 24px rgba(0,0,0,.2);
+}
+
+.spcu-toast.is-success {
+    background: linear-gradient(135deg, #0f766e, #0b5f58);
+}
+
+.spcu-toast.is-error {
+    background: linear-gradient(135deg, #b32d2e, #8f2526);
+}
+
+.spcu-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 /* ── Confirm modal ──────────────────────────────────────── */
 .spcu-modal-backdrop {
     position: fixed;
@@ -471,4 +575,7 @@
 @media (max-width: 782px) {
     .spcu-cal-popup { min-width: 260px; }
     .spcu-day-grid  { flex-direction: column; }
+    .spcu-split { grid-template-columns: 1fr; }
+    .spcu-toast-stack { right: 10px; left: 10px; top: 12px; }
+    .spcu-toast { min-width: 0; max-width: none; }
 }

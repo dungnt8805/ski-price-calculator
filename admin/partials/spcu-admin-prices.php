@@ -8,12 +8,40 @@ $page_title    = $page_mode === 'hotel' ? 'Hotel Prices' : 'Addon Prices (Lift, 
 $category_sql  = $page_mode === 'hotel' ? "p.category = 'hotel'" : "p.category != 'hotel'";
 $selected_hotel_id = ($page_mode === 'hotel' && isset($_GET['hotel'])) ? intval($_GET['hotel']) : 0;
 
+if(!function_exists('spcu_admin_breadcrumb')){
+    function spcu_admin_breadcrumb($items){
+        echo '<nav class="spcu-breadcrumb" aria-label="Breadcrumb">';
+        $last = count($items) - 1;
+        foreach($items as $i => $item){
+            if($i > 0) echo '<span class="spcu-breadcrumb-sep">/</span>';
+            if(!empty($item['url']) && $i !== $last){
+                echo '<a href="'.esc_url($item['url']).'">'.esc_html($item['label']).'</a>';
+            } else {
+                echo '<span class="current">'.esc_html($item['label']).'</span>';
+            }
+        }
+        echo '</nav>';
+    }
+}
+
 $areas  = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}spcu_areas");
 $hotels = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}spcu_hotels ORDER BY name ASC");
 $grade_options = SPCU_Grades::options();
 
 $db_table = $page_mode === 'hotel' ? $wpdb->prefix.'spcu_prices' : $wpdb->prefix.'spcu_addon_prices';
 $price_form_error = '';
+$selected_hotel = null;
+
+if($page_mode === 'hotel'){
+    if($selected_hotel_id <= 0){
+        $price_form_error = 'Please open Hotel Prices from a specific hotel in the Hotels list.';
+    } else {
+        $selected_hotel = $wpdb->get_row($wpdb->prepare("SELECT h.*, a.name as area_name FROM {$wpdb->prefix}spcu_hotels h LEFT JOIN {$wpdb->prefix}spcu_areas a ON a.id = h.area_id WHERE h.id = %d", $selected_hotel_id));
+        if(!$selected_hotel){
+            $price_form_error = 'Selected hotel was not found.';
+        }
+    }
+}
 
 // Backward-compat: ensure prices tables include required v2 columns.
 $table_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $db_table));
@@ -120,18 +148,42 @@ if(isset($_POST['add_price'])){
     $ok = $wpdb->insert($db_table, $data);
     if($ok === false){
         $price_form_error = 'Could not save price rule. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
+    } else {
+        $redirect_args = [
+            'page' => $page_mode === 'hotel' ? 'spcu-hotel-prices' : 'spcu-addon-prices',
+            'spcu_toast' => 'success',
+            'spcu_msg' => rawurlencode('Price rule saved successfully.')
+        ];
+        if($page_mode === 'hotel'){
+            $redirect_args['hotel'] = $selected_hotel_id;
+        }
+        wp_safe_redirect(add_query_arg($redirect_args, admin_url('admin.php')));
+        exit;
     }
     }
 }
 
 /* ── Handle Delete ───────────────────────────────────────────────── */
 if(isset($_GET['delete'])){
-    $wpdb->delete($db_table, ['id'=>intval($_GET['delete'])]);
+    $ok = $wpdb->delete($db_table, ['id'=>intval($_GET['delete'])]);
+    if($ok !== false){
+        $redirect_args = [
+            'page' => $page_mode === 'hotel' ? 'spcu-hotel-prices' : 'spcu-addon-prices',
+            'spcu_toast' => 'success',
+            'spcu_msg' => rawurlencode('Price rule deleted successfully.')
+        ];
+        if($page_mode === 'hotel'){
+            $redirect_args['hotel'] = $selected_hotel_id;
+        }
+        wp_safe_redirect(add_query_arg($redirect_args, admin_url('admin.php')));
+        exit;
+    }
+    $price_form_error = 'Could not delete price rule. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
 }
 
 /* ── Load rows ───────────────────────────────────────────────────── */
 if ($page_mode === 'hotel') {
-    $hotel_filter_sql = $selected_hotel_id ? $wpdb->prepare(" AND p.hotel_id = %d", $selected_hotel_id) : '';
+    $hotel_filter_sql = $selected_hotel_id ? $wpdb->prepare(" AND p.hotel_id = %d", $selected_hotel_id) : " AND 1=0";
     $rows = $wpdb->get_results("
         SELECT p.*, h.name as hotel_name, a.name as area_name, NULL as grade_name
         FROM {$db_table} p
@@ -240,11 +292,50 @@ function spcu_schedule_summary($r){
 </style>
 
 <div class='wrap'>
+<?php
+if($page_mode === 'hotel'){
+    spcu_admin_breadcrumb([
+        ['label' => 'Ski Calculator', 'url' => admin_url('admin.php?page=spcu-dashboard')],
+        ['label' => 'Hotels', 'url' => admin_url('admin.php?page=spcu-hotels')],
+        ['label' => $selected_hotel ? $selected_hotel->name : 'Hotel Prices']
+    ]);
+} else {
+    spcu_admin_breadcrumb([
+        ['label' => 'Ski Calculator', 'url' => admin_url('admin.php?page=spcu-dashboard')],
+        ['label' => 'Addon Prices']
+    ]);
+}
+?>
+
 <h1><?= esc_html($page_title) ?></h1>
 
 <?php if($price_form_error): ?>
     <div class="notice notice-error"><p><?= esc_html($price_form_error) ?></p></div>
+    <div class="spcu-toast-source" data-type="error" data-message="<?= esc_attr($price_form_error) ?>"></div>
 <?php endif; ?>
+
+<?php if($page_mode === 'hotel' && $selected_hotel): ?>
+<div class="spcu-info-card">
+    <h2><?= esc_html($selected_hotel->name) ?></h2>
+    <p><strong>Area:</strong> <?= esc_html($selected_hotel->area_name ?: '-') ?></p>
+    <p><strong>Grade:</strong> <?= esc_html(SPCU_Grades::label($selected_hotel->grade) ?: '-') ?></p>
+    <?php if(!empty($selected_hotel->address)): ?><p><strong>Address:</strong> <?= esc_html($selected_hotel->address) ?></p><?php endif; ?>
+</div>
+<?php endif; ?>
+
+<?php if($page_mode === 'hotel' && !$selected_hotel): ?>
+    <div class="spcu-table">
+        <table>
+            <tr><th>Hotel</th><th>Action</th></tr>
+            <?php foreach($hotels as $h): ?>
+                <tr>
+                    <td><?= esc_html($h->name) ?></td>
+                    <td><a class="button button-small" href="?page=spcu-hotel-prices&hotel=<?= esc_attr($h->id) ?>">Open Hotel Prices</a></td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+    </div>
+<?php else: ?>
 
 <form method='post' id="price-form">
 <table class="form-table" role="presentation">
@@ -269,10 +360,15 @@ function spcu_schedule_summary($r){
     <tr id="wrap_hotel">
         <th scope="row"><label for="hotel">Hotel</label></th>
         <td>
-            <select name='hotel' id="hotel">
-                <option value=''>— Select Hotel —</option>
-                <?php foreach($hotels as $h) echo "<option value='".esc_attr($h->id)."'".selected($selected_hotel_id, (int)$h->id, false).">".esc_html($h->name)."</option>"; ?>
-            </select>
+            <?php if($page_mode === 'hotel' && $selected_hotel): ?>
+                <strong><?= esc_html($selected_hotel->name) ?></strong>
+                <input type="hidden" name="hotel" id="hotel" value="<?= esc_attr($selected_hotel->id) ?>">
+            <?php else: ?>
+                <select name='hotel' id="hotel">
+                    <option value=''>— Select Hotel —</option>
+                    <?php foreach($hotels as $h) echo "<option value='".esc_attr($h->id)."'".selected($selected_hotel_id, (int)$h->id, false).">".esc_html($h->name)."</option>"; ?>
+                </select>
+            <?php endif; ?>
         </td>
     </tr>
 
@@ -430,6 +526,7 @@ function spcu_schedule_summary($r){
     <button name='add_price' value='1' class="button button-primary">Add Price Rule</button>
 </p>
 </form>
+<?php endif; ?>
 
 <!-- ── Price List ───────────────────────────────────────────────── -->
 <hr>
@@ -437,7 +534,8 @@ function spcu_schedule_summary($r){
     <table>
         <thead>
             <tr>
-                <th>ID</th><th>Category</th><th>Target (Hotel / Area / Grade)</th>
+                <th>ID</th>
+                <?php if ($page_mode !== 'hotel'): ?><th>Category</th><th>Target (Hotel / Area / Grade)</th><?php endif; ?>
                 <th>Days</th>
                 <?php if ($page_mode === 'hotel'): ?><th>Schedule</th><?php endif; ?>
                 <th>JPY</th><th>USD</th><th>Action</th>
@@ -461,13 +559,17 @@ function spcu_schedule_summary($r){
         ?>
         <tr>
             <td><?= esc_html($r->id) ?></td>
+            <?php if ($page_mode !== 'hotel'): ?>
             <td><?= esc_html($r->category) ?></td>
             <td><?= esc_html($subject) ?></td>
+            <?php endif; ?>
             <td><?= esc_html($r->days ?: '—') ?></td>
             <?php if ($page_mode === 'hotel'): ?><td><?= spcu_schedule_summary($r) ?></td><?php endif; ?>
             <td><?= esc_html($jpy_col) ?></td>
             <td><?= esc_html($usd_col) ?></td>
-            <td><a class='spcu-delete' href='?page=<?= esc_html($_GET['page']) ?>&delete=<?= esc_html($r->id) ?>'>Delete</a></td>
+            <td>
+                <a class='spcu-delete' href='?page=<?= esc_html($_GET['page']) ?>&delete=<?= esc_html($r->id) ?><?= $page_mode === 'hotel' && $selected_hotel_id ? '&hotel='.esc_attr($selected_hotel_id) : '' ?>'>Delete</a>
+            </td>
         </tr>
         <?php endforeach; ?>
         </tbody>
@@ -485,6 +587,10 @@ function spcu_schedule_summary($r){
 function $(id){ return document.getElementById(id); }
 function show(id){ var e=$(id); if(e) e.style.display=''; }
 function hide(id){ var e=$(id); if(e) e.style.display='none'; }
+
+if(!$('price-form')){
+    return;
+}
 
 var MONTHS = ['January','February','March','April','May','June',
               'July','August','September','October','November','December'];
@@ -686,6 +792,10 @@ var catSel  = $('category');
 var typeSel = $('price_type');
 var jpyChk  = $('currency_jpy');
 var usdChk  = $('currency_usd');
+
+if(!catSel || !typeSel || !jpyChk || !usdChk){
+    return;
+}
 
 function toggle(){
     var cat  = catSel.value;

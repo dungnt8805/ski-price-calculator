@@ -40,7 +40,8 @@ class SPCU_Admin {
 
         add_submenu_page('spcu-dashboard','Areas','Areas','manage_options','spcu-areas',[$this,'areas']);
         add_submenu_page('spcu-dashboard','Hotels','Hotels','manage_options','spcu-hotels',[$this,'hotels']);
-        add_submenu_page('spcu-dashboard','Hotel Prices','Hotel Prices','manage_options','spcu-hotel-prices',[$this,'prices']);
+        add_submenu_page(null,'Hotel Form','Hotel Form','manage_options','spcu-hotel-form',[$this,'hotel_form']);
+        add_submenu_page(null,'Hotel Prices','Hotel Prices','manage_options','spcu-hotel-prices',[$this,'prices']);
         add_submenu_page('spcu-dashboard','Addon Prices','Addon Prices','manage_options','spcu-addon-prices',[$this,'prices']);
         add_submenu_page('spcu-dashboard','Import / Export','Import / Export','manage_options','spcu-io',[$this,'io']);
     }
@@ -56,6 +57,10 @@ class SPCU_Admin {
 
     public function hotels(){
         require_once plugin_dir_path(__FILE__) . 'partials/spcu-admin-hotels.php';
+    }
+
+    public function hotel_form(){
+        require_once plugin_dir_path(__FILE__) . 'partials/spcu-admin-hotel-form.php';
     }
 
     public function prices(){

@@ -1,6 +1,64 @@
 (function(){
     'use strict';
 
+    function showToast(type, message){
+        if(!message){
+            return;
+        }
+
+        var wrap = document.querySelector('.spcu-toast-stack');
+        if(!wrap){
+            wrap = document.createElement('div');
+            wrap.className = 'spcu-toast-stack';
+            document.body.appendChild(wrap);
+        }
+
+        var toast = document.createElement('div');
+        toast.className = 'spcu-toast ' + (type === 'error' ? 'is-error' : 'is-success');
+        toast.textContent = message;
+        wrap.appendChild(toast);
+
+        requestAnimationFrame(function(){
+            toast.classList.add('is-visible');
+        });
+
+        setTimeout(function(){
+            toast.classList.remove('is-visible');
+            setTimeout(function(){
+                if(toast.parentNode){
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 220);
+        }, 3200);
+    }
+
+    function bootToasts(){
+        var params = new URLSearchParams(window.location.search);
+        var t = params.get('spcu_toast');
+        var m = params.get('spcu_msg');
+        if(t && m){
+            try {
+                showToast(t, decodeURIComponent(m));
+            } catch (e) {
+                showToast(t, m);
+            }
+
+            params.delete('spcu_toast');
+            params.delete('spcu_msg');
+            var query = params.toString();
+            var nextUrl = window.location.pathname + (query ? ('?' + query) : '');
+            window.history.replaceState({}, document.title, nextUrl);
+        }
+
+        document.querySelectorAll('.spcu-toast-source').forEach(function(node){
+            var type = node.getAttribute('data-type') || 'success';
+            var message = node.getAttribute('data-message') || '';
+            showToast(type, message);
+        });
+    }
+
+    bootToasts();
+
     var modal = null;
     var modalText = null;
     var confirmBtn = null;
