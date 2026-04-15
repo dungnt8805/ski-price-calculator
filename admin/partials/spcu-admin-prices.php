@@ -6,12 +6,52 @@ global $wpdb;
 $page_mode     = (isset($_GET['page']) && $_GET['page'] === 'spcu-addon-prices') ? 'addon' : 'hotel';
 $page_title    = $page_mode === 'hotel' ? 'Hotel Prices' : 'Addon Prices (Lift, Gear, Transport)';
 $category_sql  = $page_mode === 'hotel' ? "p.category = 'hotel'" : "p.category != 'hotel'";
+$selected_hotel_id = ($page_mode === 'hotel' && isset($_GET['hotel'])) ? intval($_GET['hotel']) : 0;
 
 $areas  = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}spcu_areas");
 $hotels = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}spcu_hotels ORDER BY name ASC");
 $grade_options = SPCU_Grades::options();
 
 $db_table = $page_mode === 'hotel' ? $wpdb->prefix.'spcu_prices' : $wpdb->prefix.'spcu_addon_prices';
+$price_form_error = '';
+
+// Backward-compat: ensure prices tables include required v2 columns.
+$table_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $db_table));
+if(!$table_exists && class_exists('SPCU_Database')){
+    SPCU_Database::create_tables();
+    $table_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $db_table));
+}
+
+if(!$table_exists){
+    $price_form_error = 'Database table is missing for this page.';
+}
+
+if($price_form_error === '' && $page_mode === 'addon'){
+    $required_columns = [
+        'grade'         => "VARCHAR(50) NULL",
+        'price_type'    => "VARCHAR(20) NOT NULL DEFAULT 'selected_days'",
+        'weekdays_json' => "TEXT NULL",
+        'dates_json'    => "TEXT NULL",
+        'date_from'     => "DATE NULL",
+        'date_to'       => "DATE NULL",
+    ];
+
+    foreach($required_columns as $column => $definition){
+        $exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$db_table} LIKE %s", $column));
+        if(!$exists){
+            $wpdb->query("ALTER TABLE {$db_table} ADD COLUMN {$column} {$definition}");
+            $exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$db_table} LIKE %s", $column));
+        }
+
+        if(!$exists){
+            $price_form_error = 'Database schema is not up to date for addon prices table.';
+            if($wpdb->last_error){
+                $price_form_error .= ' ' . $wpdb->last_error;
+            }
+            break;
+        }
+    }
+}
 
 $days_of_week = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
 $day_labels   = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
@@ -19,7 +59,11 @@ $day_labels   = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','
 /* ── Handle Add ──────────────────────────────────────────────────── */
 if(isset($_POST['add_price'])){
 
-    $hotel_id   = !empty($_POST['hotel']) ? intval($_POST['hotel']) : null;
+    if($price_form_error !== ''){
+        // Keep schema error visible; skip insert.
+    } else {
+
+    $hotel_id   = !empty($_POST['hotel']) ? intval($_POST['hotel']) : ($selected_hotel_id ?: null);
     $area_id    = !empty($_POST['area'])  ? intval($_POST['area'])  : null;
     $days       = !empty($_POST['days'])  ? intval($_POST['days'])  : null;
     $price_type = sanitize_text_field($_POST['price_type'] ?? 'selected_days');
@@ -73,7 +117,11 @@ if(isset($_POST['add_price'])){
         $data['grade']         = SPCU_Grades::normalize($_POST['grade'] ?? '');
     }
 
-    $wpdb->insert($db_table, $data);
+    $ok = $wpdb->insert($db_table, $data);
+    if($ok === false){
+        $price_form_error = 'Could not save price rule. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
+    }
+    }
 }
 
 /* ── Handle Delete ───────────────────────────────────────────────── */
@@ -83,12 +131,13 @@ if(isset($_GET['delete'])){
 
 /* ── Load rows ───────────────────────────────────────────────────── */
 if ($page_mode === 'hotel') {
+    $hotel_filter_sql = $selected_hotel_id ? $wpdb->prepare(" AND p.hotel_id = %d", $selected_hotel_id) : '';
     $rows = $wpdb->get_results("
         SELECT p.*, h.name as hotel_name, a.name as area_name, NULL as grade_name
         FROM {$db_table} p
         LEFT JOIN {$wpdb->prefix}spcu_hotels h ON p.hotel_id = h.id
         LEFT JOIN {$wpdb->prefix}spcu_areas  a ON p.area_id  = a.id
-        WHERE {$category_sql}
+        WHERE {$category_sql} {$hotel_filter_sql}
         ORDER BY p.category ASC, p.hotel_id ASC, p.id DESC
     ");
 } else {
@@ -193,6 +242,10 @@ function spcu_schedule_summary($r){
 <div class='wrap'>
 <h1><?= esc_html($page_title) ?></h1>
 
+<?php if($price_form_error): ?>
+    <div class="notice notice-error"><p><?= esc_html($price_form_error) ?></p></div>
+<?php endif; ?>
+
 <form method='post' id="price-form">
 <table class="form-table" role="presentation">
 
@@ -218,7 +271,7 @@ function spcu_schedule_summary($r){
         <td>
             <select name='hotel' id="hotel">
                 <option value=''>— Select Hotel —</option>
-                <?php foreach($hotels as $h) echo "<option value='".esc_attr($h->id)."'>".esc_html($h->name)."</option>"; ?>
+                <?php foreach($hotels as $h) echo "<option value='".esc_attr($h->id)."'".selected($selected_hotel_id, (int)$h->id, false).">".esc_html($h->name)."</option>"; ?>
             </select>
         </td>
     </tr>

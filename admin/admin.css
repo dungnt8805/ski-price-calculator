@@ -208,9 +208,21 @@
     color: #fff !important;
 }
 
+.spcu-table td .button.button-small,
+.spcu-table td .spcu-delete {
+    min-height: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    line-height: 1;
+    vertical-align: middle;
+}
+
 .button.button-small {
     font-size: 12px !important;
-    padding: 3px 11px !important;
+    padding: 0 11px !important;
     border-radius: 7px !important;
 }
 
@@ -377,6 +389,74 @@
     margin-top: 5px;
 }
 .spcu-range-lbl strong { color: var(--spcu-admin-ink); }
+
+/* ── Confirm modal ──────────────────────────────────────── */
+.spcu-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(14, 30, 45, .55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+    padding: 18px;
+}
+
+.spcu-modal-backdrop.is-open {
+    display: flex;
+}
+
+.spcu-modal {
+    width: min(460px, 100%);
+    background: linear-gradient(180deg, #ffffff, #f8fcff);
+    border: 1px solid var(--spcu-admin-border);
+    border-radius: 14px;
+    box-shadow: 0 22px 48px rgba(11, 31, 49, .28);
+    padding: 18px 18px 16px;
+    animation: spcu-modal-in .16s ease-out;
+}
+
+.spcu-modal h2 {
+    margin: 0;
+    color: var(--spcu-admin-ink);
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.spcu-modal-message {
+    margin: 10px 0 0;
+    color: var(--spcu-admin-text);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.spcu-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.spcu-modal-actions .button-primary {
+    background: #b32d2e !important;
+    border-color: #8f2526 !important;
+}
+
+.spcu-modal-actions .button-primary:hover {
+    background: #8f2526 !important;
+    border-color: #7b1f20 !important;
+}
+
+@keyframes spcu-modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(5px) scale(.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
 
 /* ── Hotel image preview (hotels page) ───────────────────── */
 #spcu-image-preview img {

@@ -5,33 +5,99 @@ global $wpdb;
 
 $areas = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}spcu_areas");
 $grade_options = SPCU_Grades::options();
+$hotel_table = $wpdb->prefix.'spcu_hotels';
+
+// Backward-compat: ensure hotels table schema supports Area + Grade fields.
+$schema_error = '';
+$table_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $hotel_table));
+if(!$table_exists && class_exists('SPCU_Database')){
+    SPCU_Database::create_tables();
+    $table_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $hotel_table));
+}
+
+$area_column_exists = false;
+$grade_column_exists = false;
+
+if($table_exists){
+    $area_column_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", 'area_id'));
+    $grade_column_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", 'grade'));
+
+    if(!$area_column_exists){
+        $wpdb->query("ALTER TABLE {$hotel_table} ADD COLUMN area_id INT NULL");
+        $area_column_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", 'area_id'));
+    }
+
+    if(!$grade_column_exists){
+        $wpdb->query("ALTER TABLE {$hotel_table} ADD COLUMN grade VARCHAR(50) NULL");
+        $grade_column_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", 'grade'));
+    }
+}
+
+if(!$table_exists || !$area_column_exists || !$grade_column_exists){
+    $schema_error = 'Database schema is not up to date for hotels table.';
+    if($wpdb->last_error){
+        $schema_error .= ' ' . $wpdb->last_error;
+    }
+}
+
+$hotel_form_error = '';
 
 // Handle Add
 if(isset($_POST['add_hotel'])){
     $images = isset($_POST['images']) ? sanitize_text_field($_POST['images']) : '';
-    $wpdb->insert($wpdb->prefix.'spcu_hotels',[
-        'name'       => sanitize_text_field($_POST['name']),
-        'name_ja'    => sanitize_text_field($_POST['name_ja']),
-        'address'    => sanitize_textarea_field($_POST['address']),
-        'address_ja' => sanitize_textarea_field($_POST['address_ja']),
-        'images'     => $images,
-        'area_id'    => intval($_POST['area_id']),
-        'grade'      => SPCU_Grades::normalize($_POST['grade'] ?? '')
-    ]);
+    $area_id = intval($_POST['area_id'] ?? 0);
+    $grade   = SPCU_Grades::normalize($_POST['grade'] ?? '');
+
+    if($schema_error !== ''){
+        $hotel_form_error = $schema_error;
+    } elseif(empty($areas)){
+        $hotel_form_error = 'Please create at least one Area before adding a hotel.';
+    } elseif($area_id <= 0 || $grade === ''){
+        $hotel_form_error = 'Please choose both Area and Grade before saving a hotel.';
+    } else {
+        $ok = $wpdb->insert($wpdb->prefix.'spcu_hotels',[
+            'name'       => sanitize_text_field($_POST['name']),
+            'name_ja'    => sanitize_text_field($_POST['name_ja']),
+            'address'    => sanitize_textarea_field($_POST['address']),
+            'address_ja' => sanitize_textarea_field($_POST['address_ja']),
+            'images'     => $images,
+            'area_id'    => $area_id,
+            'grade'      => $grade
+        ]);
+
+        if($ok === false){
+            $hotel_form_error = 'Could not save hotel. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
+        }
+    }
 }
 
 // Handle Edit
 if(isset($_POST['edit_hotel'])){
     $images = isset($_POST['images']) ? sanitize_text_field($_POST['images']) : '';
-    $wpdb->update($wpdb->prefix.'spcu_hotels',[
-        'name'       => sanitize_text_field($_POST['name']),
-        'name_ja'    => sanitize_text_field($_POST['name_ja']),
-        'address'    => sanitize_textarea_field($_POST['address']),
-        'address_ja' => sanitize_textarea_field($_POST['address_ja']),
-        'images'     => $images,
-        'area_id'    => intval($_POST['area_id']),
-        'grade'      => SPCU_Grades::normalize($_POST['grade'] ?? '')
-    ], ['id' => intval($_POST['hotel_id'])]);
+    $area_id = intval($_POST['area_id'] ?? 0);
+    $grade   = SPCU_Grades::normalize($_POST['grade'] ?? '');
+
+    if($schema_error !== ''){
+        $hotel_form_error = $schema_error;
+    } elseif(empty($areas)){
+        $hotel_form_error = 'Please create at least one Area before updating a hotel.';
+    } elseif($area_id <= 0 || $grade === ''){
+        $hotel_form_error = 'Please choose both Area and Grade before updating a hotel.';
+    } else {
+        $ok = $wpdb->update($wpdb->prefix.'spcu_hotels',[
+            'name'       => sanitize_text_field($_POST['name']),
+            'name_ja'    => sanitize_text_field($_POST['name_ja']),
+            'address'    => sanitize_textarea_field($_POST['address']),
+            'address_ja' => sanitize_textarea_field($_POST['address_ja']),
+            'images'     => $images,
+            'area_id'    => $area_id,
+            'grade'      => $grade
+        ], ['id' => intval($_POST['hotel_id'])]);
+
+        if($ok === false){
+            $hotel_form_error = 'Could not update hotel. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
+        }
+    }
 }
 
 // Handle Delete
@@ -59,6 +125,10 @@ wp_enqueue_media();
 <div class='wrap'>
     <h1><?= $edit_hotel ? 'Edit Hotel' : 'Hotels' ?></h1>
 
+    <?php if($hotel_form_error): ?>
+        <div class="notice notice-error"><p><?= esc_html($hotel_form_error) ?></p></div>
+    <?php endif; ?>
+
     <form method='post' id="hotel-form">
         <?php if($edit_hotel): ?>
             <input type='hidden' name='hotel_id' value='<?= esc_attr($edit_hotel->id) ?>'>
@@ -85,8 +155,9 @@ wp_enqueue_media();
                 <th scope="row"><label for="area_id">Area</label></th>
                 <td>
                     <select name='area_id' id='area_id' required>
+                        <option value=''>- Select Area -</option>
                         <?php foreach($areas as $a): ?>
-                            <option value="<?= esc_attr($a->id) ?>" <?= ($edit_hotel && $edit_hotel->area_id == $a->id) ? 'selected' : '' ?>><?= esc_html($a->name) ?></option>
+                            <option value="<?= esc_attr($a->id) ?>" <?= (($edit_hotel && $edit_hotel->area_id == $a->id) || (isset($_POST['area_id']) && intval($_POST['area_id']) === intval($a->id))) ? 'selected' : '' ?>><?= esc_html($a->name) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </td>
@@ -97,7 +168,7 @@ wp_enqueue_media();
                     <select name='grade' id='grade' required>
                         <option value=''>- Select Grade -</option>
                         <?php foreach($grade_options as $grade_key => $grade_label): ?>
-                            <option value="<?= esc_attr($grade_key) ?>" <?= ($edit_hotel && $edit_hotel->grade == $grade_key) ? 'selected' : '' ?>><?= esc_html($grade_label) ?></option>
+                            <option value="<?= esc_attr($grade_key) ?>" <?= (($edit_hotel && $edit_hotel->grade == $grade_key) || (isset($_POST['grade']) && SPCU_Grades::normalize($_POST['grade']) === $grade_key)) ? 'selected' : '' ?>><?= esc_html($grade_label) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </td>
@@ -170,6 +241,7 @@ wp_enqueue_media();
                 <td><?= $thumbs ? implode('',$thumbs) : '-' ?></td>
                 <td style="white-space:nowrap;">
                     <a href='?page=spcu-hotels&edit=<?= esc_html($r->id) ?>' class='button button-small'>Edit</a>
+                    <a href='?page=spcu-hotel-prices&hotel=<?= esc_attr($r->id) ?>' class='button button-small'>Add hotel price here</a>
                     <a class='spcu-delete' href='?page=spcu-hotels&delete=<?= esc_html($r->id) ?>'>Delete</a>
                 </td>
             </tr>

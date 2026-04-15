@@ -16,6 +16,14 @@ class SPCU_Admin {
             [],
             '1.0'
         );
+
+        wp_enqueue_script(
+            'spcu-admin',
+            SPCU_URL . 'admin/admin.js',
+            [],
+            '1.0',
+            true
+        );
     }
 
     /* Create Admin Menu */
