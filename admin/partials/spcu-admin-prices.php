@@ -149,10 +149,6 @@ if(isset($_POST['add_price'])){
 
     if ($page_mode === 'hotel') {
         $data['hotel_id']      = $hotel_id;
-        $data['price_min_jpy'] = ($_POST['price_min_jpy'] ?? '') !== '' ? floatval($_POST['price_min_jpy']) : null;
-        $data['price_max_jpy'] = ($_POST['price_max_jpy'] ?? '') !== '' ? floatval($_POST['price_max_jpy']) : null;
-        $data['price_min_usd'] = ($_POST['price_min_usd'] ?? '') !== '' ? floatval($_POST['price_min_usd']) : null;
-        $data['price_max_usd'] = ($_POST['price_max_usd'] ?? '') !== '' ? floatval($_POST['price_max_usd']) : null;
     } else {
         $data['grade']         = $addon_grade;
     }
@@ -506,23 +502,6 @@ if($page_mode === 'hotel'){
         </td>
     </tr>
 
-    <!-- Hotel Min/Max JPY -->
-    <tr id="wrap_hotel_jpy">
-        <th scope="row">Hotel Price JPY (¥)</th>
-        <td>
-            Min: <input type='number' step='1' name='price_min_jpy' class="regular-text" placeholder="15000">
-            &nbsp; Max: <input type='number' step='1' name='price_max_jpy' class="regular-text" placeholder="30000">
-        </td>
-    </tr>
-    <!-- Hotel Min/Max USD -->
-    <tr id="wrap_hotel_usd">
-        <th scope="row">Hotel Price USD ($)</th>
-        <td>
-            Min: <input type='number' step='0.01' name='price_min_usd' class="regular-text" placeholder="100">
-            &nbsp; Max: <input type='number' step='0.01' name='price_max_usd' class="regular-text" placeholder="200">
-        </td>
-    </tr>
-
     <!-- Fixed JPY -->
     <tr id="wrap_price_jpy">
         <th scope="row"><label for="price_jpy">Fixed Price JPY (¥)</label></th>
@@ -563,13 +542,18 @@ if($page_mode === 'hotel'){
                 $subject .= ' (' . (SPCU_Grades::label($r->grade_name) ?: $r->grade_name) . ')';
             }
             $jpy_fixed = $r->price_jpy     ? '¥'.number_format($r->price_jpy) : '';
-            $jpy_range = ($r->price_min_jpy && $r->price_max_jpy)
+            $jpy_range = (($r->price_min_jpy ?? null) && ($r->price_max_jpy ?? null))
                 ? '¥'.number_format($r->price_min_jpy).' – ¥'.number_format($r->price_max_jpy) : '';
-            $jpy_col   = $jpy_fixed ?: $jpy_range ?: '—';
             $usd_fixed = $r->price_usd     ? '$'.number_format($r->price_usd,2) : '';
-            $usd_range = ($r->price_min_usd && $r->price_max_usd)
+            $usd_range = (($r->price_min_usd ?? null) && ($r->price_max_usd ?? null))
                 ? '$'.number_format($r->price_min_usd,2).' – $'.number_format($r->price_max_usd,2) : '';
-            $usd_col   = $usd_fixed ?: $usd_range ?: '—';
+            if($page_mode === 'hotel'){
+                $jpy_col = $jpy_fixed ?: '—';
+                $usd_col = $usd_fixed ?: '—';
+            } else {
+                $jpy_col = $jpy_fixed ?: $jpy_range ?: '—';
+                $usd_col = $usd_fixed ?: $usd_range ?: '—';
+            }
         ?>
         <tr>
             <td><?= esc_html($r->id) ?></td>
@@ -835,10 +819,9 @@ function toggle(){
         setRequired('days', false);
         setRequired('grade', false);
 
-        /* price fields: min/max only */
-        hide('wrap_price_jpy'); hide('wrap_price_usd');
-        jpy ? show('wrap_hotel_jpy') : hide('wrap_hotel_jpy');
-        usd ? show('wrap_hotel_usd') : hide('wrap_hotel_usd');
+        /* price fields: fixed only */
+        jpy ? show('wrap_price_jpy') : hide('wrap_price_jpy');
+        usd ? show('wrap_price_usd') : hide('wrap_price_usd');
 
         /* schedule rows based on type */
         hide('wrap_weekdays'); hide('wrap_specific_dates'); hide('wrap_date_range');
@@ -867,7 +850,6 @@ function toggle(){
         }
 
         /* price fields: fixed price only */
-        hide('wrap_hotel_jpy'); hide('wrap_hotel_usd');
         jpy ? show('wrap_price_jpy') : hide('wrap_price_jpy');
         usd ? show('wrap_price_usd') : hide('wrap_price_usd');
     }
