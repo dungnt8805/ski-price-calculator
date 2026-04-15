@@ -1,0 +1,306 @@
+/* ── Ski Price Calculator – Frontend Styles ────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+.ski-calculator {
+    --spcu-brand: #0f766e;
+    --spcu-brand-strong: #0b5f58;
+    --spcu-surface: #ffffff;
+    --spcu-surface-soft: #f3f8f7;
+    --spcu-border: #d4e0df;
+    --spcu-ink: #16324f;
+    --spcu-muted: #617689;
+}
+
+.ski-calculator {
+    font-family: 'Space Grotesk', sans-serif;
+    max-width: 680px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background:
+        radial-gradient(1200px 260px at -8% -15%, #d9f3ee 0%, transparent 50%),
+        radial-gradient(1200px 260px at 115% 8%, #d9eefa 0%, transparent 46%),
+        var(--spcu-surface);
+    border-radius: 16px;
+    border: 1px solid #dbe5ed;
+    box-shadow: 0 16px 44px rgba(17, 39, 63, .16);
+    color: var(--spcu-ink);
+}
+
+.ski-calculator h2 {
+    font-size: 1.62rem;
+    font-weight: 700;
+    margin: 0 0 1.5rem;
+    color: var(--spcu-ink);
+    border-bottom: 3px solid var(--spcu-brand);
+    padding-bottom: .7rem;
+    letter-spacing: .01em;
+}
+
+/* ── Steps ──────────────────────────────────────────────────────── */
+.spcu-step {
+    background: linear-gradient(180deg, #ffffff, var(--spcu-surface-soft));
+    border: 1px solid var(--spcu-border);
+    border-radius: 14px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 10px 24px rgba(16, 47, 75, .06);
+    animation: spcu-fadein .3s ease;
+}
+
+@keyframes spcu-fadein {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0);   }
+}
+
+/* ── Fields ─────────────────────────────────────────────────────── */
+.spcu-field {
+    margin-bottom: 1rem;
+}
+.spcu-field:last-child { margin-bottom: 0; }
+
+.spcu-field label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--spcu-muted);
+    margin-bottom: .35rem;
+}
+
+.spcu-field input[type="text"],
+.spcu-field input[type="number"],
+.spcu-field input[type="date"],
+.spcu-field select {
+    width: 100%;
+    padding: .62rem .88rem;
+    border: 1.5px solid var(--spcu-border);
+    border-radius: 10px;
+    font-size: .95rem;
+    font-family: inherit;
+    background: #fff;
+    transition: border-color .2s, box-shadow .2s;
+    box-sizing: border-box;
+}
+
+.spcu-field input:focus,
+.spcu-field select:focus {
+    outline: none;
+    border-color: var(--spcu-brand);
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, .16);
+}
+
+/* ── Hotel info panel ───────────────────────────────────────────── */
+.spcu-hotel-info {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid var(--spcu-border);
+}
+
+.spcu-hotel-images {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: .75rem;
+}
+
+.spcu-hotel-images img {
+    width: 120px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #dcdcde;
+}
+
+.spcu-hotel-meta {
+    font-size: .9rem;
+    line-height: 1.7;
+    color: #2f4356;
+}
+
+.spcu-hotel-meta strong {
+    font-size: 1.05rem;
+    color: var(--spcu-ink);
+}
+
+.spcu-badge {
+    display: inline-block;
+    background: #e9f8f5;
+    color: var(--spcu-brand);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: .78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+/* ── Add-ons ─────────────────────────────────────────────────────── */
+.spcu-addons .spcu-field {
+    display: block;
+    margin-right: 0;
+    margin-bottom: .55rem;
+}
+.spcu-addons label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: .5rem .65rem;
+    border: 1px solid var(--spcu-border);
+    border-radius: 10px;
+    background: #fff;
+    font-size: .9rem !important;
+    text-transform: none !important;
+    font-weight: 500 !important;
+    letter-spacing: 0 !important;
+    cursor: pointer;
+}
+
+.spcu-addons input[type='checkbox'] {
+    accent-color: var(--spcu-brand);
+}
+
+.spcu-addons .spcu-field:has(input:checked) label {
+    border-color: var(--spcu-brand);
+    background: #ecf8f6;
+    box-shadow: 0 0 0 2px rgba(15, 118, 110, .08);
+}
+
+/* ── Button ─────────────────────────────────────────────────────── */
+.spcu-actions {
+    margin-top: 1.2rem;
+}
+
+.spcu-btn {
+    background: linear-gradient(135deg, var(--spcu-brand), var(--spcu-brand-strong));
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: .75rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+    letter-spacing: .02em;
+}
+
+.spcu-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 9px 22px rgba(11, 95, 88, .34);
+}
+
+.spcu-btn:active {
+    transform: translateY(0);
+}
+
+/* ── Result ─────────────────────────────────────────────────────── */
+.spcu-result {
+    margin-top: 1.5rem;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 2px solid var(--spcu-brand);
+    animation: spcu-fadein .4s ease;
+}
+
+.spcu-result h3 {
+    background: var(--spcu-brand);
+    color: #fff;
+    margin: 0;
+    padding: .85rem 1.2rem;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* ── Breakdown rows ─────────────────────────────────────────────── */
+.spcu-breakdown {
+    padding: .5rem 0;
+    background: #f5faf9;
+}
+
+.spcu-brow {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 1rem;
+    padding: .6rem 1.2rem;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: .9rem;
+    align-items: center;
+}
+
+.spcu-brow:last-child { border-bottom: none; }
+
+.spcu-brow-label {
+    font-weight: 500;
+    color: var(--spcu-ink);
+}
+
+.spcu-brow-label small {
+    display: block;
+    font-size: .77rem;
+    color: #78757a;
+    font-weight: 400;
+}
+
+.spcu-brow-unit {
+    color: var(--spcu-muted);
+    font-size: .85rem;
+    text-align: right;
+}
+
+.spcu-brow-total {
+    font-weight: 700;
+    color: var(--spcu-brand-strong);
+    text-align: right;
+    min-width: 80px;
+}
+
+/* ── Total ──────────────────────────────────────────────────────── */
+.spcu-total {
+    background: #e8f7f4;
+    padding: 1rem 1.2rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--spcu-ink);
+    text-align: right;
+}
+
+.spcu-total span {
+    font-size: 1.5rem;
+    color: var(--spcu-brand);
+}
+
+.spcu-note {
+    padding: .6rem 1.2rem;
+    font-size: .78rem;
+    color: var(--spcu-muted);
+    margin: 0;
+    background: #f3f8f7;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* ── Error ──────────────────────────────────────────────────────── */
+.spcu-error {
+    margin-top: 1rem;
+    background: #fcf0f1;
+    border: 1.5px solid #d63638;
+    color: #d63638;
+    border-radius: 8px;
+    padding: .75rem 1rem;
+    font-size: .9rem;
+}
+
+.spcu-field input::placeholder,
+.spcu-field textarea::placeholder {
+    color: #8a9aac;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .ski-calculator { padding: 1.2rem; border-radius: 10px; }
+    .spcu-hotel-images img { width: 80px; height: 54px; }
+    .spcu-brow { grid-template-columns: 1fr auto; }
+    .spcu-brow-unit { display: none; }
+}
