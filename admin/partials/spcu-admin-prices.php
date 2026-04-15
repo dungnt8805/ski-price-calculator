@@ -91,10 +91,22 @@ if(isset($_POST['add_price'])){
         // Keep schema error visible; skip insert.
     } else {
 
+    $post_category = sanitize_text_field($_POST['category'] ?? '');
     $hotel_id   = !empty($_POST['hotel']) ? intval($_POST['hotel']) : ($selected_hotel_id ?: null);
     $area_id    = !empty($_POST['area'])  ? intval($_POST['area'])  : null;
     $days       = !empty($_POST['days'])  ? intval($_POST['days'])  : null;
     $price_type = sanitize_text_field($_POST['price_type'] ?? 'selected_days');
+    $addon_grade = SPCU_Grades::normalize($_POST['grade'] ?? '');
+
+    if($page_mode === 'addon'){
+        if(!$area_id || $area_id <= 0){
+            $price_form_error = 'Please select Area for add-on prices.';
+        } elseif(in_array($post_category, ['lift','gear'], true) && (!$days || $days <= 0)){
+            $price_form_error = 'Lift and Gear prices require Days greater than 0.';
+        } elseif($post_category === 'transport' && $addon_grade === ''){
+            $price_form_error = 'Transport prices require Grade selection.';
+        }
+    }
 
     /* Days-of-week JSON */
     $weekdays_json = null;
@@ -122,7 +134,7 @@ if(isset($_POST['add_price'])){
     $currency = ($jpy && $usd) ? 'BOTH' : ($usd ? 'USD' : 'JPY');
 
     $data = [
-        'category'      => sanitize_text_field($_POST['category']),
+        'category'      => $post_category,
         'area_id'       => $area_id,
         'days'          => $days,
         'price_type'    => $price_type,
@@ -142,23 +154,25 @@ if(isset($_POST['add_price'])){
         $data['price_min_usd'] = ($_POST['price_min_usd'] ?? '') !== '' ? floatval($_POST['price_min_usd']) : null;
         $data['price_max_usd'] = ($_POST['price_max_usd'] ?? '') !== '' ? floatval($_POST['price_max_usd']) : null;
     } else {
-        $data['grade']         = SPCU_Grades::normalize($_POST['grade'] ?? '');
+        $data['grade']         = $addon_grade;
     }
 
-    $ok = $wpdb->insert($db_table, $data);
-    if($ok === false){
-        $price_form_error = 'Could not save price rule. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
-    } else {
-        $redirect_args = [
-            'page' => $page_mode === 'hotel' ? 'spcu-hotel-prices' : 'spcu-addon-prices',
-            'spcu_toast' => 'success',
-            'spcu_msg' => rawurlencode('Price rule saved successfully.')
-        ];
-        if($page_mode === 'hotel'){
-            $redirect_args['hotel'] = $selected_hotel_id;
+    if($price_form_error === ''){
+        $ok = $wpdb->insert($db_table, $data);
+        if($ok === false){
+            $price_form_error = 'Could not save price rule. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
+        } else {
+            $redirect_args = [
+                'page' => $page_mode === 'hotel' ? 'spcu-hotel-prices' : 'spcu-addon-prices',
+                'spcu_toast' => 'success',
+                'spcu_msg' => rawurlencode('Price rule saved successfully.')
+            ];
+            if($page_mode === 'hotel'){
+                $redirect_args['hotel'] = $selected_hotel_id;
+            }
+            wp_safe_redirect(add_query_arg($redirect_args, admin_url('admin.php')));
+            exit;
         }
-        wp_safe_redirect(add_query_arg($redirect_args, admin_url('admin.php')));
-        exit;
     }
     }
 }
@@ -587,6 +601,12 @@ if($page_mode === 'hotel'){
 function $(id){ return document.getElementById(id); }
 function show(id){ var e=$(id); if(e) e.style.display=''; }
 function hide(id){ var e=$(id); if(e) e.style.display='none'; }
+function setRequired(id, required){
+    var e = $(id);
+    if(!e) return;
+    if(required) e.setAttribute('required', 'required');
+    else e.removeAttribute('required');
+}
 
 if(!$('price-form')){
     return;
@@ -811,6 +831,10 @@ function toggle(){
         show('wrap_hotel'); hide('wrap_area'); hide('wrap_days'); hide('wrap_grade');
         show('wrap_price_type');
 
+        setRequired('area', false);
+        setRequired('days', false);
+        setRequired('grade', false);
+
         /* price fields: min/max only */
         hide('wrap_price_jpy'); hide('wrap_price_usd');
         jpy ? show('wrap_hotel_jpy') : hide('wrap_hotel_jpy');
@@ -825,6 +849,7 @@ function toggle(){
     /* ── Lift / Gear / Transport ── */
     } else {
         hide('wrap_hotel'); show('wrap_area');
+        setRequired('area', true);
         
         hide('wrap_price_type');
         hide('wrap_weekdays'); hide('wrap_specific_dates'); hide('wrap_date_range');
@@ -832,9 +857,13 @@ function toggle(){
         if (cat === 'transport') {
             hide('wrap_days');
             show('wrap_grade');
+            setRequired('days', false);
+            setRequired('grade', true);
         } else {
             show('wrap_days');
             hide('wrap_grade');
+            setRequired('days', true);
+            setRequired('grade', false);
         }
 
         /* price fields: fixed price only */
