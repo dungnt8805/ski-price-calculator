@@ -6,6 +6,7 @@ class SPCU_Shortcode {
     public function __construct(){
         add_shortcode('ski_calculator', [$this,'render']);
         add_shortcode('ski_areas_overview', [$this,'render_areas_overview']);
+        add_shortcode('ski_quote_form', [$this,'render_quote_form']);
         add_action('wp_enqueue_scripts', [$this,'enqueue_assets']);
     }
 
@@ -429,6 +430,538 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         </div>
     <?php endforeach; ?>
 </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    public function render_quote_form(){
+        global $wpdb;
+        
+        // Get areas
+        $areas = $wpdb->get_results("SELECT id, name, name_ja FROM {$wpdb->prefix}spcu_areas ORDER BY name ASC");
+        
+        // Grades for package level
+        $grades = SPCU_Grades::options();
+        
+        ob_start(); ?>
+
+<div class="spcu-quote-form-wrapper">
+    <div class="spcu-quote-form">
+        <!-- Step indicators -->
+        <div class="spcu-quote-steps">
+            <div class="spcu-quote-step active">
+                <span class="spcu-quote-step-num">1</span>
+                <span class="spcu-quote-step-label">Where</span>
+            </div>
+            <div class="spcu-quote-step">
+                <span class="spcu-quote-step-num">2</span>
+                <span class="spcu-quote-step-label">Level</span>
+            </div>
+            <div class="spcu-quote-step">
+                <span class="spcu-quote-step-num">3</span>
+                <span class="spcu-quote-step-label">Duration</span>
+            </div>
+            <div class="spcu-quote-step">
+                <span class="spcu-quote-step-num">4</span>
+                <span class="spcu-quote-step-label">Group</span>
+            </div>
+            <div class="spcu-quote-step">
+                <span class="spcu-quote-step-num">5</span>
+                <span class="spcu-quote-step-label">Options</span>
+            </div>
+        </div>
+
+        <!-- Form fields -->
+        <form id="spcu-quote-form">
+            <div class="spcu-quote-row">
+                <!-- Column 1: Resort Area -->
+                <div class="spcu-quote-col">
+                    <label>RESORT AREA</label>
+                    <select id="quote_area" name="area" required>
+                        <option value="">- Select Area -</option>
+                        <?php foreach($areas as $area): ?>
+                            <option value="<?= esc_attr($area->id) ?>"><?= esc_html($area->name) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Column 2: Package Level -->
+                <div class="spcu-quote-col">
+                    <label>PACKAGE LEVEL</label>
+                    <select id="quote_level" name="level" required>
+                        <option value="">- Select Level -</option>
+                        <?php foreach($grades as $key => $label): ?>
+                            <option value="<?= esc_attr($key) ?>"><?= esc_html($label) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Column 3: Duration -->
+                <div class="spcu-quote-col">
+                    <label>NUMBER OF NIGHTS</label>
+                    <select id="quote_duration" name="duration" required>
+                        <option value="">- Select Duration -</option>
+                        <option value="3">3 nights (2D1N)</option>
+                        <option value="4">4 nights (3D2N)</option>
+                        <option value="5">5 nights (4D3N)</option>
+                        <option value="6">6 nights (5D4N)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="spcu-quote-row">
+                <!-- Column 4: Number of Guests -->
+                <div class="spcu-quote-col">
+                    <label>NUMBER OF GUESTS</label>
+                    <select id="quote_guests" name="guests" required>
+                        <option value="">- Select -</option>
+                        <option value="1">1 guest</option>
+                        <option value="2">2 guests</option>
+                        <option value="3">3 guests</option>
+                        <option value="4">4 guests</option>
+                        <option value="5">5 guests</option>
+                        <option value="6">6 guests</option>
+                        <option value="7">7 guests</option>
+                        <option value="8">8+ guests</option>
+                    </select>
+                </div>
+
+                <!-- Column 5: Season -->
+                <div class="spcu-quote-col">
+                    <label>SEASON</label>
+                    <select id="quote_season" name="season" required>
+                        <option value="">- Select Season -</option>
+                        <option value="regular">Regular Season (Dec - Mar)</option>
+                        <option value="peak">Peak (Dec 26-Jan 3 / Feb 20-22)</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        <!-- Pricing breakdown -->
+        <div class="spcu-quote-pricing" id="quote_pricing_box">
+            <div class="spcu-quote-pricing-header">
+                <h3>Estimated Price Per Person</h3>
+                <div class="spcu-quote-pricing-main">
+                    <div class="spcu-quote-price-jpy">
+                        <span class="spcu-quote-price-symbol">¥</span><span id="quote_price_jpy">0</span>
+                    </div>
+                    <div class="spcu-quote-price-range">~ ¥<span id="quote_price_jpy_max">0</span></div>
+                </div>
+            </div>
+
+            <div class="spcu-quote-pricing-total">
+                <div class="spcu-quote-group-total">
+                    <span>Group Total (<span id="quote_guests_display">2</span> guests)</span>
+                    <span class="spcu-quote-group-price">¥<span id="quote_total_jpy">0</span> ~ ¥<span id="quote_total_jpy_max">0</span></span>
+                </div>
+            </div>
+
+            <div class="spcu-quote-pricing-breakdown">
+                <div class="spcu-quote-item">
+                    <span>Accommodation (<span id="quote_nights_display">5</span> nights)</span>
+                    <span>¥<span id="quote_accommodation">0</span> ~ ¥<span id="quote_accommodation_max">0</span></span>
+                </div>
+                <div class="spcu-quote-item">
+                    <span>Lift Tickets (<span id="quote_skidays_display">3</span> days)</span>
+                    <span>¥<span id="quote_lift">0</span></span>
+                </div>
+                <div class="spcu-quote-item">
+                    <span>Gear Rental (<span id="quote_skidays_display2">3</span> days)</span>
+                    <span>¥<span id="quote_gear">0</span></span>
+                </div>
+                <div class="spcu-quote-item">
+                    <span>Transport (round trip)</span>
+                    <span>¥<span id="quote_transport">0</span></span>
+                </div>
+            </div>
+
+            <p class="spcu-quote-note">* Prices are estimates based on standard rates. Final pricing depends on specific dates and hotel availability. Weekend / peak season rates may be higher.</p>
+
+            <button type="button" class="spcu-quote-btn" id="quote_get_quote">Get Exact Quote →</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.spcu-quote-form-wrapper {
+    max-width: 1000px;
+    margin: 30px auto;
+}
+
+.spcu-quote-form {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.spcu-quote-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    gap: 10px;
+}
+
+.spcu-quote-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.spcu-quote-step-num {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e8e8e8;
+    border-radius: 50%;
+    font-weight: 600;
+    color: #666;
+    font-size: 16px;
+}
+
+.spcu-quote-step.active .spcu-quote-step-num {
+    background: #2563eb;
+    color: white;
+}
+
+.spcu-quote-step-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    text-align: center;
+}
+
+.spcu-quote-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.spcu-quote-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.spcu-quote-col label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #333;
+}
+
+.spcu-quote-col select {
+    padding: 12px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.spcu-quote-col select:hover {
+    border-color: #2563eb;
+}
+
+.spcu-quote-col select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.spcu-quote-pricing {
+    background: #1a2a4a;
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-top: 30px;
+}
+
+.spcu-quote-pricing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.spcu-quote-pricing-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.spcu-quote-pricing-main {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.spcu-quote-price-jpy {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.spcu-quote-price-symbol {
+    font-size: 20px;
+    margin-right: 4px;
+}
+
+.spcu-quote-price-range {
+    font-size: 14px;
+    color: #aaa;
+}
+
+.spcu-quote-pricing-total {
+    text-align: right;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.spcu-quote-group-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.spcu-quote-group-total span:first-child {
+    font-size: 16px;
+    color: #aaa;
+}
+
+.spcu-quote-group-price {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffa500;
+}
+
+.spcu-quote-pricing-breakdown {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 30px;
+    margin-bottom: 20px;
+}
+
+.spcu-quote-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 14px;
+}
+
+.spcu-quote-item span:first-child {
+    color: #bbb;
+}
+
+.spcu-quote-item span:last-child {
+    font-weight: 600;
+    color: #fff;
+}
+
+.spcu-quote-note {
+    font-size: 12px;
+    color: #888;
+    margin: 20px 0;
+    line-height: 1.5;
+}
+
+.spcu-quote-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: #ffa500;
+    color: #1a2a4a;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.spcu-quote-btn:hover {
+    background: #ff9500;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 165, 0, 0.3);
+}
+
+@media (max-width: 640px) {
+    .spcu-quote-form {
+        padding: 20px;
+    }
+
+    .spcu-quote-steps {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .spcu-quote-step {
+        flex-direction: row;
+        gap: 12px;
+    }
+
+    .spcu-quote-row {
+        grid-template-columns: 1fr;
+    }
+
+    .spcu-quote-pricing-breakdown {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}
+</style>
+
+<script>
+(function(){
+    var API_BASE = '<?= esc_url(rest_url('spc/v1')) ?>';
+    var allPrices = [];
+
+    // Load catalog data
+    fetch(API_BASE + '/catalog')
+        .then(function(r){ return r.json(); })
+        .then(function(data){ allPrices = data; })
+        .catch(function(e){ console.error('Failed to load prices:', e); });
+
+    // Form change listeners
+    ['quote_area', 'quote_level', 'quote_duration', 'quote_guests', 'quote_season'].forEach(function(id){
+        document.getElementById(id).addEventListener('change', calculatePrice);
+    });
+
+    function calculatePrice(){
+        var areaId = document.getElementById('quote_area').value;
+        var level = document.getElementById('quote_level').value;
+        var nights = parseInt(document.getElementById('quote_duration').value) || 0;
+        var guests = parseInt(document.getElementById('quote_guests').value) || 1;
+        var season = document.getElementById('quote_season').value;
+
+        // Always show pricing box
+        document.getElementById('quote_pricing_box').style.display = 'block';
+
+        // Update display values
+        document.getElementById('quote_nights_display').textContent = nights || '-';
+        var skiDays = nights > 0 ? Math.ceil(nights * 0.6) : 0;
+        document.getElementById('quote_skidays_display').textContent = skiDays || '-';
+        document.getElementById('quote_skidays_display2').textContent = skiDays || '-';
+        document.getElementById('quote_guests_display').textContent = guests || '-';
+
+        // Default to showing dashes if incomplete selection
+        if(!areaId || !level || !nights || !guests || !season || !allPrices.hotels){
+            document.getElementById('quote_price_jpy').textContent = '--';
+            document.getElementById('quote_price_jpy_max').textContent = '--';
+            document.getElementById('quote_total_jpy').textContent = '--';
+            document.getElementById('quote_total_jpy_max').textContent = '--';
+            document.getElementById('quote_accommodation').textContent = '--';
+            document.getElementById('quote_accommodation_max').textContent = '--';
+            document.getElementById('quote_lift').textContent = '--';
+            document.getElementById('quote_gear').textContent = '--';
+            document.getElementById('quote_transport').textContent = '--';
+            return;
+        }
+
+        // Find hotels in selected area with selected grade
+        var hotelsInArea = (allPrices.hotels || []).filter(function(h){
+            return String(h.area_id) === areaId && h.grade_key === level;
+        });
+
+        if(hotelsInArea.length === 0){
+            document.getElementById('quote_price_jpy').textContent = '--';
+            document.getElementById('quote_price_jpy_max').textContent = '--';
+            document.getElementById('quote_total_jpy').textContent = '--';
+            document.getElementById('quote_total_jpy_max').textContent = '--';
+            document.getElementById('quote_accommodation').textContent = '--';
+            document.getElementById('quote_accommodation_max').textContent = '--';
+            document.getElementById('quote_lift').textContent = '--';
+            document.getElementById('quote_gear').textContent = '--';
+            document.getElementById('quote_transport').textContent = '--';
+            return;
+        }
+
+        // Get min/max accommodation prices per night
+        var accom_prices = hotelsInArea.map(function(h){
+            var prices = (h.prices || []);
+            if(prices.length === 0) return null;
+            var min_price = Math.min.apply(null, prices.map(function(p){ return p.price_jpy; }));
+            var max_price = Math.max.apply(null, prices.map(function(p){ return p.price_jpy; }));
+            return { min: min_price, max: max_price };
+        }).filter(Boolean);
+
+        var accom_min_per_night = 0;
+        var accom_max_per_night = 0;
+        if(accom_prices.length > 0){
+            accom_min_per_night = Math.min.apply(null, accom_prices.map(function(p){ return p.min; }));
+            accom_max_per_night = Math.max.apply(null, accom_prices.map(function(p){ return p.max; }));
+        }
+
+        // Accommodation total (per guest for the group)
+        var accommodation_low = accom_min_per_night > 0 ? accom_min_per_night * nights : 0;
+        var accommodation_high = accom_max_per_night > 0 ? accom_max_per_night * nights : 0;
+        var accommodation_group_low = accommodation_low * guests;
+        var accommodation_group_high = accommodation_high * guests;
+
+        // Find addon prices (lift, gear, transport) for this area and grade
+        var addons = (allPrices.addons || []).filter(function(a){
+            return String(a.area_id) === areaId && a.grade_key === level;
+        });
+
+        var lift_price = 0, gear_price = 0, transport_price = 0;
+
+        addons.forEach(function(addon){
+            if(addon.category === 'lift') lift_price = addon.price_jpy || 0;
+            if(addon.category === 'gear') gear_price = addon.price_jpy || 0;
+            if(addon.category === 'transport') transport_price = addon.price_jpy || 0;
+        });
+
+        // Calculate totals
+        // Accommodation: per-night price × nights × guests
+        // Lift + Gear: per-day price × ski days × guests
+        // Transport: flat fee × guests
+        var lift_total = lift_price * skiDays * guests;
+        var gear_total = gear_price * skiDays * guests;
+        // Transport per guest
+        var transport_total = transport_price * guests;
+
+        // Total for all guests
+        var total_low = accommodation_group_low + lift_total + gear_total + transport_total;
+        var total_high = accommodation_group_high + lift_total + gear_total + transport_total;
+
+        // Per-person pricing
+        var per_person_low = guests > 0 ? Math.floor(total_low / guests) : 0;
+        var per_person_high = guests > 0 ? Math.floor(total_high / guests) : 0;
+
+        // Display prices
+        document.getElementById('quote_price_jpy').textContent = per_person_low > 0 ? per_person_low.toLocaleString() : '--';
+        document.getElementById('quote_price_jpy_max').textContent = per_person_high > 0 ? per_person_high.toLocaleString() : '--';
+        document.getElementById('quote_total_jpy').textContent = total_low > 0 ? total_low.toLocaleString() : '--';
+        document.getElementById('quote_total_jpy_max').textContent = total_high > 0 ? total_high.toLocaleString() : '--';
+        document.getElementById('quote_accommodation').textContent = accommodation_group_low > 0 ? accommodation_group_low.toLocaleString() : '--';
+        document.getElementById('quote_accommodation_max').textContent = accommodation_group_high > 0 ? accommodation_group_high.toLocaleString() : '--';
+        document.getElementById('quote_lift').textContent = lift_total > 0 ? lift_total.toLocaleString() : '--';
+        document.getElementById('quote_gear').textContent = gear_total > 0 ? gear_total.toLocaleString() : '--';
+        document.getElementById('quote_transport').textContent = transport_total > 0 ? transport_total.toLocaleString() : '--';
+    }
+
+    // Get exact quote
+    document.getElementById('quote_get_quote').addEventListener('click', function(){
+        alert('Quote form submission functionality to be implemented');
+    });
+})();
+</script>
+
         <?php
         return ob_get_clean();
     }
