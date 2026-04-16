@@ -35,20 +35,24 @@
   async function loadHotelFacilities() {
     if (hotelId <= 0) return;
     try {
-      var response = await fetch(restUrl + 'spcu_hotel/' + hotelId);
-      if (!response.ok) throw new Error('Failed to fetch hotel');
-      var post = await response.json();
-      if (post.spcu_facility && Array.isArray(post.spcu_facility)) {
-        currentFacilities = post.spcu_facility.map(function (termId) {
+      console.log('Loading hotel facilities via AJAX for hotel ID:', hotelId);
+      var response = await fetch(spcu_facilities_data.ajax_url + '?action=spcu_load_hotel_facilities&hotel_id=' + hotelId);
+      if (!response.ok) {
+        console.warn('AJAX request returned status ' + response.status);
+        return;
+      }
+      var result = await response.json();
+      if (result.success && result.data && Array.isArray(result.data.facilities)) {
+        currentFacilities = result.data.facilities.map(function (termId) {
           var term = allFacilities.find(function (t) { return t.id === termId; });
           return { id: termId, name: term ? term.name : 'Facility #' + termId };
         });
         updateHiddenField();
         renderFacilityTags();
-        console.log('Loaded hotel facilities:', currentFacilities);
+        console.log('Loaded hotel facilities via AJAX:', currentFacilities);
       }
     } catch (e) {
-      console.error('Failed to load hotel facilities:', e);
+      console.warn('Failed to load hotel facilities via AJAX:', e.message);
     }
   }
 

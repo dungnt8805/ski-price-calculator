@@ -48,11 +48,42 @@ add_action('init', function(){
         'public' => false,
         'show_ui' => true,
         'show_in_menu' => true,
-        'show_in_rest' => true,
-        'rest_base' => 'spcu_facility',
+        'show_in_rest' => [
+            'show_in_rest' => true,
+            'rest_base' => 'spcu_facility',
+        ],
         'hierarchical' => false,
         'rewrite' => false,
     ]);
+});
+
+// Register taxonomy field for REST API
+add_action('rest_api_init', function(){
+    register_rest_field('spcu_hotel', 'spcu_facility', [
+        'get_callback' => function($post) {
+            $terms = wp_get_post_terms($post['id'], 'spcu_facility', ['fields' => 'ids']);
+            return $terms ?: [];
+        },
+    ]);
+});
+
+// AJAX endpoint to load hotel facilities from database
+add_action('wp_ajax_spcu_load_hotel_facilities', function(){
+    $hotel_id = intval($_GET['hotel_id'] ?? 0);
+    if($hotel_id <= 0){
+        wp_send_json_error('Invalid hotel ID', 400);
+    }
+
+    global $wpdb;
+    
+    // First try to get from WordPress post
+    $terms = wp_get_post_terms($hotel_id, 'spcu_facility', ['fields' => 'ids']);
+    if(!empty($terms)){
+        wp_send_json_success(['facilities' => $terms]);
+    }
+    
+    // If no post, fallback is empty - user can add facilities
+    wp_send_json_success(['facilities' => []]);
 });
 
 // Enqueue facilities JavaScript in admin

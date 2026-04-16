@@ -329,5 +329,11 @@ document.addEventListener('DOMContentLoaded', function(){
         btn.closest('.spcu-img-wrap').remove();
     });
 
+    // Initialize facilities loading in edit mode
+    var hotelIdField = document.querySelector('input[name="hotel_id"]');
+    if(hotelIdField && typeof window.loadHotelFacilities === 'function'){
+        window.loadHotelFacilities();
+    }
+
 });
 </script>

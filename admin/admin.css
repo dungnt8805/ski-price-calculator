@@ -17,9 +17,51 @@
 }
 
 /* ── Global ──────────────────────────────────────────────── */
-#wpcontent .wrap,
-#wpcontent .wrap * {
+#wpcontent .wrap {
     font-family: 'Manrope', sans-serif;
+}
+
+#wpcontent .wrap h1,
+#wpcontent .wrap h2,
+#wpcontent .wrap h3,
+#wpcontent .wrap h4,
+#wpcontent .wrap h5,
+#wpcontent .wrap h6,
+#wpcontent .wrap label,
+#wpcontent .wrap input[type="text"],
+#wpcontent .wrap input[type="email"],
+#wpcontent .wrap input[type="number"],
+#wpcontent .wrap input[type="date"],
+#wpcontent .wrap select,
+#wpcontent .wrap textarea,
+#wpcontent .wrap button,
+#wpcontent .wrap a,
+#wpcontent .wrap p,
+#wpcontent .wrap div,
+#wpcontent .wrap span,
+#wpcontent .wrap table,
+#wpcontent .wrap td,
+#wpcontent .wrap th {
+    font-family: 'Manrope', sans-serif;
+}
+
+/* Exclude editor from global font override */
+#wpcontent .wrap .wp-editor-wrap {
+    font-family: inherit;
+}
+
+#wpcontent .wrap .wp-editor-wrap * {
+    font-family: inherit;
+}
+
+/* Restore WordPress icon fonts in editor */
+#wpcontent .wrap .mce-ico,
+.mce-ico {
+    font-family: Arial, sans-serif !important;
+}
+
+.dashicons {
+    font-family: dashicons !important;
 }
 
 .wrap h1 {

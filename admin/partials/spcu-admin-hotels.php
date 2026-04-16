@@ -63,17 +63,10 @@ if($hotel_error === ''){
         <table>
             <tr>
                 <th>ID</th><th>Name</th><th>Name (JP)</th><th>Short Description</th><th>Address</th>
-                <th>Area</th><th>Grade</th><th>Featured</th><th>Images</th><th>Action</th>
+                <th>Area</th><th>Grade</th><th>Image</th><th>Action</th>
             </tr>
             <?php foreach($rows as $r): ?>
             <?php
-                $thumbs = [];
-                if(!empty($r->images)){
-                    foreach(explode(',',$r->images) as $img_id){
-                        $t = wp_get_attachment_image_url(intval($img_id),'thumbnail');
-                        if($t) $thumbs[] = "<img src='".esc_url($t)."' style='width:40px;height:40px;object-fit:cover;border-radius:3px;margin-right:3px;'>";
-                    }
-                }
                 $featured_thumb = !empty($r->featured_image)
                     ? wp_get_attachment_image_url(intval($r->featured_image), 'thumbnail')
                     : '';
@@ -94,7 +87,6 @@ if($hotel_error === ''){
                 <td><?= esc_html($r->area_name) ?></td>
                 <td><?= esc_html(SPCU_Grades::label($r->grade_name) ?: '-') ?></td>
                 <td><?= $featured_thumb ? "<img src='".esc_url($featured_thumb)."' style='width:40px;height:40px;object-fit:cover;border-radius:3px;'>" : '-' ?></td>
-                <td><?= $thumbs ? implode('',$thumbs) : '-' ?></td>
                 <td style="white-space:nowrap;">
                     <a href='?page=spcu-hotel-prices&hotel=<?= esc_attr($r->id) ?>' class='button button-small'>Details</a>
                     <a href='?page=spcu-hotel-form&edit=<?= esc_attr($r->id) ?>' class='button button-small'>Edit</a>

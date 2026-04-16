@@ -6,6 +6,9 @@ class SPCU_Admin {
     public function __construct(){
         add_action('admin_menu', [$this,'menu']);
         add_action('admin_enqueue_scripts', [$this,'enqueue_admin_css']);
+        add_action('admin_head', [$this, 'hide_internal_submenus']);
+        add_filter('parent_file', [$this, 'set_active_admin_menu']);
+        add_filter('submenu_file', [$this, 'set_active_admin_submenu']);
     }
 
     /* Load admin CSS */
@@ -14,7 +17,7 @@ class SPCU_Admin {
             'spcu-admin',
             SPCU_URL . 'admin/admin.css',
             [],
-            '1.0'
+            '1.2'
         );
 
         wp_enqueue_script(
@@ -40,8 +43,8 @@ class SPCU_Admin {
 
         add_submenu_page('spcu-dashboard','Areas','Areas','manage_options','spcu-areas',[$this,'areas']);
         add_submenu_page('spcu-dashboard','Hotels','Hotels','manage_options','spcu-hotels',[$this,'hotels']);
-        add_submenu_page(null,'Hotel Form','Hotel Form','manage_options','spcu-hotel-form',[$this,'hotel_form']);
-        add_submenu_page(null,'Hotel Prices','Hotel Prices','manage_options','spcu-hotel-prices',[$this,'prices']);
+        add_submenu_page('spcu-dashboard','Hotel Form','Hotel Form','manage_options','spcu-hotel-form',[$this,'hotel_form']);
+        add_submenu_page('spcu-dashboard','Hotel Prices','Hotel Prices','manage_options','spcu-hotel-prices',[$this,'prices']);
         add_submenu_page('spcu-dashboard','Addon Prices','Addon Prices','manage_options','spcu-addon-prices',[$this,'prices']);
         add_submenu_page('spcu-dashboard','Import / Export','Import / Export','manage_options','spcu-io',[$this,'io']);
     }
@@ -106,5 +109,34 @@ class SPCU_Admin {
         echo "<div class='wrap'><h1>Import / Export</h1>
         <p><a href='".rest_url('spc/v1/export')."' class='button button-primary'>Download CSV</a></p>
         </div>";
+    }
+
+    public function hide_internal_submenus(){
+        echo '<style>
+            #toplevel_page_spcu-dashboard .wp-submenu a[href="admin.php?page=spcu-hotel-form"],
+            #toplevel_page_spcu-dashboard .wp-submenu a[href="admin.php?page=spcu-hotel-prices"] {
+                display: none;
+            }
+        </style>';
+    }
+
+    public function set_active_admin_menu($parent_file){
+        $page = sanitize_text_field($_GET['page'] ?? '');
+
+        if(in_array($page, ['spcu-hotel-form', 'spcu-hotel-prices'], true)){
+            return 'spcu-dashboard';
+        }
+
+        return $parent_file;
+    }
+
+    public function set_active_admin_submenu($submenu_file){
+        $page = sanitize_text_field($_GET['page'] ?? '');
+
+        if(in_array($page, ['spcu-hotel-form', 'spcu-hotel-prices'], true)){
+            return 'spcu-hotels';
+        }
+
+        return $submenu_file;
     }
 }
