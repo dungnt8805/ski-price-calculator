@@ -48,7 +48,42 @@ class SPCU_Admin {
 
     /* Dashboard */
     public function dashboard(){
-        echo "<div class='wrap'><h1>Ski Calculator Ultimate</h1><p>Welcome to the dashboard. Manage your areas, hotels and prices from the menus.</p></div>";
+        global $wpdb;
+
+        $areas_table = $wpdb->prefix . 'spcu_areas';
+        $hotels_table = $wpdb->prefix . 'spcu_hotels';
+
+        $areas_count = 0;
+        $hotels_count = 0;
+
+        $areas_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $areas_table));
+        if($areas_exists){
+            $areas_count = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$areas_table}");
+        }
+
+        $hotels_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $hotels_table));
+        if($hotels_exists){
+            $hotels_count = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$hotels_table}");
+        }
+
+        echo "<div class='wrap'>";
+        echo "<h1>Ski Calculator Ultimate</h1>";
+        echo "<p class='spcu-dashboard-intro'>Overview of your configured data.</p>";
+
+        echo "<div class='spcu-dashboard-grid'>";
+        echo "<div class='spcu-dashboard-card'>";
+        echo "<div class='spcu-dashboard-label'>Areas</div>";
+        echo "<div class='spcu-dashboard-value'>" . esc_html($areas_count) . "</div>";
+        echo "<a class='button button-small' href='" . esc_url(admin_url('admin.php?page=spcu-areas')) . "'>Manage Areas</a>";
+        echo "</div>";
+
+        echo "<div class='spcu-dashboard-card'>";
+        echo "<div class='spcu-dashboard-label'>Hotels</div>";
+        echo "<div class='spcu-dashboard-value'>" . esc_html($hotels_count) . "</div>";
+        echo "<a class='button button-small' href='" . esc_url(admin_url('admin.php?page=spcu-hotels')) . "'>Manage Hotels</a>";
+        echo "</div>";
+        echo "</div>";
+        echo "</div>";
     }
 
     public function areas(){

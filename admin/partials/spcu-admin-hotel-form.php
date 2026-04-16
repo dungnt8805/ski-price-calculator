@@ -62,78 +62,6 @@ if(isset($_GET['edit'])){
     $edit_hotel = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}spcu_hotels WHERE id=".intval($_GET['edit']));
 }
 
-// Handle Add
-if(isset($_POST['add_hotel'])){
-    $images = isset($_POST['images']) ? sanitize_text_field($_POST['images']) : '';
-    $area_id = intval($_POST['area_id'] ?? 0);
-    $grade   = SPCU_Grades::normalize($_POST['grade'] ?? '');
-
-    if($schema_error !== ''){
-        $hotel_form_error = $schema_error;
-    } elseif(empty($areas)){
-        $hotel_form_error = 'Please create at least one Area before adding a hotel.';
-    } elseif($area_id <= 0 || $grade === ''){
-        $hotel_form_error = 'Please choose both Area and Grade before saving a hotel.';
-    } else {
-        $ok = $wpdb->insert($wpdb->prefix.'spcu_hotels',[
-            'name'       => sanitize_text_field($_POST['name']),
-            'name_ja'    => sanitize_text_field($_POST['name_ja']),
-            'address'    => sanitize_textarea_field($_POST['address']),
-            'address_ja' => sanitize_textarea_field($_POST['address_ja']),
-            'images'     => $images,
-            'area_id'    => $area_id,
-            'grade'      => $grade
-        ]);
-
-        if($ok !== false){
-            wp_safe_redirect(add_query_arg([
-                'page' => 'spcu-hotels',
-                'spcu_toast' => 'success',
-                'spcu_msg' => rawurlencode('Hotel added successfully.')
-            ], admin_url('admin.php')));
-            exit;
-        }
-
-        $hotel_form_error = 'Could not save hotel. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
-    }
-}
-
-// Handle Edit
-if(isset($_POST['edit_hotel'])){
-    $images = isset($_POST['images']) ? sanitize_text_field($_POST['images']) : '';
-    $area_id = intval($_POST['area_id'] ?? 0);
-    $grade   = SPCU_Grades::normalize($_POST['grade'] ?? '');
-
-    if($schema_error !== ''){
-        $hotel_form_error = $schema_error;
-    } elseif(empty($areas)){
-        $hotel_form_error = 'Please create at least one Area before updating a hotel.';
-    } elseif($area_id <= 0 || $grade === ''){
-        $hotel_form_error = 'Please choose both Area and Grade before updating a hotel.';
-    } else {
-        $ok = $wpdb->update($wpdb->prefix.'spcu_hotels',[
-            'name'       => sanitize_text_field($_POST['name']),
-            'name_ja'    => sanitize_text_field($_POST['name_ja']),
-            'address'    => sanitize_textarea_field($_POST['address']),
-            'address_ja' => sanitize_textarea_field($_POST['address_ja']),
-            'images'     => $images,
-            'area_id'    => $area_id,
-            'grade'      => $grade
-        ], ['id' => intval($_POST['hotel_id'])]);
-
-        if($ok !== false){
-            wp_safe_redirect(add_query_arg([
-                'page' => 'spcu-hotels',
-                'spcu_toast' => 'success',
-                'spcu_msg' => rawurlencode('Hotel updated successfully.')
-            ], admin_url('admin.php')));
-            exit;
-        }
-
-        $hotel_form_error = 'Could not update hotel. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
-    }
-}
-
 // Enqueue WP Media.
 wp_enqueue_media();
 ?>
@@ -153,6 +81,7 @@ wp_enqueue_media();
     <?php endif; ?>
 
     <form method='post' id="hotel-form">
+        <?php wp_nonce_field('spcu_save_hotel'); ?>
         <?php if($edit_hotel): ?>
             <input type='hidden' name='hotel_id' value='<?= esc_attr($edit_hotel->id) ?>'>
         <?php endif; ?>

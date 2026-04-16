@@ -30,6 +30,44 @@
     letter-spacing: .01em;
 }
 
+.spcu-dashboard-intro {
+    margin-top: -4px;
+    margin-bottom: 14px;
+    color: var(--spcu-admin-muted);
+    font-size: 14px;
+}
+
+.spcu-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    max-width: 720px;
+}
+
+.spcu-dashboard-card {
+    background: linear-gradient(180deg, #ffffff, #f8fbff);
+    border: 1px solid var(--spcu-admin-border);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 10px 24px rgba(18, 45, 71, .08);
+}
+
+.spcu-dashboard-label {
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--spcu-admin-muted);
+    font-weight: 700;
+}
+
+.spcu-dashboard-value {
+    margin: 6px 0 14px;
+    font-size: 34px;
+    line-height: 1;
+    font-weight: 800;
+    color: var(--spcu-admin-ink);
+}
+
 /* ── Form panels ─────────────────────────────────────────── */
 .wrap form {
     background: linear-gradient(180deg, #ffffff, #f9fcff);
@@ -106,9 +144,8 @@
 .submit .button-primary {
     background: linear-gradient(135deg, var(--spcu-admin-primary), var(--spcu-admin-primary-strong)) !important;
     border-color: var(--spcu-admin-primary-strong) !important;
-    border-radius: 10px !important;
+    border-radius: 2x !important;
     height: auto !important;
-    padding: 8px 20px !important;
     font-weight: 700 !important;
     font-size: 13px !important;
     letter-spacing: .02em;

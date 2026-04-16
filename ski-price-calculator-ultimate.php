@@ -26,6 +26,9 @@ add_action('admin_init', 'spcu_handle_areas_post');
 require_once SPCU_PATH.'admin/partials/spcu-admin-prices-post.php';
 add_action('admin_init', 'spcu_handle_prices_post');
 add_action('admin_init', 'spcu_handle_prices_delete');
+require_once SPCU_PATH.'admin/partials/spcu-admin-hotels-post.php';
+add_action('admin_init', 'spcu_handle_hotels_post');
+add_action('admin_init', 'spcu_handle_hotels_delete');
 
 register_activation_hook(__FILE__, ['SPCU_Activator','activate']);
 

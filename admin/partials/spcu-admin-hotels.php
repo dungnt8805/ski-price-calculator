@@ -32,19 +32,6 @@ if(!$table_exists){
     $hotel_error = 'Hotels table is missing.';
 }
 
-if(isset($_GET['delete'])){
-    $ok = $wpdb->delete($hotel_table, ['id' => intval($_GET['delete'])]);
-    if($ok !== false){
-        wp_safe_redirect(add_query_arg([
-            'page' => 'spcu-hotels',
-            'spcu_toast' => 'success',
-            'spcu_msg' => rawurlencode('Hotel deleted successfully.')
-        ], admin_url('admin.php')));
-        exit;
-    }
-    $hotel_error = 'Could not delete hotel. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
-}
-
 $rows = [];
 if($hotel_error === ''){
     $rows = $wpdb->get_results("
@@ -87,6 +74,13 @@ if($hotel_error === ''){
                         if($t) $thumbs[] = "<img src='".esc_url($t)."' style='width:40px;height:40px;object-fit:cover;border-radius:3px;margin-right:3px;'>";
                     }
                 }
+                $delete_url = wp_nonce_url(
+                    add_query_arg([
+                        'page' => 'spcu-hotels',
+                        'delete' => intval($r->id),
+                    ], admin_url('admin.php')),
+                    'spcu_delete_hotel_' . intval($r->id)
+                );
             ?>
             <tr>
                 <td><?= esc_html($r->id) ?></td>
@@ -99,7 +93,7 @@ if($hotel_error === ''){
                 <td style="white-space:nowrap;">
                     <a href='?page=spcu-hotel-prices&hotel=<?= esc_attr($r->id) ?>' class='button button-small'>Details</a>
                     <a href='?page=spcu-hotel-form&edit=<?= esc_attr($r->id) ?>' class='button button-small'>Edit</a>
-                    <a class='spcu-delete' href='?page=spcu-hotels&delete=<?= esc_attr($r->id) ?>'>Delete</a>
+                    <a class='spcu-delete' href='<?= esc_url($delete_url) ?>'>Delete</a>
                 </td>
             </tr>
             <?php endforeach; ?>
