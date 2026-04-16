@@ -33,7 +33,7 @@ if(!$table_exists && class_exists('SPCU_Database')){
 }
 
 $schema_columns = [
-    'short_description' => 'VARCHAR(255) NULL',
+    'short_description' => 'VARCHAR(200) NULL',
     'description' => 'TEXT NULL',
     'featured_image' => 'INT NULL',
     'images' => 'TEXT NULL',

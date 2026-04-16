@@ -35,7 +35,7 @@ if(!$table_exists && class_exists('SPCU_Database')){
 $schema_columns = [
     'area_id' => 'INT NULL',
     'grade' => 'VARCHAR(50) NULL',
-    'short_description' => 'VARCHAR(255) NULL',
+    'short_description' => 'VARCHAR(200) NULL',
     'description' => 'TEXT NULL',
     'facilities' => 'TEXT NULL',
     'featured_image' => 'INT NULL',

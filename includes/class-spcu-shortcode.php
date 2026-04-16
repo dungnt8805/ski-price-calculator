@@ -324,7 +324,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         
         // Get addon prices for this area
         $prices = $wpdb->get_results( $wpdb->prepare(
-            "SELECT DISTINCT category, grade FROM {$wpdb->prefix}spcu_addon_prices WHERE area_id = %d ORDER BY category ASC, FIELD(grade, 'beginner', 'intermediate', 'advanced') ASC",
+            "SELECT DISTINCT category, grade FROM {$wpdb->prefix}spcu_addon_prices WHERE area_id = %d ORDER BY category ASC, FIELD(grade, 'standard', 'premium', 'exclusive') ASC",
             $area->id
         ));
         
@@ -392,9 +392,9 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                             <thead>
                                 <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
                                     <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Category</th>
-                                    <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Beginner</th>
-                                    <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Intermediate</th>
-                                    <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Advanced</th>
+                                    <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Standard</th>
+                                    <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Premium</th>
+                                    <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Exclusive</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -403,7 +403,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                                         <td style="padding: 10px; font-weight: 500; color: #333; text-transform: capitalize;">
                                             <?php echo esc_html(str_replace('_', ' ', $category)); ?>
                                         </td>
-                                        <?php foreach( ['beginner', 'intermediate', 'advanced'] as $grade ): ?>
+                                        <?php foreach( ['standard', 'premium', 'exclusive'] as $grade ): ?>
                                             <td style="padding: 10px; color: #555;">
                                                 <?php
                                                 if( in_array($grade, $grades) ){

@@ -70,7 +70,7 @@ class SPCU_Frontend {
         global $wpdb;
         
         return $wpdb->get_results($wpdb->prepare(
-            "SELECT DISTINCT category, grade FROM {$wpdb->prefix}spcu_addon_prices WHERE area_id = %d ORDER BY category ASC, FIELD(grade, 'beginner', 'intermediate', 'advanced')",
+            "SELECT DISTINCT category, grade FROM {$wpdb->prefix}spcu_addon_prices WHERE area_id = %d ORDER BY category ASC, FIELD(grade, 'standard', 'premium', 'exclusive')",
             $area_id
         ));
     }

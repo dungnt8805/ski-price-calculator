@@ -577,16 +577,16 @@ foreach($addon_prices as $p){
                         <thead>
                             <tr>
                                 <th>Service</th>
-                                <th>Beginner</th>
-                                <th>Intermediate</th>
-                                <th>Advanced</th>
+                                <th>Standard</th>
+                                <th>Premium</th>
+                                <th>Exclusive</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach($price_data as $category => $grades): ?>
                                 <tr>
                                     <td class="spcu-addon-category"><?php echo esc_html(str_replace('_', ' ', $category)); ?></td>
-                                    <?php foreach(['beginner', 'intermediate', 'advanced'] as $grade): ?>
+                                    <?php foreach(['standard', 'premium', 'exclusive'] as $grade): ?>
                                         <td>
                                             <?php
                                             if(in_array($grade, $grades)){
