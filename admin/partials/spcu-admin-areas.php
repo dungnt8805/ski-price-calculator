@@ -21,48 +21,6 @@ if(!function_exists('spcu_admin_breadcrumb')){
     }
 }
 
-// Handle area update
-if(isset($_POST['edit_area'])){
-    $area_id = intval($_POST['area_id'] ?? 0);
-    if($area_id > 0){
-        $ok = $wpdb->update($table,[
-            'type'=>sanitize_text_field($_POST['type']),
-            'name'=>sanitize_text_field($_POST['name']),
-            'name_ja'=>sanitize_text_field($_POST['name_ja'])
-        ], ['id'=>$area_id]);
-
-        if($ok !== false){
-            wp_safe_redirect(add_query_arg([
-                'page' => 'spcu-areas',
-                'spcu_toast' => 'success',
-                'spcu_msg' => rawurlencode('Area updated successfully.')
-            ], admin_url('admin.php')));
-            exit;
-        }
-
-        $area_error = 'Could not update area. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
-    }
-}
-
-if(isset($_POST['add_area'])){
-    $ok = $wpdb->insert($table,[
-        'type'=>sanitize_text_field($_POST['type']),
-        'name'=>sanitize_text_field($_POST['name']),
-        'name_ja'=>sanitize_text_field($_POST['name_ja'])
-    ]);
-
-    if($ok !== false){
-        wp_safe_redirect(add_query_arg([
-            'page' => 'spcu-areas',
-            'spcu_toast' => 'success',
-            'spcu_msg' => rawurlencode('Area added successfully.')
-        ], admin_url('admin.php')));
-        exit;
-    }
-
-    $area_error = 'Could not add area. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
-}
-
 $edit_area = null;
 if(isset($_GET['edit'])){
     $edit_area = $wpdb->get_row("SELECT * FROM {$table} WHERE id=".intval($_GET['edit']));
@@ -85,7 +43,8 @@ $rows = $wpdb->get_results("SELECT * FROM $table");
 
     <div class="spcu-split spcu-split-areas">
         <div class="spcu-col spcu-col-form">
-            <form method='post'>
+            <form method='post' action='<?= esc_url(admin_url('admin.php?page=spcu-areas')) ?>'>
+                <?php wp_nonce_field('spcu_save_area'); ?>
                 <?php if($edit_area): ?>
                     <input type='hidden' name='area_id' value='<?= esc_attr($edit_area->id) ?>'>
                 <?php endif; ?>
@@ -94,6 +53,7 @@ $rows = $wpdb->get_results("SELECT * FROM $table");
                         <th scope="row"><label for="type">Area Type</label></th>
                         <td>
                             <select name='type' id='type' required>
+                                <option value='Prefecture' <?= selected(($edit_area->type ?? ''), 'Prefecture', false) ?>>Prefecture</option>
                                 <option value='City' <?= selected(($edit_area->type ?? ''), 'City', false) ?>>City</option>
                                 <option value='Town' <?= selected(($edit_area->type ?? ''), 'Town', false) ?>>Town</option>
                                 <option value='Village' <?= selected(($edit_area->type ?? ''), 'Village', false) ?>>Village</option>
