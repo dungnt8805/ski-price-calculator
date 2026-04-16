@@ -119,6 +119,7 @@ function spcu_handle_hotels_post(){
         'images'            => isset($_POST['images']) ? sanitize_text_field($_POST['images']) : '',
         'area_id'           => $area_id,
         'grade'             => $grade,
+        'is_featured'       => isset($_POST['is_featured']) ? 1 : 0,
     ];
 
     if($is_add){

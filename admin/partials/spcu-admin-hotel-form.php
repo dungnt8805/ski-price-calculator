@@ -39,6 +39,7 @@ $schema_columns = [
     'description' => 'TEXT NULL',
     'facilities' => 'TEXT NULL',
     'featured_image' => 'INT NULL',
+    'is_featured' => 'TINYINT(1) DEFAULT 0',
 ];
 $missing_columns = [];
 
@@ -161,6 +162,16 @@ wp_enqueue_media();
                             <option value="<?= esc_attr($grade_key) ?>" <?= (($edit_hotel && $edit_hotel->grade == $grade_key) || (isset($_POST['grade']) && SPCU_Grades::normalize($_POST['grade']) === $grade_key)) ? 'selected' : '' ?>><?= esc_html($grade_label) ?></option>
                         <?php endforeach; ?>
                     </select>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label for="is_featured">Featured</label></th>
+                <td>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                        <input type='checkbox' name='is_featured' id='is_featured' value='1' <?= ($edit_hotel && $edit_hotel->is_featured) ? 'checked' : '' ?>>
+                        <span>Mark this hotel as featured</span>
+                    </label>
+                    <p class="description">Featured hotels are highlighted in the admin list and public interface.</p>
                 </td>
             </tr>
             <tr>
