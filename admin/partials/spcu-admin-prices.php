@@ -84,113 +84,6 @@ if($price_form_error === '' && $page_mode === 'addon'){
 $days_of_week = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
 $day_labels   = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
-/* ── Handle Add ──────────────────────────────────────────────────── */
-if(isset($_POST['add_price'])){
-
-    if($price_form_error !== ''){
-        // Keep schema error visible; skip insert.
-    } else {
-
-    $post_category = sanitize_text_field($_POST['category'] ?? '');
-    $hotel_id   = !empty($_POST['hotel']) ? intval($_POST['hotel']) : ($selected_hotel_id ?: null);
-    $area_id    = !empty($_POST['area'])  ? intval($_POST['area'])  : null;
-    $days       = !empty($_POST['days'])  ? intval($_POST['days'])  : null;
-    $price_type = sanitize_text_field($_POST['price_type'] ?? 'selected_days');
-    $addon_grade = SPCU_Grades::normalize($_POST['grade'] ?? '');
-
-    if($page_mode === 'addon'){
-        if(!$area_id || $area_id <= 0){
-            $price_form_error = 'Please select Area for add-on prices.';
-        } elseif(in_array($post_category, ['lift','gear'], true) && (!$days || $days <= 0)){
-            $price_form_error = 'Lift and Gear prices require Days greater than 0.';
-        } elseif($post_category === 'transport' && $addon_grade === ''){
-            $price_form_error = 'Transport prices require Grade selection.';
-        }
-    }
-
-    /* Days-of-week JSON */
-    $weekdays_json = null;
-    if($price_type === 'selected_days'){
-        $sel = array_intersect($_POST['weekdays'] ?? [], $days_of_week);
-        $weekdays_json = !empty($sel) ? wp_json_encode(array_values($sel)) : null;
-    }
-
-    /* Specific dates JSON */
-    $dates_json = null;
-    if($price_type === 'specific_dates'){
-        $raw = array_filter(array_map('trim', explode(',', $_POST['specific_dates'] ?? '')));
-        $clean = [];
-        foreach($raw as $d){ $ts = strtotime($d); if($ts) $clean[] = date('Y-m-d',$ts); }
-        $dates_json = !empty($clean) ? wp_json_encode(array_values($clean)) : null;
-    }
-
-    /* Date range */
-    $date_from = ($price_type === 'date_range' && !empty($_POST['date_from'])) ? sanitize_text_field($_POST['date_from']) : null;
-    $date_to   = ($price_type === 'date_range' && !empty($_POST['date_to']))   ? sanitize_text_field($_POST['date_to'])   : null;
-
-    /* Currency */
-    $jpy = !empty($_POST['currency_jpy']);
-    $usd = !empty($_POST['currency_usd']);
-    $currency = ($jpy && $usd) ? 'BOTH' : ($usd ? 'USD' : 'JPY');
-
-    $data = [
-        'category'      => $post_category,
-        'area_id'       => $area_id,
-        'days'          => $days,
-        'price_type'    => $price_type,
-        'weekdays_json' => $weekdays_json,
-        'dates_json'    => $dates_json,
-        'date_from'     => $date_from,
-        'date_to'       => $date_to,
-        'currency'      => $currency,
-        'price_jpy'     => ($_POST['price_jpy']     ?? '') !== '' ? floatval($_POST['price_jpy'])     : null,
-        'price_usd'     => ($_POST['price_usd']     ?? '') !== '' ? floatval($_POST['price_usd'])     : null,
-    ];
-
-    if ($page_mode === 'hotel') {
-        $data['hotel_id']      = $hotel_id;
-    } else {
-        $data['grade']         = $addon_grade;
-    }
-
-    if($price_form_error === ''){
-        $ok = $wpdb->insert($db_table, $data);
-        if($ok === false){
-            $price_form_error = 'Could not save price rule. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
-        } else {
-            $redirect_args = [
-                'page' => $page_mode === 'hotel' ? 'spcu-hotel-prices' : 'spcu-addon-prices',
-                'spcu_toast' => 'success',
-                'spcu_msg' => rawurlencode('Price rule saved successfully.')
-            ];
-            if($page_mode === 'hotel'){
-                $redirect_args['hotel'] = $selected_hotel_id;
-            }
-            wp_safe_redirect(add_query_arg($redirect_args, admin_url('admin.php')));
-            exit;
-        }
-    }
-    }
-}
-
-/* ── Handle Delete ───────────────────────────────────────────────── */
-if(isset($_GET['delete'])){
-    $ok = $wpdb->delete($db_table, ['id'=>intval($_GET['delete'])]);
-    if($ok !== false){
-        $redirect_args = [
-            'page' => $page_mode === 'hotel' ? 'spcu-hotel-prices' : 'spcu-addon-prices',
-            'spcu_toast' => 'success',
-            'spcu_msg' => rawurlencode('Price rule deleted successfully.')
-        ];
-        if($page_mode === 'hotel'){
-            $redirect_args['hotel'] = $selected_hotel_id;
-        }
-        wp_safe_redirect(add_query_arg($redirect_args, admin_url('admin.php')));
-        exit;
-    }
-    $price_form_error = 'Could not delete price rule. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
-}
-
 /* ── Load rows ───────────────────────────────────────────────────── */
 if ($page_mode === 'hotel') {
     $hotel_filter_sql = $selected_hotel_id ? $wpdb->prepare(" AND p.hotel_id = %d", $selected_hotel_id) : " AND 1=0";
@@ -348,6 +241,7 @@ if($page_mode === 'hotel'){
 <?php else: ?>
 
 <form method='post' id="price-form">
+<?php wp_nonce_field('spcu_save_price_rule'); ?>
 <table class="form-table" role="presentation">
 
     <!-- Category -->
@@ -541,6 +435,17 @@ if($page_mode === 'hotel'){
             if ($r->grade_name) {
                 $subject .= ' (' . (SPCU_Grades::label($r->grade_name) ?: $r->grade_name) . ')';
             }
+            $delete_args = [
+                'page' => $page_mode === 'hotel' ? 'spcu-hotel-prices' : 'spcu-addon-prices',
+                'delete' => intval($r->id),
+            ];
+            if($page_mode === 'hotel' && $selected_hotel_id){
+                $delete_args['hotel'] = intval($selected_hotel_id);
+            }
+            $delete_url = wp_nonce_url(
+                add_query_arg($delete_args, admin_url('admin.php')),
+                'spcu_delete_price_rule_' . intval($r->id)
+            );
             $jpy_fixed = $r->price_jpy     ? '¥'.number_format($r->price_jpy) : '';
             $jpy_range = (($r->price_min_jpy ?? null) && ($r->price_max_jpy ?? null))
                 ? '¥'.number_format($r->price_min_jpy).' – ¥'.number_format($r->price_max_jpy) : '';
@@ -566,7 +471,7 @@ if($page_mode === 'hotel'){
             <td><?= esc_html($jpy_col) ?></td>
             <td><?= esc_html($usd_col) ?></td>
             <td>
-                <a class='spcu-delete' href='?page=<?= esc_html($_GET['page']) ?>&delete=<?= esc_html($r->id) ?><?= $page_mode === 'hotel' && $selected_hotel_id ? '&hotel='.esc_attr($selected_hotel_id) : '' ?>'>Delete</a>
+                <a class='spcu-delete' href='<?= esc_url($delete_url) ?>'>Delete</a>
             </td>
         </tr>
         <?php endforeach; ?>
