@@ -53,7 +53,21 @@ class SPCU_API {
     public function get_catalog(){
         global $wpdb;
 
-        $areas = $wpdb->get_results("\n            SELECT id, name, name_ja, type\n            FROM {$wpdb->prefix}spcu_areas\n            ORDER BY name ASC\n        ");
+        $areas = $wpdb->get_results("\n            SELECT id, name, name_ja, type, short_description, description, featured_image, images\n            FROM {$wpdb->prefix}spcu_areas\n            ORDER BY name ASC\n        ");
+
+        foreach($areas as $area){
+            $imgs = [];
+            if(!empty($area->images)){
+                foreach(explode(',', $area->images) as $id){
+                    $url = wp_get_attachment_image_url(intval($id), 'medium');
+                    if($url) $imgs[] = $url;
+                }
+            }
+            $area->image_urls = $imgs;
+            $area->featured_image_url = !empty($area->featured_image)
+                ? wp_get_attachment_image_url(intval($area->featured_image), 'medium_large')
+                : null;
+        }
 
         $addon_rows = $wpdb->get_results("\n            SELECT\n                p.*,\n                a.name as area,\n                a.name_ja as area_ja,\n                a.type as area_type\n            FROM {$wpdb->prefix}spcu_addon_prices p\n            LEFT JOIN {$wpdb->prefix}spcu_areas a ON a.id = p.area_id\n            ORDER BY p.category ASC, p.area_id ASC, p.days ASC, p.id ASC\n        ");
 

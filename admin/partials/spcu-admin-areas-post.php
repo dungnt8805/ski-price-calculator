@@ -21,10 +21,36 @@ function spcu_handle_areas_post(){
     global $wpdb;
     $table = $wpdb->prefix.'spcu_areas';
 
+    $table_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table));
+    if(!$table_exists && class_exists('SPCU_Database')){
+        SPCU_Database::create_tables();
+        $table_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table));
+    }
+
+    $schema_columns = [
+        'short_description' => 'VARCHAR(255) NULL',
+        'description' => 'TEXT NULL',
+        'featured_image' => 'INT NULL',
+        'images' => 'TEXT NULL',
+    ];
+
+    if($table_exists){
+        foreach($schema_columns as $column => $definition){
+            $exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$table} LIKE %s", $column));
+            if(!$exists){
+                $wpdb->query("ALTER TABLE {$table} ADD COLUMN {$column} {$definition}");
+            }
+        }
+    }
+
     $data = [
-        'type'    => sanitize_text_field($_POST['type']),
-        'name'    => sanitize_text_field($_POST['name']),
-        'name_ja' => sanitize_text_field($_POST['name_ja'])
+        'type' => sanitize_text_field($_POST['type'] ?? ''),
+        'name' => sanitize_text_field($_POST['name'] ?? ''),
+        'name_ja' => sanitize_text_field($_POST['name_ja'] ?? ''),
+        'short_description' => sanitize_textarea_field($_POST['short_description'] ?? ''),
+        'description' => wp_kses_post($_POST['description'] ?? ''),
+        'featured_image' => ($featured_image = absint($_POST['featured_image'] ?? 0)) > 0 ? $featured_image : null,
+        'images' => sanitize_text_field($_POST['images'] ?? ''),
     ];
 
     $area_id = intval($_POST['area_id'] ?? 0);
