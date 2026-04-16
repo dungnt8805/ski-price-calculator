@@ -165,6 +165,26 @@ class SPCU_API {
             ORDER BY h.name ASC
         ");
 
+        $hotel_price_rows = $wpdb->get_results("
+            SELECT *
+            FROM {$wpdb->prefix}spcu_prices
+            WHERE category = 'hotel'
+            ORDER BY hotel_id ASC, id ASC
+        ");
+
+        $prices_by_hotel = [];
+        foreach($hotel_price_rows as $rule){
+            $hotel_id = intval($rule->hotel_id ?? 0);
+            if($hotel_id <= 0) continue;
+            if(!isset($prices_by_hotel[$hotel_id])){
+                $prices_by_hotel[$hotel_id] = [];
+            }
+            $formatted = $this->format_price_rule($rule);
+            $formatted['category'] = $rule->category;
+            $formatted['days'] = $rule->days ? (int)$rule->days : null;
+            $prices_by_hotel[$hotel_id][] = $formatted;
+        }
+
         // Resolve image URLs
         foreach($rows as $r){
             $imgs = [];
@@ -176,6 +196,7 @@ class SPCU_API {
             }
             $r->image_urls = $imgs;
             $r->grade = SPCU_Grades::label($r->grade_key ?? '');
+            $r->prices = $prices_by_hotel[intval($r->id)] ?? [];
         }
 
         return rest_ensure_response($rows);
