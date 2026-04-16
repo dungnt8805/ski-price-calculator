@@ -4,254 +4,313 @@
 -- ============================================================================
 
 -- ── AREAS ────────────────────────────────────────────────────────────────
-INSERT INTO wp_spcu_areas (type, name, name_ja, short_description, featured_image) VALUES
+INSERT INTO wp_spcu_areas (type, name, name_ja, short_description, description, featured_image) VALUES
 ('Prefecture', 'Hakuba Valley', '白馬バレー',
+LEFT('Stretching across the dramatic Northern Japan Alps, Hakuba Valley is one of Asia’s most legendary ski destinations and host of the 1998 Winter Olympic alpine events. The valley connects multiple world-class resorts offering terrain for every level—from gentle groomers to steep backcountry bowls and tree runs loved by advanced riders. Off the slopes, Hakuba delivers a lively alpine village atmosphere with international dining, craft beer bars, cozy cafés, and soothing natural onsens overlooking snow-covered peaks. Perfect for travelers seeking powder, scenery, and nightlife in one destination.', 200),
 'Stretching across the dramatic Northern Japan Alps, Hakuba Valley is one of Asia’s most legendary ski destinations and host of the 1998 Winter Olympic alpine events. The valley connects multiple world-class resorts offering terrain for every level—from gentle groomers to steep backcountry bowls and tree runs loved by advanced riders. Off the slopes, Hakuba delivers a lively alpine village atmosphere with international dining, craft beer bars, cozy cafés, and soothing natural onsens overlooking snow-covered peaks. Perfect for travelers seeking powder, scenery, and nightlife in one destination.',
 0),
 
 ('Town', 'Niseko', 'ニセコ',
+LEFT('Niseko is globally famous as the powder capital of the world, attracting skiers and snowboarders from every continent in search of legendary “Japow.” Niseko United links four major resorts across Mount Yotei, offering seamless lift access, extensive night skiing, and incredibly reliable snowfall. The town’s international atmosphere features English-friendly services, luxury chalets, gourmet restaurants, and vibrant après-ski culture, making it ideal for travelers wanting world-class facilities with Japanese hospitality.', 200),
 'Niseko is globally famous as the powder capital of the world, attracting skiers and snowboarders from every continent in search of legendary “Japow.” Niseko United links four major resorts across Mount Yotei, offering seamless lift access, extensive night skiing, and incredibly reliable snowfall. The town’s international atmosphere features English-friendly services, luxury chalets, gourmet restaurants, and vibrant après-ski culture, making it ideal for travelers wanting world-class facilities with Japanese hospitality.',
 0),
 
 ('Town', 'Yuzawa Snow Park', '湯沢スノーパーク',
+LEFT('Located just 80 minutes from Tokyo via Shinkansen, Yuzawa Snow Park is Japan’s most convenient ski destination. Perfect for day trips and weekend escapes, it offers gentle beginner terrain, excellent ski schools, and family-friendly snow activities. Visitors can enjoy relaxing hot springs, cozy mountain dining, and beautiful snowy landscapes without traveling far from the city.', 200),
 'Located just 80 minutes from Tokyo via Shinkansen, Yuzawa Snow Park is Japan’s most convenient ski destination. Perfect for day trips and weekend escapes, it offers gentle beginner terrain, excellent ski schools, and family-friendly snow activities. Visitors can enjoy relaxing hot springs, cozy mountain dining, and beautiful snowy landscapes without traveling far from the city.',
 0),
 
 ('Prefecture', 'Nagano', '長野',
+LEFT('Nagano is the historic heart of Japan’s winter sports scene and host of the 1998 Winter Olympics. The region features world-famous resorts such as Shiga Kogen and Hakuba, known for long seasons, high-altitude terrain, and breathtaking alpine scenery. Visitors can combine skiing with cultural experiences, including traditional villages, temples, and the famous Snow Monkeys bathing in natural hot springs.', 200),
 'Nagano is the historic heart of Japan’s winter sports scene and host of the 1998 Winter Olympics. The region features world-famous resorts such as Shiga Kogen and Hakuba, known for long seasons, high-altitude terrain, and breathtaking alpine scenery. Visitors can combine skiing with cultural experiences, including traditional villages, temples, and the famous Snow Monkeys bathing in natural hot springs.',
 0),
 
 ('Town', 'Rusutsu', 'ルスツ',
+LEFT('Spanning three mountains, Rusutsu is celebrated for some of the best tree skiing in the world. This purpose-built resort features high-speed lifts, wide uncrowded slopes, and consistent Hokkaido powder. Families love the indoor theme park and diverse dining, while advanced riders appreciate the endless off-piste opportunities.', 200),
 'Spanning three mountains, Rusutsu is celebrated for some of the best tree skiing in the world. This purpose-built resort features high-speed lifts, wide uncrowded slopes, and consistent Hokkaido powder. Families love the indoor theme park and diverse dining, while advanced riders appreciate the endless off-piste opportunities.',
 0),
 
 ('Town', 'Nozawa Onsen', '野沢温泉',
+LEFT('Nozawa Onsen blends authentic Japanese culture with exceptional skiing. This charming village features narrow streets, traditional ryokans, and 13 free public hot springs. Famous for its 10km downhill run and lively festivals, it offers a unique mix of deep snow, cultural heritage, and warm hospitality.', 200),
 'Nozawa Onsen blends authentic Japanese culture with exceptional skiing. This charming village features narrow streets, traditional ryokans, and 13 free public hot springs. Famous for its 10km downhill run and lively festivals, it offers a unique mix of deep snow, cultural heritage, and warm hospitality.',
 0),
 
 ('Town', 'Myoko Kogen', '妙高高原',
+LEFT('Myoko Kogen is known for some of the heaviest snowfall in Japan, making it a paradise for powder lovers. The area retains an authentic, old-school charm with wide-open runs, deep tree skiing, and stunning views of Mount Myoko. Perfect for travelers seeking deep snow and a traditional Japanese atmosphere.', 200),
 'Myoko Kogen is known for some of the heaviest snowfall in Japan, making it a paradise for powder lovers. The area retains an authentic, old-school charm with wide-open runs, deep tree skiing, and stunning views of Mount Myoko. Perfect for travelers seeking deep snow and a traditional Japanese atmosphere.',
 0),
 
 ('Town', 'Tomamu', 'トマム',
+LEFT('Tomamu is a stylish winter wonderland managed by Hoshino Resorts, designed with families in mind. Beyond the groomed slopes, the resort features the magical Ice Village, the Mina-Mina indoor beach, and the breathtaking Unkai Terrace. A perfect destination for combining skiing with luxury resort experiences.', 200),
 'Tomamu is a stylish winter wonderland managed by Hoshino Resorts, designed with families in mind. Beyond the groomed slopes, the resort features the magical Ice Village, the Mina-Mina indoor beach, and the breathtaking Unkai Terrace. A perfect destination for combining skiing with luxury resort experiences.',
 0),
 
 ('Town', 'Appi Kogen', '安比高原',
+LEFT('Appi Kogen is often called the “Aspen of Japan” thanks to its perfectly groomed silky snow and elegant resort atmosphere. The north-facing slopes preserve snow quality all day, while refined hotels and dining create a luxurious winter escape ideal for couples and families.', 200),
 'Appi Kogen is often called the “Aspen of Japan” thanks to its perfectly groomed silky snow and elegant resort atmosphere. The north-facing slopes preserve snow quality all day, while refined hotels and dining create a luxurious winter escape ideal for couples and families.',
 0),
 
 ('Town', 'Zao Onsen', '蔵王温泉',
+LEFT('Zao Onsen is famous for its magical “Snow Monsters” — trees encased in snow and ice that create a surreal winter landscape. Visitors can enjoy scenic skiing, night tours, and the healing waters of historic sulfur hot springs, making it a destination where adventure and relaxation meet.', 200),
 'Zao Onsen is famous for its magical “Snow Monsters” — trees encased in snow and ice that create a surreal winter landscape. Visitors can enjoy scenic skiing, night tours, and the healing waters of historic sulfur hot springs, making it a destination where adventure and relaxation meet.',
 0);
 
 -- ── HOTELS ──────────────────────────────────────────────────────────────
 
-INSERT INTO wp_spcu_hotels (area_id, name, name_ja, grade, short_description, address, is_featured) VALUES
+INSERT INTO wp_spcu_hotels (area_id, name, name_ja, grade, short_description, description, address, is_featured) VALUES
 
 -- HAKUBA
 (1,'Hakuba Highland Hotel','白馬ハイランドホテル','premium',
+LEFT('Famous for its breathtaking panoramic views of the Northern Alps, this hotel offers one of Hakuba’s most scenic outdoor onsens. Guests enjoy spacious rooms, warm hospitality, and convenient shuttle access to the Happo-one lifts. A perfect blend of comfort, scenery, and value.', 200),
 'Famous for its breathtaking panoramic views of the Northern Alps, this hotel offers one of Hakuba’s most scenic outdoor onsens. Guests enjoy spacious rooms, warm hospitality, and convenient shuttle access to the Happo-one lifts. A perfect blend of comfort, scenery, and value.',
 '3581 Hakuba, Nagano',1),
 
 (1,'Hakuba Grandvaux','白馬グランボー','exclusive',
+LEFT('A refined luxury lodge combining French elegance with alpine charm. Guests enjoy gourmet dining, concierge ski services, and a tranquil private atmosphere. Designed for travelers seeking a sophisticated ski holiday with personalized service.', 200),
 'A refined luxury lodge combining French elegance with alpine charm. Guests enjoy gourmet dining, concierge ski services, and a tranquil private atmosphere. Designed for travelers seeking a sophisticated ski holiday with personalized service.',
 '3593 Hakuba, Nagano',1),
 
 (1,'Alpine Valley Lodge','アルパインバレーロッジ','standard',
+LEFT('A welcoming family-run lodge known for its cozy atmosphere and hearty home-cooked breakfasts. Located near beginner-friendly slopes, it is ideal for families and first-time skiers seeking comfort and affordability.', 200),
 'A welcoming family-run lodge known for its cozy atmosphere and hearty home-cooked breakfasts. Located near beginner-friendly slopes, it is ideal for families and first-time skiers seeking comfort and affordability.',
 '3500 Hakuba, Nagano',0),
 
 (1,'Ezo Powder House','エゾパウダーハウス','premium',
+LEFT('A stylish modern lodge designed for groups and powder enthusiasts. Features a large communal kitchen, spacious lounge areas, and professional gear-drying facilities—perfect for adventurous skiers.', 200),
 'A stylish modern lodge designed for groups and powder enthusiasts. Features a large communal kitchen, spacious lounge areas, and professional gear-drying facilities—perfect for adventurous skiers.',
 '3585 Hakuba, Nagano',0),
 
 (1,'Hakuba Mominoki Hotel','白馬樅の木ホテル','exclusive',
+LEFT('Nestled in the tranquil Wadano forest, this hotel delivers a true alpine luxury experience with a renowned alkaline onsen and an impressive wine cellar. Perfect for travelers seeking relaxation after epic ski days.', 200),
 'Nestled in the tranquil Wadano forest, this hotel delivers a true alpine luxury experience with a renowned alkaline onsen and an impressive wine cellar. Perfect for travelers seeking relaxation after epic ski days.',
 '4683-2 Hokujo, Hakuba, Nagano',0),
 
 -- NISEKO
 (2,'Park Hyatt Niseko Hanazono','パークハイアットニセコ','exclusive',
+LEFT('The pinnacle of luxury in Niseko featuring ski-in/ski-out access, private onsens, and floor-to-ceiling Mount Yotei views. World-class dining and spa experiences make it one of Japan’s most prestigious ski resorts.', 200),
 'The pinnacle of luxury in Niseko featuring ski-in/ski-out access, private onsens, and floor-to-ceiling Mount Yotei views. World-class dining and spa experiences make it one of Japan’s most prestigious ski resorts.',
 '328-47 Iwaobetsu, Kutchan, Hokkaido',1),
 
 (2,'Niseko Grand Hotel','ニセコグランドホテル','premium',
+LEFT('Home to Niseko’s largest mixed outdoor onsen, this traditional hotel offers spacious rooms, authentic Japanese hospitality, and outstanding seafood buffets after a day in deep powder.', 200),
 'Home to Niseko’s largest mixed outdoor onsen, this traditional hotel offers spacious rooms, authentic Japanese hospitality, and outstanding seafood buffets after a day in deep powder.',
 '204 Niseko, Hokkaido',1),
 
 (2,'Hilton Niseko Village','ヒルトンニセコビレッジ','exclusive',
+LEFT('A modern ski-in/ski-out resort with an iconic outdoor onsen overlooking snow-covered mountains. Guests enjoy luxury spa treatments, premium dining, and direct gondola access.', 200),
 'A modern ski-in/ski-out resort with an iconic outdoor onsen overlooking snow-covered mountains. Guests enjoy luxury spa treatments, premium dining, and direct gondola access.',
 'Higashiyama-onsen, Niseko, Hokkaido',0),
 
 (2,'Niseko Powder Lodge','ニセコパウダーロッジ','standard',
+LEFT('A lively and budget-friendly lodge in Annupuri focused on powder lovers. Perfect for travelers who prioritize snow quality and a social ski atmosphere over luxury.', 200),
 'A lively and budget-friendly lodge in Annupuri focused on powder lovers. Perfect for travelers who prioritize snow quality and a social ski atmosphere over luxury.',
 '210 Niseko, Hokkaido',0),
 
 (2,'Niseko Base Camp','ニセコベースキャンプ','standard',
+LEFT('Modern self-catering apartments offering flexibility and convenience for families and groups. Located within walking distance of restaurants and village life.', 200),
 'Modern self-catering apartments offering flexibility and convenience for families and groups. Located within walking distance of restaurants and village life.',
 '198 Niseko, Hokkaido',0),
 
 -- YUZAWA
 (3,'NASPA New Otani','NASPAニューオータニ','exclusive',
+LEFT('A rare ski-only resort offering a quiet luxury experience. Features premium facilities, private ski lockers, and spacious rooms designed for relaxation.', 200),
 'A rare ski-only resort offering a quiet luxury experience. Features premium facilities, private ski lockers, and spacious rooms designed for relaxation.',
 '2117-9 Yuzawa, Niigata',1),
 
 (3,'Hotel Futaba','ホテル双葉','premium',
+LEFT('Known as the “bathhouse hotel,” featuring 28 mineral hot spring baths and authentic ryokan hospitality. Guests enjoy panoramic mountain views and exceptional Japanese cuisine.', 200),
 'Known as the “bathhouse hotel,” featuring 28 mineral hot spring baths and authentic ryokan hospitality. Guests enjoy panoramic mountain views and exceptional Japanese cuisine.',
 '419 Yuzawa, Niigata',1),
 
 (3,'Yuzawa Prince Hotel','湯沢プリンスホテル','premium',
+LEFT('A convenient resort hotel near the Shinkansen station, perfect for beginners and weekend travelers. Easy access to rental shops and ski lifts.', 200),
 'A convenient resort hotel near the Shinkansen station, perfect for beginners and weekend travelers. Easy access to rental shops and ski lifts.',
 '1800 Yuzawa, Niigata',0),
 
 (3,'Snow Ridge Inn','スノーリッジイン','standard',
+LEFT('A cheerful and affordable inn popular with solo travelers and students. Cozy lounge areas and night-skiing views create a relaxed atmosphere.', 200),
 'A cheerful and affordable inn popular with solo travelers and students. Cozy lounge areas and night-skiing views create a relaxed atmosphere.',
 '1770 Yuzawa, Niigata',0),
 
 (3,'Yuzawa Family Resort','湯沢ファミリーリゾート','standard',
+LEFT('Designed for families with children, offering indoor play areas, nursery services, and easy access to sledding and beginner slopes.', 200),
 'Designed for families with children, offering indoor play areas, nursery services, and easy access to sledding and beginner slopes.',
 '1750 Yuzawa, Niigata',0),
 
 -- NAGANO
 (4,'Hotel Grand Phenix Okushiga','ホテルグランフェニックス奥志賀','exclusive',
+LEFT('A prestigious Swiss chalet-style hotel known for fine dining and elegant alpine ambiance. A favorite among discerning skiers visiting Shiga Kogen.', 200),
 'A prestigious Swiss chalet-style hotel known for fine dining and elegant alpine ambiance. A favorite among discerning skiers visiting Shiga Kogen.',
 'Okushiga Kogen, Nagano',1),
 
 (4,'Nagano Olympic Lodge','長野オリンピックロッジ','premium',
+LEFT('A historic hotel that hosted Olympic athletes, blending sporty atmosphere with modern comfort and memorabilia displays.', 200),
 'A historic hotel that hosted Olympic athletes, blending sporty atmosphere with modern comfort and memorabilia displays.',
 '3680 Nagano, Nagano',1),
 
 (4,'Shiga Grand Hotel','志賀グランドホテル','standard',
+LEFT('A large and practical hotel offering excellent lift access and buffet dining, perfect for groups and ski tours.', 200),
 'A large and practical hotel offering excellent lift access and buffet dining, perfect for groups and ski tours.',
 '7148-31 Ichinose, Nagano',0),
 
 (4,'Nagano Summit Hotel','長野サミットホテル','standard',
+LEFT('Located at high altitude with spectacular sunrise views. Ideal for skiers who want first tracks every morning.', 200),
 'Located at high altitude with spectacular sunrise views. Ideal for skiers who want first tracks every morning.',
 '3670 Nagano, Nagano',0),
 
 -- RUSUTSU
 (5,'The Vale Rusutsu','ザ・ヴェール・ルスツ','exclusive',
+LEFT('Luxury designer condos redefining mountain living with private onsens and premium interiors. Perfect for upscale family ski holidays.', 200),
 'Luxury designer condos redefining mountain living with private onsens and premium interiors. Perfect for upscale family ski holidays.',
 '27-6 Izumikawa, Rusutsu, Hokkaido',1),
 
 (5,'The Westin Rusutsu Resort','ウェスティン ルスツリゾート','exclusive',
+LEFT('A landmark tower hotel offering bi-level suites and signature Heavenly Beds for ultimate post-ski recovery.', 200),
 'A landmark tower hotel offering bi-level suites and signature Heavenly Beds for ultimate post-ski recovery.',
 '133 Izumikawa, Rusutsu, Hokkaido',1),
 
 (5,'Rusutsu Resort Hotel','ルスツリゾートホテル','premium',
+LEFT('The heart of resort life connected to shopping, dining, and the monorail. Great for families seeking convenience and entertainment.', 200),
 'The heart of resort life connected to shopping, dining, and the monorail. Great for families seeking convenience and entertainment.',
 '133 Izumikawa, Rusutsu, Hokkaido',0),
 
 (5,'Hotel Lilla Huset','ホテルリラハセット','standard',
+LEFT('A charming boutique hotel offering Scandinavian-inspired design and peaceful surroundings near the gondola.', 200),
 'A charming boutique hotel offering Scandinavian-inspired design and peaceful surroundings near the gondola.',
 '13-3 Izumikawa, Rusutsu, Hokkaido',0),
 
 (5,'Rusutsu Pension Lilla','ペンション リラハセット','standard',
+LEFT('A cozy pension run by passionate local hosts, famous for hearty home-cooked meals and warm hospitality.', 200),
 'A cozy pension run by passionate local hosts, famous for hearty home-cooked meals and warm hospitality.',
 '13-3 Izumikawa, Rusutsu, Hokkaido',0),
 
 -- NOZAWA ONSEN
 (6,'Ryokan Sakaya','旅館さかや','exclusive',
+LEFT('An 18-generation luxury ryokan featuring stunning timber architecture and a spectacular traditional bathhouse.', 200),
 'An 18-generation luxury ryokan featuring stunning timber architecture and a spectacular traditional bathhouse.',
 '9329 Toyosato, Nozawa Onsen, Nagano',1),
 
 (6,'The Ridge Nozawa','ザ・リッジ野沢','premium',
+LEFT('Modern ski apartments beside the Nagasaka Gondola, perfect for international guests seeking comfort and convenience.', 200),
 'Modern ski apartments beside the Nagasaka Gondola, perfect for international guests seeking comfort and convenience.',
 '9806 Toyosato, Nozawa Onsen, Nagano',1),
 
 (6,'Address Nozawa','アドレス野沢','premium',
+LEFT('Colorful boutique studios in the village center with creative design and kitchenettes for independent travelers.', 200),
 'Colorful boutique studios in the village center with creative design and kitchenettes for independent travelers.',
 '9535 Toyosato, Nozawa Onsen, Nagano',0),
 
 (6,'Nozawa Hospitality','野沢ホスピタリティ','standard',
+LEFT('A collection of renovated traditional houses blending local charm with modern comfort.', 200),
 'A collection of renovated traditional houses blending local charm with modern comfort.',
 '9285 Toyosato, Nozawa Onsen, Nagano',0),
 
 (6,'Kamoshika Lodge','カモシカロッジ','standard',
+LEFT('A social lodge known for its lively bar and communal ski culture.', 200),
 'A social lodge known for its lively bar and communal ski culture.',
 '9330 Toyosato, Nozawa Onsen, Nagano',0),
 
 -- MYOKO
 (7,'Akakura Kanko Hotel','赤倉観光ホテル','exclusive',
+LEFT('A historic luxury hotel famous for its infinity onsen terrace overlooking the mountains.', 200),
 'A historic luxury hotel famous for its infinity onsen terrace overlooking the mountains.',
 '216 Tagiri, Myoko, Niigata',1),
 
 (7,'Lotte Arai Resort','ロッテアライリゾート','exclusive',
+LEFT('A massive upscale resort village offering spa, adventure activities, and guided powder experiences.', 200),
 'A massive upscale resort village offering spa, adventure activities, and guided powder experiences.',
 '1966 Ryozenji, Myoko, Niigata',1),
 
 (7,'Akakura Hotel','赤倉ホテル','premium',
+LEFT('A traditional hotel in the heart of the village with expansive baths and classic charm.', 200),
 'A traditional hotel in the heart of the village with expansive baths and classic charm.',
 '441 Akakura Onsen, Myoko, Niigata',0),
 
 (7,'Hotel Taizan','ホテル太山','standard',
+LEFT('A friendly lodge known for natural volcanic hot spring water and great location.', 200),
 'A friendly lodge known for natural volcanic hot spring water and great location.',
 '351 Akakura Onsen, Myoko, Niigata',0),
 
 (7,'Red Horse Myoko','レッドホース妙高','standard',
+LEFT('A newly renovated lodge with modern comfort and excellent breakfasts.', 200),
 'A newly renovated lodge with modern comfort and excellent breakfasts.',
 '209-3 Tagiri, Myoko, Niigata',0),
 
 -- TOMAMU
 (8,'Hoshino Risonare Tomamu','リゾナーレトマム','exclusive',
+LEFT('Luxury family suites featuring private whirlpool baths and premium resort services.', 200),
 'Luxury family suites featuring private whirlpool baths and premium resort services.',
 'Nakatomamu, Shimukappu, Hokkaido',1),
 
 (8,'Club Med Tomamu','クラブメッドトマム','exclusive',
+LEFT('The ultimate all-inclusive ski experience covering lift passes, lessons, dining, and entertainment.', 200),
 'The ultimate all-inclusive ski experience covering lift passes, lessons, dining, and entertainment.',
 'Nakatomamu, Shimukappu, Hokkaido',1),
 
 (8,'Tomamu The Tower','トマム ザ・タワー','premium',
+LEFT('A central landmark hotel ideal for families with easy access to resort attractions.', 200),
 'A central landmark hotel ideal for families with easy access to resort attractions.',
 'Nakatomamu, Shimukappu, Hokkaido',0),
 
 (8,'Petit Hotel Grace','プチホテルグレーズ','standard',
+LEFT('A quiet and affordable hotel just outside the resort gates.', 200),
 'A quiet and affordable hotel just outside the resort gates.',
 '3070 Shimukappu, Hokkaido',0),
 
 (8,'Pension Woody Note','ペンションウッディノート','standard',
+LEFT('A cozy guesthouse famous for warm hospitality and local knowledge.', 200),
 'A cozy guesthouse famous for warm hospitality and local knowledge.',
 '3073 Shimukappu, Hokkaido',0),
 
 -- APPI
 (9,'ANA InterContinental Appi','ANAインターコンチネンタル安比高原','exclusive',
+LEFT('A true five-star ski resort featuring refined dining and a private club lounge.', 200),
 'A true five-star ski resort featuring refined dining and a private club lounge.',
 '117-46 Appi Kogen, Iwate',1),
 
 (9,'ANA Crowne Plaza Appi','ANAクラウンプラザリゾート安比高原','premium',
+LEFT('A large resort complex with pools, restaurants, and one of Tohoku’s biggest onsen facilities.', 200),
 'A large resort complex with pools, restaurants, and one of Tohoku’s biggest onsen facilities.',
 '117-17 Appi Kogen, Iwate',1),
 
 (9,'ANA Holiday Inn Appi','ANAホリデイ・インリゾート安比高原','standard',
+LEFT('Family-friendly hotel with direct slope access and spacious rooms.', 200),
 'Family-friendly hotel with direct slope access and spacious rooms.',
 '117-1 Appi Kogen, Iwate',0),
 
 (9,'Hachimantai Heights','八幡平ハイツ','premium',
+LEFT('A serene forest retreat known for outdoor baths and premium Wagyu dining.', 200),
 'A serene forest retreat known for outdoor baths and premium Wagyu dining.',
 '1-1 Hachimantai, Iwate',0),
 
 (9,'Pension Mutti','ペンション・ムッティ','standard',
+LEFT('A charming pension famous for homemade breads and jams.', 200),
 'A charming pension famous for homemade breads and jams.',
 '605-64 Appi Kogen, Iwate',0),
 
 -- ZAO
 (10,'Takamiya Ryokan Miyamaso','深山荘 高見屋','exclusive',
+LEFT('A 300-year-old ryokan showcasing traditional architecture and antique interiors.', 200),
 'A 300-year-old ryokan showcasing traditional architecture and antique interiors.',
 '54 Zao Onsen, Yamagata',1),
 
 (10,'Zao Meitoya So','蔵王温泉 名湯舎 創','exclusive',
+LEFT('A modern minimalist ryokan designed for relaxation and comfort.', 200),
 'A modern minimalist ryokan designed for relaxation and comfort.',
 '48 Zao Onsen, Yamagata',1),
 
 (10,'Zao Kokusai Hotel','蔵王国際ホテル','premium',
+LEFT('Famous for its all-wood hot spring building and milky sulfur baths.', 200),
 'Famous for its all-wood hot spring building and milky sulfur baths.',
 '933 Zao Onsen, Yamagata',0),
 
 (10,'Hotel Lucent Takamiya','ホテルルーセントタカミヤ','premium',
+LEFT('A convenient hotel at the base of the ropeway, ideal for night Snow Monster tours.', 200),
 'A convenient hotel at the base of the ropeway, ideal for night Snow Monster tours.',
 '942 Zao Onsen, Yamagata',0),
 
 (10,'Zao Astraea Hotel','蔵王アストリアホテル','standard',
+LEFT('A unique mountain hotel offering first access to the slopes every morning.', 200),
 'A unique mountain hotel offering first access to the slopes every morning.',
 '801 Zao Onsen, Yamagata',0);
 
@@ -275,7 +334,7 @@ SELECT
 	NULL AS dates_json,
 	NULL AS date_from,
 	NULL AS date_to,
-	'BOTH' AS currency,
+	'JPY' AS currency,
 	ROUND(
 		(
 			CASE h.grade
@@ -349,7 +408,7 @@ SELECT
 	NULL,
 	NULL,
 	NULL,
-	'BOTH',
+	'JPY',
 	ROUND(
 		(
 			CASE h.grade
@@ -425,7 +484,7 @@ SELECT
 	'["2026-12-24","2026-12-25","2026-12-26","2026-12-27","2026-12-28","2026-12-29","2026-12-30","2026-12-31","2027-01-01","2027-01-02","2027-01-03","2027-02-11"]',
 	NULL,
 	NULL,
-	'BOTH',
+	'JPY',
 	ROUND(
 		(
 			CASE h.grade

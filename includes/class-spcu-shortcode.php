@@ -478,10 +478,14 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                 <div class="spcu-quote-col">
                     <label>RESORT AREA</label>
                     <select id="quote_area" name="area" required>
-                        <option value="">- Select Area -</option>
-                        <?php foreach($areas as $area): ?>
-                            <option value="<?= esc_attr($area->id) ?>"><?= esc_html($area->name) ?></option>
-                        <?php endforeach; ?>
+                        <?php if(!empty($areas)): ?>
+                            <option value="<?= esc_attr($areas[0]->id) ?>" selected><?= esc_html($areas[0]->name) ?></option>
+                            <?php foreach(array_slice($areas, 1) as $area): ?>
+                                <option value="<?= esc_attr($area->id) ?>"><?= esc_html($area->name) ?></option>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <option value="">- No areas available -</option>
+                        <?php endif; ?>
                     </select>
                 </div>
 
@@ -489,10 +493,14 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                 <div class="spcu-quote-col">
                     <label>PACKAGE LEVEL</label>
                     <select id="quote_level" name="level" required>
-                        <option value="">- Select Level -</option>
-                        <?php foreach($grades as $key => $label): ?>
-                            <option value="<?= esc_attr($key) ?>"><?= esc_html($label) ?></option>
-                        <?php endforeach; ?>
+                        <?php $grade_list = array_keys($grades); if(!empty($grade_list)): ?>
+                            <option value="<?= esc_attr($grade_list[0]) ?>" selected><?= esc_html($grades[$grade_list[0]]) ?></option>
+                            <?php foreach(array_slice($grade_list, 1) as $key): ?>
+                                <option value="<?= esc_attr($key) ?>"><?= esc_html($grades[$key]) ?></option>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <option value="">- No levels available -</option>
+                        <?php endif; ?>
                     </select>
                 </div>
 
@@ -500,8 +508,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                 <div class="spcu-quote-col">
                     <label>NUMBER OF NIGHTS</label>
                     <select id="quote_duration" name="duration" required>
-                        <option value="">- Select Duration -</option>
-                        <option value="3">3 nights (2D1N)</option>
+                        <option value="3" selected>3 nights (2D1N)</option>
                         <option value="4">4 nights (3D2N)</option>
                         <option value="5">5 nights (4D3N)</option>
                         <option value="6">6 nights (5D4N)</option>
@@ -514,8 +521,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                 <div class="spcu-quote-col">
                     <label>NUMBER OF GUESTS</label>
                     <select id="quote_guests" name="guests" required>
-                        <option value="">- Select -</option>
-                        <option value="1">1 guest</option>
+                        <option value="1" selected>1 guest</option>
                         <option value="2">2 guests</option>
                         <option value="3">3 guests</option>
                         <option value="4">4 guests</option>
@@ -530,8 +536,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                 <div class="spcu-quote-col">
                     <label>SEASON</label>
                     <select id="quote_season" name="season" required>
-                        <option value="">- Select Season -</option>
-                        <option value="regular">Regular Season (Dec - Mar)</option>
+                        <option value="regular" selected>Regular Season (Dec - Mar)</option>
                         <option value="peak">Peak (Dec 26-Jan 3 / Feb 20-22)</option>
                     </select>
                 </div>
@@ -829,18 +834,58 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
 <script>
 (function(){
     var API_BASE = '<?= esc_url(rest_url('spc/v1')) ?>';
-    var allPrices = [];
+    var allPrices = {};
+    var dataLoaded = false;
+
+    // Delay init to ensure DOM is ready
+    function initializeForm() {
+        // Set initial values from form HTML
+        var areaSelect = document.getElementById('quote_area');
+        var levelSelect = document.getElementById('quote_level');
+        var durationSelect = document.getElementById('quote_duration');
+        var guestsSelect = document.getElementById('quote_guests');
+        var seasonSelect = document.getElementById('quote_season');
+
+        // Ensure selects have values
+        if(areaSelect && !areaSelect.value && areaSelect.options.length > 0) {
+            areaSelect.value = areaSelect.options[0].value;
+        }
+        if(levelSelect && !levelSelect.value && levelSelect.options.length > 0) {
+            levelSelect.value = levelSelect.options[0].value;
+        }
+        if(durationSelect && !durationSelect.value && durationSelect.options.length > 0) {
+            durationSelect.value = durationSelect.options[0].value;
+        }
+        if(guestsSelect && !guestsSelect.value && guestsSelect.options.length > 0) {
+            guestsSelect.value = guestsSelect.options[0].value;
+        }
+        if(seasonSelect && !seasonSelect.value && seasonSelect.options.length > 0) {
+            seasonSelect.value = seasonSelect.options[0].value;
+        }
+
+        // Attach change listeners
+        ['quote_area', 'quote_level', 'quote_duration', 'quote_guests', 'quote_season'].forEach(function(id){
+            var el = document.getElementById(id);
+            if(el) el.addEventListener('change', calculatePrice);
+        });
+
+        // Calculate once DOM is ready (data might still be loading)
+        calculatePrice();
+    }
 
     // Load catalog data
     fetch(API_BASE + '/catalog')
         .then(function(r){ return r.json(); })
-        .then(function(data){ allPrices = data; })
-        .catch(function(e){ console.error('Failed to load prices:', e); });
-
-    // Form change listeners
-    ['quote_area', 'quote_level', 'quote_duration', 'quote_guests', 'quote_season'].forEach(function(id){
-        document.getElementById(id).addEventListener('change', calculatePrice);
-    });
+        .then(function(data){
+            allPrices = data;
+            dataLoaded = true;
+            // Recalculate now that we have data
+            calculatePrice();
+        })
+        .catch(function(e){
+            console.error('Failed to load catalog:', e);
+            allPrices = { areas: [], addon_prices: [], hotels: [] };
+        });
 
     function calculatePrice(){
         var areaId = document.getElementById('quote_area').value;
@@ -859,8 +904,8 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         document.getElementById('quote_skidays_display2').textContent = skiDays || '-';
         document.getElementById('quote_guests_display').textContent = guests || '-';
 
-        // Default to showing dashes if incomplete selection
-        if(!areaId || !level || !nights || !guests || !season || !allPrices.hotels){
+        // Default to showing dashes if incomplete selection or data not loaded
+        if(!areaId || !level || !nights || !guests || !season || !allPrices.hotels || allPrices.hotels.length === 0){
             document.getElementById('quote_price_jpy').textContent = '--';
             document.getElementById('quote_price_jpy_max').textContent = '--';
             document.getElementById('quote_total_jpy').textContent = '--';
@@ -875,7 +920,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
 
         // Find hotels in selected area with selected grade
         var hotelsInArea = (allPrices.hotels || []).filter(function(h){
-            return String(h.area_id) === areaId && h.grade_key === level;
+            return String(h.area_id) === String(areaId) && h.grade_key === level;
         });
 
         if(hotelsInArea.length === 0){
@@ -895,10 +940,10 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         var accom_prices = hotelsInArea.map(function(h){
             var prices = (h.prices || []);
             if(prices.length === 0) return null;
-            var min_price = Math.min.apply(null, prices.map(function(p){ return p.price_jpy; }));
-            var max_price = Math.max.apply(null, prices.map(function(p){ return p.price_jpy; }));
+            var min_price = Math.min.apply(null, prices.map(function(p){ return parseFloat(p.price_jpy) || 0; }));
+            var max_price = Math.max.apply(null, prices.map(function(p){ return parseFloat(p.price_jpy) || 0; }));
             return { min: min_price, max: max_price };
-        }).filter(Boolean);
+        }).filter(function(x){ return x !== null; });
 
         var accom_min_per_night = 0;
         var accom_max_per_night = 0;
@@ -914,25 +959,21 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         var accommodation_group_high = accommodation_high * guests;
 
         // Find addon prices (lift, gear, transport) for this area and grade
-        var addons = (allPrices.addons || []).filter(function(a){
-            return String(a.area_id) === areaId && a.grade_key === level;
+        var addons = (allPrices.addon_prices || []).filter(function(a){
+            return String(a.area_id) === String(areaId) && a.grade_key === level;
         });
 
         var lift_price = 0, gear_price = 0, transport_price = 0;
 
         addons.forEach(function(addon){
-            if(addon.category === 'lift') lift_price = addon.price_jpy || 0;
-            if(addon.category === 'gear') gear_price = addon.price_jpy || 0;
-            if(addon.category === 'transport') transport_price = addon.price_jpy || 0;
+            if(addon.category === 'lift') lift_price = parseFloat(addon.price_jpy) || 0;
+            if(addon.category === 'gear') gear_price = parseFloat(addon.price_jpy) || 0;
+            if(addon.category === 'transport') transport_price = parseFloat(addon.price_jpy) || 0;
         });
 
         // Calculate totals
-        // Accommodation: per-night price × nights × guests
-        // Lift + Gear: per-day price × ski days × guests
-        // Transport: flat fee × guests
         var lift_total = lift_price * skiDays * guests;
         var gear_total = gear_price * skiDays * guests;
-        // Transport per guest
         var transport_total = transport_price * guests;
 
         // Total for all guests
@@ -959,6 +1000,13 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
     document.getElementById('quote_get_quote').addEventListener('click', function(){
         alert('Quote form submission functionality to be implemented');
     });
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeForm);
+    } else {
+        initializeForm();
+    }
 })();
 </script>
 
