@@ -19,6 +19,7 @@ require_once SPCU_PATH.'includes/class-spcu-grades.php';
 require_once SPCU_PATH.'admin/class-spcu-admin.php';
 require_once SPCU_PATH.'includes/class-spcu-shortcode.php';
 require_once SPCU_PATH.'includes/class-spcu-api.php';
+require_once SPCU_PATH.'includes/class-spcu-frontend.php';
 
 require_once SPCU_PATH.'admin/partials/spcu-admin-areas-post.php';
 add_action('admin_init', 'spcu_handle_areas_post');
@@ -31,6 +32,7 @@ add_action('admin_init', 'spcu_handle_hotels_post');
 add_action('admin_init', 'spcu_handle_hotels_delete');
 
 register_activation_hook(__FILE__, ['SPCU_Activator','activate']);
+register_activation_hook(__FILE__, 'flush_rewrite_rules');
 
 new SPCU_Admin();
 new SPCU_Shortcode();

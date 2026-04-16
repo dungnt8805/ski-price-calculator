@@ -5,6 +5,7 @@ class SPCU_Shortcode {
 
     public function __construct(){
         add_shortcode('ski_calculator', [$this,'render']);
+        add_shortcode('ski_areas_overview', [$this,'render_areas_overview']);
         add_action('wp_enqueue_scripts', [$this,'enqueue_assets']);
     }
 
@@ -299,6 +300,139 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
 <?php
         return ob_get_clean();
     }
+
+    public function render_areas_overview(){
+        global $wpdb;
+        
+        // Get all areas
+        $areas = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}spcu_areas ORDER BY name ASC" );
+        
+        if( empty($areas) ){
+            return '<p style="text-align:center; color:#999;">No areas found.</p>';
+        }
+        
+        ob_start();
+        ?>
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 1200px; margin: 20px auto;">
+    <?php foreach( $areas as $area ):
+        // Get hotels in this area
+        $hotels = $wpdb->get_results( $wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}spcu_hotels WHERE area_id = %d ORDER BY name ASC",
+            $area->id
+        ));
+        
+        // Get addon prices for this area
+        $prices = $wpdb->get_results( $wpdb->prepare(
+            "SELECT DISTINCT category, grade FROM {$wpdb->prefix}spcu_addon_prices WHERE area_id = %d ORDER BY category ASC, FIELD(grade, 'beginner', 'intermediate', 'advanced') ASC",
+            $area->id
+        ));
+        
+        // Group prices by category and grade
+        $price_data = [];
+        foreach( $prices as $p ){
+            if( !isset($price_data[$p->category]) ){
+                $price_data[$p->category] = [];
+            }
+            $price_data[$p->category][] = $p->grade;
+        }
+        ?>
+        <div style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <!-- Area Header -->
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #f0f0f0;">
+                <div>
+                    <h2 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 700; color: #1a1a1a;">
+                        <?php echo esc_html($area->name); ?>
+                    </h2>
+                    <?php if( !empty($area->name_ja) ): ?>
+                        <p style="margin: 0; font-size: 16px; color: #666;">
+                            <?php echo esc_html($area->name_ja); ?>
+                        </p>
+                    <?php endif; ?>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 32px; font-weight: 700; color: var(--spcu-admin-primary, #0073aa);">
+                        <?php echo count($hotels); ?>
+                    </div>
+                    <div style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Hotel<?php echo count($hotels) !== 1 ? 's' : ''; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hotels Grid -->
+            <?php if( !empty($hotels) ): ?>
+                <div style="margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #666; text-transform: uppercase;">
+                        Hotels
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+                        <?php foreach( $hotels as $hotel ): ?>
+                            <div style="background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 6px; padding: 12px; font-size: 14px;">
+                                <strong><?php echo esc_html($hotel->name); ?></strong>
+                                <?php if( !empty($hotel->name_ja) ): ?>
+                                    <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                                        <?php echo esc_html($hotel->name_ja); ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <!-- Addon Fees Table -->
+            <?php if( !empty($price_data) ): ?>
+                <div style="margin-top: 20px;">
+                    <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #666; text-transform: uppercase;">
+                        Addon Fees
+                    </h3>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                            <thead>
+                                <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
+                                    <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Category</th>
+                                    <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Beginner</th>
+                                    <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Intermediate</th>
+                                    <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Advanced</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach( $price_data as $category => $grades ): ?>
+                                    <tr style="border-bottom: 1px solid #eee;">
+                                        <td style="padding: 10px; font-weight: 500; color: #333; text-transform: capitalize;">
+                                            <?php echo esc_html(str_replace('_', ' ', $category)); ?>
+                                        </td>
+                                        <?php foreach( ['beginner', 'intermediate', 'advanced'] as $grade ): ?>
+                                            <td style="padding: 10px; color: #555;">
+                                                <?php
+                                                if( in_array($grade, $grades) ){
+                                                    $price_entry = $wpdb->get_row( $wpdb->prepare(
+                                                        "SELECT price_jpy, price_usd FROM {$wpdb->prefix}spcu_addon_prices WHERE area_id = %d AND category = %s AND grade = %s LIMIT 1",
+                                                        $area->id, $category, $grade
+                                                    ));
+                                                    if( $price_entry ){
+                                                        echo '¥' . intval($price_entry->price_jpy) . ' / $' . intval($price_entry->price_usd);
+                                                    }
+                                                } else {
+                                                    echo '—';
+                                                }
+                                                ?>
+                                            </td>
+                                        <?php endforeach; ?>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endforeach; ?>
+</div>
+        <?php
+        return ob_get_clean();
+    }
 }
+
 
 new SPCU_Shortcode();
