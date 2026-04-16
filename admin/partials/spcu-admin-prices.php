@@ -398,12 +398,12 @@ if($page_mode === 'hotel'){
 
     <!-- Fixed JPY -->
     <tr id="wrap_price_jpy">
-        <th scope="row"><label for="price_jpy">Fixed Price JPY (¥)</label></th>
+        <th scope="row"><label for="price_jpy">Fixed Price JPY (¥) / person</label></th>
         <td><input type='number' step='1' name='price_jpy' id="price_jpy" class="regular-text"></td>
     </tr>
     <!-- Fixed USD -->
     <tr id="wrap_price_usd">
-        <th scope="row"><label for="price_usd">Fixed Price USD ($)</label></th>
+        <th scope="row"><label for="price_usd">Fixed Price USD ($) / person</label></th>
         <td><input type='number' step='0.01' name='price_usd' id="price_usd" class="regular-text"></td>
     </tr>
 

@@ -40,6 +40,66 @@ class SPCU_API {
             'callback'            => [$this,'export_csv'],
             'permission_callback' => '__return_true',
         ]);
+
+        /* Aggregated data: areas + addon prices + hotels with prices */
+        register_rest_route('spc/v1', '/catalog', [
+            'methods'             => 'GET',
+            'callback'            => [$this,'get_catalog'],
+            'permission_callback' => '__return_true',
+        ]);
+    }
+
+    /* ── Aggregated catalog payload ─────────────────────────────── */
+    public function get_catalog(){
+        global $wpdb;
+
+        $areas = $wpdb->get_results("\n            SELECT id, name, name_ja, type\n            FROM {$wpdb->prefix}spcu_areas\n            ORDER BY name ASC\n        ");
+
+        $addon_rows = $wpdb->get_results("\n            SELECT\n                p.*,\n                a.name as area,\n                a.name_ja as area_ja,\n                a.type as area_type\n            FROM {$wpdb->prefix}spcu_addon_prices p\n            LEFT JOIN {$wpdb->prefix}spcu_areas a ON a.id = p.area_id\n            ORDER BY p.category ASC, p.area_id ASC, p.days ASC, p.id ASC\n        ");
+
+        foreach($addon_rows as $r){
+            $r->weekdays = $r->weekdays_json ? json_decode($r->weekdays_json, true) : [];
+            $r->dates    = $r->dates_json ? json_decode($r->dates_json, true) : [];
+            $r->grade_key = $r->grade;
+            $r->grade = SPCU_Grades::label($r->grade_key ?? '');
+            unset($r->weekdays_json, $r->dates_json);
+        }
+
+        $hotels = $wpdb->get_results("\n            SELECT\n                h.id, h.name, h.name_ja, h.address, h.address_ja, h.images, h.grade as grade_key,\n                a.id as area_id, a.name as area, a.name_ja as area_ja, a.type as area_type\n            FROM {$wpdb->prefix}spcu_hotels h\n            LEFT JOIN {$wpdb->prefix}spcu_areas a ON a.id = h.area_id\n            ORDER BY h.name ASC\n        ");
+
+        $hotel_price_rows = $wpdb->get_results("\n            SELECT *\n            FROM {$wpdb->prefix}spcu_prices\n            WHERE category = 'hotel'\n            ORDER BY hotel_id ASC, id ASC\n        ");
+
+        $prices_by_hotel = [];
+        foreach($hotel_price_rows as $rule){
+            $hotel_id = intval($rule->hotel_id ?? 0);
+            if($hotel_id <= 0) continue;
+            if(!isset($prices_by_hotel[$hotel_id])){
+                $prices_by_hotel[$hotel_id] = [];
+            }
+            $formatted = $this->format_price_rule($rule);
+            $formatted['category'] = $rule->category;
+            $formatted['days'] = $rule->days ? (int)$rule->days : null;
+            $prices_by_hotel[$hotel_id][] = $formatted;
+        }
+
+        foreach($hotels as $h){
+            $imgs = [];
+            if(!empty($h->images)){
+                foreach(explode(',', $h->images) as $id){
+                    $url = wp_get_attachment_image_url(intval($id), 'medium');
+                    if($url) $imgs[] = $url;
+                }
+            }
+            $h->image_urls = $imgs;
+            $h->grade = SPCU_Grades::label($h->grade_key ?? '');
+            $h->prices = $prices_by_hotel[intval($h->id)] ?? [];
+        }
+
+        return rest_ensure_response([
+            'areas' => $areas,
+            'addon_prices' => $addon_rows,
+            'hotels' => $hotels,
+        ]);
     }
 
     /* ── All Prices ──────────────────────────────────────────────── */
