@@ -18,13 +18,16 @@ class SPCU_Database {
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(200) NOT NULL,
             name_ja VARCHAR(200) NULL,
+            short_description VARCHAR(255) NULL,
+            description TEXT NULL,
+            facilities TEXT NULL,
             address VARCHAR(500) NULL,
             address_ja VARCHAR(500) NULL,
+            featured_image INT NULL,
             images TEXT NULL,
             area_id INT NULL,
             grade VARCHAR(50) NULL
         ) $charset;";
-
         $prices = "CREATE TABLE {$wpdb->prefix}spcu_prices(
             id INT AUTO_INCREMENT PRIMARY KEY,
             category VARCHAR(50) NOT NULL,

@@ -44,26 +44,34 @@ function spcu_handle_hotels_post(){
         $table_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $hotel_table));
     }
 
-    $area_column_exists = false;
-    $grade_column_exists = false;
+    $schema_columns = [
+        'area_id' => 'INT NULL',
+        'grade' => 'VARCHAR(50) NULL',
+        'short_description' => 'VARCHAR(255) NULL',
+        'description' => 'TEXT NULL',
+        'facilities' => 'TEXT NULL',
+        'featured_image' => 'INT NULL',
+    ];
+    $missing_columns = [];
 
     if($table_exists){
-        $area_column_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", 'area_id'));
-        $grade_column_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", 'grade'));
-
-        if(!$area_column_exists){
-            $wpdb->query("ALTER TABLE {$hotel_table} ADD COLUMN area_id INT NULL");
-            $area_column_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", 'area_id'));
-        }
-
-        if(!$grade_column_exists){
-            $wpdb->query("ALTER TABLE {$hotel_table} ADD COLUMN grade VARCHAR(50) NULL");
-            $grade_column_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", 'grade'));
+        foreach($schema_columns as $column => $definition){
+            $exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", $column));
+            if(!$exists){
+                $wpdb->query("ALTER TABLE {$hotel_table} ADD COLUMN {$column} {$definition}");
+                $exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", $column));
+            }
+            if(!$exists){
+                $missing_columns[] = $column;
+            }
         }
     }
 
-    if(!$table_exists || !$area_column_exists || !$grade_column_exists){
+    if(!$table_exists || !empty($missing_columns)){
         $msg = 'Database schema is not up to date for hotels table.';
+        if(!empty($missing_columns)){
+            $msg .= ' Missing: ' . implode(', ', $missing_columns) . '.';
+        }
         if($wpdb->last_error){
             $msg .= ' ' . $wpdb->last_error;
         }
@@ -88,14 +96,29 @@ function spcu_handle_hotels_post(){
         spcu_hotels_form_redirect('error', $msg, intval($_POST['hotel_id'] ?? 0));
     }
 
+    $featured_image = absint($_POST['featured_image'] ?? 0);
+
+    // Get facilities from form (array of term IDs)
+    $facilities_terms = [];
+    $facilities_raw = $_POST['spcu_facilities'] ?? '[]';
+    try {
+        $decoded = json_decode($facilities_raw, true);
+        if(is_array($decoded)){
+            $facilities_terms = array_filter(array_map('absint', $decoded));
+        }
+    } catch(Exception $e){}
+
     $data = [
-        'name'       => sanitize_text_field($_POST['name'] ?? ''),
-        'name_ja'    => sanitize_text_field($_POST['name_ja'] ?? ''),
-        'address'    => sanitize_textarea_field($_POST['address'] ?? ''),
-        'address_ja' => sanitize_textarea_field($_POST['address_ja'] ?? ''),
-        'images'     => isset($_POST['images']) ? sanitize_text_field($_POST['images']) : '',
-        'area_id'    => $area_id,
-        'grade'      => $grade,
+        'name'              => sanitize_text_field($_POST['name'] ?? ''),
+        'name_ja'           => sanitize_text_field($_POST['name_ja'] ?? ''),
+        'short_description' => sanitize_textarea_field($_POST['short_description'] ?? ''),
+        'description'       => wp_kses_post($_POST['description'] ?? ''),
+        'address'           => sanitize_textarea_field($_POST['address'] ?? ''),
+        'address_ja'        => sanitize_textarea_field($_POST['address_ja'] ?? ''),
+        'featured_image'    => $featured_image > 0 ? $featured_image : null,
+        'images'            => isset($_POST['images']) ? sanitize_text_field($_POST['images']) : '',
+        'area_id'           => $area_id,
+        'grade'             => $grade,
     ];
 
     if($is_add){
@@ -103,6 +126,21 @@ function spcu_handle_hotels_post(){
         if($ok === false){
             $msg = 'Could not save hotel. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
             spcu_hotels_form_redirect('error', $msg);
+        }
+
+        $hotel_id = intval($wpdb->insert_id);
+        
+        // Create shadow WordPress post for taxonomy support
+        $post_id = wp_insert_post([
+            'ID' => $hotel_id,
+            'post_type' => 'spcu_hotel',
+            'post_status' => 'publish',
+            'post_title' => sanitize_text_field($_POST['name'] ?? ''),
+        ], false);
+        
+        // Assign facilities to the post
+        if($post_id && !empty($facilities_terms)){
+            wp_set_object_terms($post_id, $facilities_terms, 'spcu_facility', false);
         }
 
         wp_safe_redirect(add_query_arg([
@@ -123,6 +161,15 @@ function spcu_handle_hotels_post(){
         $msg = 'Could not update hotel. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
         spcu_hotels_form_redirect('error', $msg, $hotel_id);
     }
+
+    // Update shadow WordPress post for taxonomy support
+    wp_update_post([
+        'ID' => $hotel_id,
+        'post_title' => sanitize_text_field($_POST['name'] ?? ''),
+    ]);
+    
+    // Update facilities assignment
+    wp_set_object_terms($hotel_id, $facilities_terms, 'spcu_facility', false);
 
     wp_safe_redirect(add_query_arg([
         'page' => 'spcu-hotels',

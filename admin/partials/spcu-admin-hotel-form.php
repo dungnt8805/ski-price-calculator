@@ -32,26 +32,34 @@ if(!$table_exists && class_exists('SPCU_Database')){
     $table_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $hotel_table));
 }
 
-$area_column_exists = false;
-$grade_column_exists = false;
+$schema_columns = [
+    'area_id' => 'INT NULL',
+    'grade' => 'VARCHAR(50) NULL',
+    'short_description' => 'VARCHAR(255) NULL',
+    'description' => 'TEXT NULL',
+    'facilities' => 'TEXT NULL',
+    'featured_image' => 'INT NULL',
+];
+$missing_columns = [];
 
 if($table_exists){
-    $area_column_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", 'area_id'));
-    $grade_column_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", 'grade'));
-
-    if(!$area_column_exists){
-        $wpdb->query("ALTER TABLE {$hotel_table} ADD COLUMN area_id INT NULL");
-        $area_column_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", 'area_id'));
-    }
-
-    if(!$grade_column_exists){
-        $wpdb->query("ALTER TABLE {$hotel_table} ADD COLUMN grade VARCHAR(50) NULL");
-        $grade_column_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", 'grade'));
+    foreach($schema_columns as $column => $definition){
+        $exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", $column));
+        if(!$exists){
+            $wpdb->query("ALTER TABLE {$hotel_table} ADD COLUMN {$column} {$definition}");
+            $exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$hotel_table} LIKE %s", $column));
+        }
+        if(!$exists){
+            $missing_columns[] = $column;
+        }
     }
 }
 
-if(!$table_exists || !$area_column_exists || !$grade_column_exists){
+if(!$table_exists || !empty($missing_columns)){
     $schema_error = 'Database schema is not up to date for hotels table.';
+    if(!empty($missing_columns)){
+        $schema_error .= ' Missing: ' . implode(', ', $missing_columns) . '.';
+    }
     if($wpdb->last_error){
         $schema_error .= ' ' . $wpdb->last_error;
     }
@@ -75,6 +83,11 @@ wp_enqueue_media();
 
     <h1><?= $edit_hotel ? 'Edit Hotel' : 'Add Hotel' ?></h1>
 
+    <?php if($schema_error): ?>
+        <div class="notice notice-error"><p><?= esc_html($schema_error) ?></p></div>
+        <div class="spcu-toast-source" data-type="error" data-message="<?= esc_attr($schema_error) ?>"></div>
+    <?php endif; ?>
+
     <?php if($hotel_form_error): ?>
         <div class="notice notice-error"><p><?= esc_html($hotel_form_error) ?></p></div>
         <div class="spcu-toast-source" data-type="error" data-message="<?= esc_attr($hotel_form_error) ?>"></div>
@@ -94,6 +107,31 @@ wp_enqueue_media();
             <tr>
                 <th scope="row"><label for="name_ja">Name (Japanese)</label></th>
                 <td><input name='name_ja' id='name_ja' class="regular-text" placeholder='白馬グランドホテル' value="<?= esc_attr($edit_hotel->name_ja ?? '') ?>"></td>
+            </tr>
+            <tr>
+                <th scope="row"><label for="short_description">Short Description</label></th>
+                <td>
+                    <textarea name='short_description' id='short_description' class="large-text" rows="2" maxlength="255" placeholder='Ski-in, ski-out hotel with mountain views'><?= esc_textarea($edit_hotel->short_description ?? '') ?></textarea>
+                    <p class="description">255 character limit.</p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label for="description">Description</label></th>
+                <td>
+                    <?php wp_editor($edit_hotel->description ?? '', 'description', ['media_buttons' => true, 'teeny' => false, 'textarea_rows' => 10]); ?>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label for="spcu_facilities_input">Facilities</label></th>
+                <td>
+                    <input type="hidden" name="spcu_facilities" id="spcu_facilities_hidden" value="">
+                    <div style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px;" id="spcu-facilities-tags"></div>
+                    <div style="position:relative;">
+                        <input type="text" id="spcu_facilities_input" placeholder="Search or add facility (e.g., Free Wi-Fi, Onsen, Gym)" style="width:100%;padding:6px 10px;border:1px solid #c3c4c7;border-radius:4px;" autocomplete="off">
+                        <div id="spcu-facility-autocomplete" style="display:none;position:absolute;background:#fff;border:1px solid #999;border-radius:4px;margin-top:2px;z-index:1000;max-height:200px;overflow-y:auto;min-width:100%;box-shadow:0 2px 8px rgba(0,0,0,0.1);"></div>
+                    </div>
+                    <p style="margin:8px 0 0 0;font-size:12px;color:#666;">Start typing to search existing facilities or press Enter to create new</p>
+                </td>
             </tr>
             <tr>
                 <th scope="row"><label for="address">Address</label></th>
@@ -123,6 +161,25 @@ wp_enqueue_media();
                             <option value="<?= esc_attr($grade_key) ?>" <?= (($edit_hotel && $edit_hotel->grade == $grade_key) || (isset($_POST['grade']) && SPCU_Grades::normalize($_POST['grade']) === $grade_key)) ? 'selected' : '' ?>><?= esc_html($grade_label) ?></option>
                         <?php endforeach; ?>
                     </select>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label for="spcu_featured_image_id">Featured Image</label></th>
+                <td>
+                    <input type='hidden' name='featured_image' id='spcu_featured_image_id' value="<?= esc_attr(isset($edit_hotel->featured_image) ? intval($edit_hotel->featured_image) : 0) ?>">
+                    <div id="spcu-featured-image-preview" style="margin-bottom:10px;">
+                        <?php
+                        $featured_id = isset($edit_hotel->featured_image) ? intval($edit_hotel->featured_image) : 0;
+                        if($featured_id){
+                            $featured_thumb = wp_get_attachment_image_url($featured_id, 'medium');
+                            if($featured_thumb){
+                                echo "<img src='".esc_url($featured_thumb)."' style='width:120px;height:120px;object-fit:cover;border-radius:6px;border:2px solid #ccc;'>";
+                            }
+                        }
+                        ?>
+                    </div>
+                    <button type='button' id='spcu-select-featured-image' class='button'>Select Featured Image</button>
+                    <button type='button' id='spcu-remove-featured-image' class='button' <?= $featured_id ? '' : 'style="display:none;"' ?>>Remove</button>
                 </td>
             </tr>
             <tr>
@@ -170,12 +227,29 @@ wp_enqueue_media();
 document.addEventListener('DOMContentLoaded', function(){
 
     var mediaFrame;
+    var featuredMediaFrame;
     var idsField  = document.getElementById('spcu_images_ids');
     var preview   = document.getElementById('spcu-image-preview');
     var addBtn    = document.getElementById('spcu-add-images');
+    var featuredIdField = document.getElementById('spcu_featured_image_id');
+    var featuredPreview = document.getElementById('spcu-featured-image-preview');
+    var featuredSelectBtn = document.getElementById('spcu-select-featured-image');
+    var featuredRemoveBtn = document.getElementById('spcu-remove-featured-image');
 
     function getIds(){ return idsField.value ? idsField.value.split(',').filter(Boolean) : []; }
     function setIds(arr){ idsField.value = arr.join(','); }
+
+    function setFeaturedImage(id, url){
+        if(!featuredIdField || !featuredPreview) return;
+        featuredIdField.value = id ? String(id) : '0';
+        if(url){
+            featuredPreview.innerHTML = '<img src="'+url+'" style="width:120px;height:120px;object-fit:cover;border-radius:6px;border:2px solid #ccc;">';
+            if(featuredRemoveBtn) featuredRemoveBtn.style.display = '';
+        } else {
+            featuredPreview.innerHTML = '';
+            if(featuredRemoveBtn) featuredRemoveBtn.style.display = 'none';
+        }
+    }
 
     function addThumb(id, url){
         var wrap = document.createElement('div');
@@ -185,6 +259,36 @@ document.addEventListener('DOMContentLoaded', function(){
         wrap.innerHTML = '<img src="'+url+'" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:2px solid #ccc;">'
                        + '<span class="spcu-img-remove" data-id="'+id+'" title="Remove" style="position:absolute;top:-6px;right:-6px;background:#c00;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;line-height:1;">✕</span>';
         preview.appendChild(wrap);
+    }
+
+    if(featuredSelectBtn){
+        featuredSelectBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            if(featuredMediaFrame){ featuredMediaFrame.open(); return; }
+            featuredMediaFrame = wp.media({
+                title: 'Select Featured Image',
+                button: { text: 'Use as Featured Image' },
+                multiple: false,
+                library: { type: 'image' }
+            });
+            featuredMediaFrame.on('select', function(){
+                var attachment = featuredMediaFrame.state().get('selection').first();
+                if(!attachment) return;
+                var id = attachment.attributes.id;
+                var previewUrl = attachment.attributes.sizes && attachment.attributes.sizes.medium
+                    ? attachment.attributes.sizes.medium.url
+                    : attachment.attributes.url;
+                setFeaturedImage(id, previewUrl);
+            });
+            featuredMediaFrame.open();
+        });
+    }
+
+    if(featuredRemoveBtn){
+        featuredRemoveBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            setFeaturedImage(0, '');
+        });
     }
 
     if(addBtn){

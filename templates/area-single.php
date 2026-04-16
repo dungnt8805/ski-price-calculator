@@ -425,8 +425,19 @@ foreach($addon_prices as $p){
             <h2 class="spcu-section-title">🏨 Hotels</h2>
             <div class="spcu-hotels-grid">
                 <?php foreach($hotels as $hotel): 
-                    $images = !empty($hotel->images) ? json_decode($hotel->images, true) : [];
-                    $primary_image = !empty($images[0]) ? $images[0] : '';
+                    $primary_image = '';
+                    if(!empty($hotel->featured_image)){
+                        $primary_image = wp_get_attachment_image_url(intval($hotel->featured_image), 'large');
+                    }
+                    if(!$primary_image && !empty($hotel->images)){
+                        foreach(explode(',', $hotel->images) as $image_id){
+                            $candidate = wp_get_attachment_image_url(intval($image_id), 'large');
+                            if($candidate){
+                                $primary_image = $candidate;
+                                break;
+                            }
+                        }
+                    }
                 ?>
                     <div class="spcu-hotel-card">
                         <div class="spcu-hotel-image">
@@ -440,6 +451,36 @@ foreach($addon_prices as $p){
                             <h3 class="spcu-hotel-name"><?php echo esc_html($hotel->name); ?></h3>
                             <?php if(!empty($hotel->name_ja)): ?>
                                 <p class="spcu-hotel-name-ja"><?php echo esc_html($hotel->name_ja); ?></p>
+                            <?php endif; ?>
+
+                            <?php if(!empty($hotel->short_description)): ?>
+                                <p style="margin:0 0 14px 0;font-size:14px;color:#334155;line-height:1.55;"><?php echo esc_html($hotel->short_description); ?></p>
+                            <?php endif; ?>
+
+                            <?php if(!empty($hotel->facilities)): ?>
+                                <?php 
+                                $facilities_list = [];
+                                if(is_string($hotel->facilities)){
+                                    // Handle old JSON string format for backward compatibility
+                                    $decoded = json_decode($hotel->facilities, true);
+                                    if(is_array($decoded)){
+                                        $facilities_list = $decoded;
+                                    }
+                                } elseif(is_array($hotel->facilities)){
+                                    // New format from WordPress taxonomy
+                                    $facilities_list = $hotel->facilities;
+                                }
+                                if(!empty($facilities_list)):
+                                ?>
+                                <div style="margin:0 0 14px 0;display:flex;flex-wrap:wrap;gap:6px;">
+                                    <?php foreach($facilities_list as $facility): 
+                                        $facility_name = is_array($facility) ? ($facility['name'] ?? '') : $facility;
+                                        if(empty($facility_name)) continue;
+                                    ?>
+                                        <span style="display:inline-block;background:#e0f2fe;color:#0369a1;border:1px solid #06b6d4;border-radius:12px;padding:4px 12px;font-size:12px;font-weight:500;"><?php echo esc_html($facility_name); ?></span>
+                                    <?php endforeach; ?>
+                                </div>
+                                <?php endif; ?>
                             <?php endif; ?>
                             
                             <?php if(!empty($hotel->address)): ?>

@@ -65,7 +65,7 @@ class SPCU_API {
             unset($r->weekdays_json, $r->dates_json);
         }
 
-        $hotels = $wpdb->get_results("\n            SELECT\n                h.id, h.name, h.name_ja, h.address, h.address_ja, h.images, h.grade as grade_key,\n                a.id as area_id, a.name as area, a.name_ja as area_ja, a.type as area_type\n            FROM {$wpdb->prefix}spcu_hotels h\n            LEFT JOIN {$wpdb->prefix}spcu_areas a ON a.id = h.area_id\n            ORDER BY h.name ASC\n        ");
+        $hotels = $wpdb->get_results("\n            SELECT\n                h.id, h.name, h.name_ja, h.short_description, h.description, h.facilities,\n                h.address, h.address_ja, h.featured_image, h.images, h.grade as grade_key,\n                a.id as area_id, a.name as area, a.name_ja as area_ja, a.type as area_type\n            FROM {$wpdb->prefix}spcu_hotels h\n            LEFT JOIN {$wpdb->prefix}spcu_areas a ON a.id = h.area_id\n            ORDER BY h.name ASC\n        ");
 
         $hotel_price_rows = $wpdb->get_results("\n            SELECT *\n            FROM {$wpdb->prefix}spcu_prices\n            WHERE category = 'hotel'\n            ORDER BY hotel_id ASC, id ASC\n        ");
 
@@ -91,6 +91,14 @@ class SPCU_API {
                 }
             }
             $h->image_urls = $imgs;
+            $h->featured_image_url = !empty($h->featured_image)
+                ? wp_get_attachment_image_url(intval($h->featured_image), 'medium_large')
+                : null;
+            // Get facilities from WordPress taxonomy
+            $terms = get_the_terms($h->id, 'spcu_facility');
+            $h->facilities = is_array($terms) ? array_map(function($t){
+                return ['id' => $t->term_id, 'name' => $t->name];
+            }, $terms) : [];
             $h->grade = SPCU_Grades::label($h->grade_key ?? '');
             $h->prices = $prices_by_hotel[intval($h->id)] ?? [];
         }
@@ -157,7 +165,8 @@ class SPCU_API {
 
         $rows = $wpdb->get_results("
             SELECT
-                h.id, h.name, h.name_ja, h.address, h.address_ja, h.images,
+                h.id, h.name, h.name_ja, h.short_description, h.description, h.facilities,
+                h.address, h.address_ja, h.featured_image, h.images,
                 a.id   as area_id,   a.name as area,     a.name_ja as area_ja,   a.type as area_type,
                 h.grade as grade_key
             FROM {$wpdb->prefix}spcu_hotels h
@@ -195,6 +204,12 @@ class SPCU_API {
                 }
             }
             $r->image_urls = $imgs;
+            $r->featured_image_url = !empty($r->featured_image)
+                ? wp_get_attachment_image_url(intval($r->featured_image), 'medium_large')
+                : null;
+            $r->facilities_list = !empty($r->facilities)
+                ? json_decode($r->facilities, true)
+                : [];
             $r->grade = SPCU_Grades::label($r->grade_key ?? '');
             $r->prices = $prices_by_hotel[intval($r->id)] ?? [];
         }

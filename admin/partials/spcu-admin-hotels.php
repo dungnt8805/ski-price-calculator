@@ -62,8 +62,8 @@ if($hotel_error === ''){
     <div class='spcu-table'>
         <table>
             <tr>
-                <th>ID</th><th>Name</th><th>Name (JP)</th><th>Address</th>
-                <th>Area</th><th>Grade</th><th>Images</th><th>Action</th>
+                <th>ID</th><th>Name</th><th>Name (JP)</th><th>Short Description</th><th>Address</th>
+                <th>Area</th><th>Grade</th><th>Featured</th><th>Images</th><th>Action</th>
             </tr>
             <?php foreach($rows as $r): ?>
             <?php
@@ -74,6 +74,9 @@ if($hotel_error === ''){
                         if($t) $thumbs[] = "<img src='".esc_url($t)."' style='width:40px;height:40px;object-fit:cover;border-radius:3px;margin-right:3px;'>";
                     }
                 }
+                $featured_thumb = !empty($r->featured_image)
+                    ? wp_get_attachment_image_url(intval($r->featured_image), 'thumbnail')
+                    : '';
                 $delete_url = wp_nonce_url(
                     add_query_arg([
                         'page' => 'spcu-hotels',
@@ -86,9 +89,11 @@ if($hotel_error === ''){
                 <td><?= esc_html($r->id) ?></td>
                 <td><strong><?= esc_html($r->name) ?></strong><?php if($r->name_ja) echo "<br><small>".esc_html($r->name_ja)."</small>"; ?></td>
                 <td><?= esc_html($r->name_ja ?: '-') ?></td>
+                <td style="max-width:220px;font-size:12px;"><?= esc_html($r->short_description ?: '-') ?></td>
                 <td style="max-width:220px;font-size:12px;"><?= nl2br(esc_html($r->address ?: '-')) ?></td>
                 <td><?= esc_html($r->area_name) ?></td>
                 <td><?= esc_html(SPCU_Grades::label($r->grade_name) ?: '-') ?></td>
+                <td><?= $featured_thumb ? "<img src='".esc_url($featured_thumb)."' style='width:40px;height:40px;object-fit:cover;border-radius:3px;'>" : '-' ?></td>
                 <td><?= $thumbs ? implode('',$thumbs) : '-' ?></td>
                 <td style="white-space:nowrap;">
                     <a href='?page=spcu-hotel-prices&hotel=<?= esc_attr($r->id) ?>' class='button button-small'>Details</a>
