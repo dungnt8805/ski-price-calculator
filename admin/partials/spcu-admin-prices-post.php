@@ -33,6 +33,20 @@ function spcu_handle_prices_post(){
         spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'error', 'Database table is missing for this page.');
     }
 
+    $required_columns_all = [
+        'child_price_jpy' => "DECIMAL(10,2) NULL",
+        'child_price_usd' => "DECIMAL(10,2) NULL",
+        'infant_price_jpy' => "DECIMAL(10,2) NULL",
+        'infant_price_usd' => "DECIMAL(10,2) NULL",
+    ];
+
+    foreach($required_columns_all as $column => $definition){
+        $exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$db_table} LIKE %s", $column));
+        if(!$exists){
+            $wpdb->query("ALTER TABLE {$db_table} ADD COLUMN {$column} {$definition}");
+        }
+    }
+
     if($page_mode === 'addon'){
         $required_columns = [
             'grade'         => "VARCHAR(50) NULL",
@@ -130,6 +144,10 @@ function spcu_handle_prices_post(){
         'currency'      => $currency,
         'price_jpy'     => ($_POST['price_jpy'] ?? '') !== '' ? floatval($_POST['price_jpy']) : null,
         'price_usd'     => ($_POST['price_usd'] ?? '') !== '' ? floatval($_POST['price_usd']) : null,
+        'child_price_jpy' => ($_POST['child_price_jpy'] ?? '') !== '' ? floatval($_POST['child_price_jpy']) : null,
+        'child_price_usd' => ($_POST['child_price_usd'] ?? '') !== '' ? floatval($_POST['child_price_usd']) : null,
+        'infant_price_jpy' => ($_POST['infant_price_jpy'] ?? '') !== '' ? floatval($_POST['infant_price_jpy']) : null,
+        'infant_price_usd' => ($_POST['infant_price_usd'] ?? '') !== '' ? floatval($_POST['infant_price_usd']) : null,
     ];
 
     if($page_mode === 'hotel'){

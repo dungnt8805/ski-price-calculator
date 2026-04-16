@@ -45,7 +45,11 @@ class SPCU_Database {
             price_min_jpy DECIMAL(10,2) NULL,
             price_max_jpy DECIMAL(10,2) NULL,
             price_min_usd DECIMAL(10,2) NULL,
-            price_max_usd DECIMAL(10,2) NULL
+            price_max_usd DECIMAL(10,2) NULL,
+            child_price_jpy DECIMAL(10,2) NULL,
+            child_price_usd DECIMAL(10,2) NULL,
+            infant_price_jpy DECIMAL(10,2) NULL,
+            infant_price_usd DECIMAL(10,2) NULL
         ) $charset;";
 
         $addon_prices = "CREATE TABLE {$wpdb->prefix}spcu_addon_prices(

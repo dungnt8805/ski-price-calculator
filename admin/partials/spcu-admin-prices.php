@@ -396,15 +396,34 @@ if($page_mode === 'hotel'){
         </td>
     </tr>
 
-    <!-- Fixed JPY -->
+    <!-- Adult Prices -->
     <tr id="wrap_price_jpy">
-        <th scope="row"><label for="price_jpy">Fixed Price JPY (¥) / person</label></th>
+        <th scope="row"><label for="price_jpy">Adult Price JPY (¥) / person</label></th>
         <td><input type='number' step='1' name='price_jpy' id="price_jpy" class="regular-text"></td>
     </tr>
-    <!-- Fixed USD -->
     <tr id="wrap_price_usd">
-        <th scope="row"><label for="price_usd">Fixed Price USD ($) / person</label></th>
+        <th scope="row"><label for="price_usd">Adult Price USD ($) / person</label></th>
         <td><input type='number' step='0.01' name='price_usd' id="price_usd" class="regular-text"></td>
+    </tr>
+
+    <!-- Child Prices -->
+    <tr id="wrap_child_price_jpy">
+        <th scope="row"><label for="child_price_jpy">Child Price JPY (¥) / person</label></th>
+        <td><input type='number' step='1' name='child_price_jpy' id="child_price_jpy" class="regular-text"><p class="description">Optional. Leave empty to disable child pricing.</p></td>
+    </tr>
+    <tr id="wrap_child_price_usd">
+        <th scope="row"><label for="child_price_usd">Child Price USD ($) / person</label></th>
+        <td><input type='number' step='0.01' name='child_price_usd' id="child_price_usd" class="regular-text"></td>
+    </tr>
+
+    <!-- Infant Prices -->
+    <tr id="wrap_infant_price_jpy">
+        <th scope="row"><label for="infant_price_jpy">Infant Price JPY (¥) / person</label></th>
+        <td><input type='number' step='1' name='infant_price_jpy' id="infant_price_jpy" class="regular-text"><p class="description">Optional. Leave empty to disable infant pricing.</p></td>
+    </tr>
+    <tr id="wrap_infant_price_usd">
+        <th scope="row"><label for="infant_price_usd">Infant Price USD ($) / person</label></th>
+        <td><input type='number' step='0.01' name='infant_price_usd' id="infant_price_usd" class="regular-text"></td>
     </tr>
 
 </table>
@@ -425,7 +444,7 @@ if($page_mode === 'hotel'){
                 <?php if ($page_mode !== 'hotel'): ?><th>Category</th><th>Target (Hotel / Area / Grade)</th><?php endif; ?>
                 <th>Days</th>
                 <?php if ($page_mode === 'hotel'): ?><th>Schedule</th><?php endif; ?>
-                <th>JPY</th><th>USD</th><th>Action</th>
+                <th>Adult JPY</th><th>Adult USD</th><th>Child JPY</th><th>Child USD</th><th>Infant JPY</th><th>Infant USD</th><th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -452,6 +471,12 @@ if($page_mode === 'hotel'){
             $usd_fixed = $r->price_usd     ? '$'.number_format($r->price_usd,2) : '';
             $usd_range = (($r->price_min_usd ?? null) && ($r->price_max_usd ?? null))
                 ? '$'.number_format($r->price_min_usd,2).' – $'.number_format($r->price_max_usd,2) : '';
+            
+            $child_jpy_fixed = isset($r->child_price_jpy) && $r->child_price_jpy ? '¥'.number_format($r->child_price_jpy) : '';
+            $child_usd_fixed = isset($r->child_price_usd) && $r->child_price_usd ? '$'.number_format($r->child_price_usd,2) : '';
+            $infant_jpy_fixed = isset($r->infant_price_jpy) && $r->infant_price_jpy ? '¥'.number_format($r->infant_price_jpy) : '';
+            $infant_usd_fixed = isset($r->infant_price_usd) && $r->infant_price_usd ? '$'.number_format($r->infant_price_usd,2) : '';
+            
             if($page_mode === 'hotel'){
                 $jpy_col = $jpy_fixed ?: '—';
                 $usd_col = $usd_fixed ?: '—';
@@ -470,6 +495,10 @@ if($page_mode === 'hotel'){
             <?php if ($page_mode === 'hotel'): ?><td><?= spcu_schedule_summary($r) ?></td><?php endif; ?>
             <td><?= esc_html($jpy_col) ?></td>
             <td><?= esc_html($usd_col) ?></td>
+            <td><?= esc_html($child_jpy_fixed ?: '—') ?></td>
+            <td><?= esc_html($child_usd_fixed ?: '—') ?></td>
+            <td><?= esc_html($infant_jpy_fixed ?: '—') ?></td>
+            <td><?= esc_html($infant_usd_fixed ?: '—') ?></td>
             <td>
                 <a class='spcu-delete' href='<?= esc_url($delete_url) ?>'>Delete</a>
             </td>

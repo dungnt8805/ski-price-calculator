@@ -292,6 +292,10 @@ class SPCU_API {
             'price_max_jpy'=> $r->price_max_jpy ? (float)$r->price_max_jpy : null,
             'price_min_usd'=> $r->price_min_usd ? (float)$r->price_min_usd : null,
             'price_max_usd'=> $r->price_max_usd ? (float)$r->price_max_usd : null,
+            'child_price_jpy' => isset($r->child_price_jpy) && $r->child_price_jpy ? (float)$r->child_price_jpy : null,
+            'child_price_usd' => isset($r->child_price_usd) && $r->child_price_usd ? (float)$r->child_price_usd : null,
+            'infant_price_jpy' => isset($r->infant_price_jpy) && $r->infant_price_jpy ? (float)$r->infant_price_jpy : null,
+            'infant_price_usd' => isset($r->infant_price_usd) && $r->infant_price_usd ? (float)$r->infant_price_usd : null,
         ];
     }
 
@@ -307,6 +311,8 @@ class SPCU_API {
                 p.price_jpy, p.price_usd,
                 p.price_min_jpy, p.price_max_jpy,
                 p.price_min_usd, p.price_max_usd,
+                p.child_price_jpy, p.child_price_usd,
+                p.infant_price_jpy, p.infant_price_usd,
                 h.name as hotel,  h.name_ja as hotel_ja,
                 a.name as area,   a.name_ja as area_ja,
                 NULL as grade
@@ -323,6 +329,8 @@ class SPCU_API {
                 p.price_jpy, p.price_usd,
                 NULL as price_min_jpy, NULL as price_max_jpy,
                 NULL as price_min_usd, NULL as price_max_usd,
+                p.child_price_jpy, p.child_price_usd,
+                p.infant_price_jpy, p.infant_price_usd,
                 NULL as hotel,  NULL as hotel_ja,
                 a.name as area,   a.name_ja as area_ja,
                 p.grade as grade
