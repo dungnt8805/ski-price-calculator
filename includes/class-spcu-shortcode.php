@@ -459,7 +459,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
             </div>
             <div class="spcu-quote-step">
                 <span class="spcu-quote-step-num">3</span>
-                <span class="spcu-quote-step-label">Duration</span>
+                <span class="spcu-quote-step-label">Dates</span>
             </div>
             <div class="spcu-quote-step">
                 <span class="spcu-quote-step-num">4</span>
@@ -503,16 +503,20 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                         <?php endif; ?>
                     </select>
                 </div>
+            </div>
 
-                <!-- Column 3: Duration -->
+            <div class="spcu-quote-row">
+                <!-- Column 3: Stay Dates -->
                 <div class="spcu-quote-col">
-                    <label>NUMBER OF NIGHTS</label>
-                    <select id="quote_duration" name="duration" required>
-                        <option value="3" selected>3 nights (2D1N)</option>
-                        <option value="4">4 nights (3D2N)</option>
-                        <option value="5">5 nights (4D3N)</option>
-                        <option value="6">6 nights (5D4N)</option>
-                    </select>
+                    <label>STAY DATES</label>
+                    <div class="spcu-quote-date-range">
+                        <input type="date" id="quote_checkin" name="checkin" required>
+                        <span class="spcu-quote-date-sep">to</span>
+                        <input type="date" id="quote_checkout" name="checkout" required>
+                    </div>
+                    <small id="quote_duration_hint" class="spcu-quote-date-hint">Select check-in and check-out dates</small>
+                    <small id="quote_calendar_min_rate" class="spcu-quote-date-hint">Minimum rate/day: ¥--</small>
+                    <input type="hidden" id="quote_duration" name="duration" value="5">
                 </div>
             </div>
 
@@ -563,21 +567,29 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
             </div>
 
             <div class="spcu-quote-pricing-breakdown">
+                <div class="spcu-quote-item spcu-quote-item-full">
+                    <span>Ski Days</span>
+                    <span><span id="quote_skidays_display">3</span> days</span>
+                </div>
                 <div class="spcu-quote-item">
                     <span>Accommodation (<span id="quote_nights_display">5</span> nights)</span>
                     <span>¥<span id="quote_accommodation">0</span> ~ ¥<span id="quote_accommodation_max">0</span></span>
                 </div>
                 <div class="spcu-quote-item">
-                    <span>Lift Tickets (<span id="quote_skidays_display">3</span> days)</span>
+                    <span>Lift Tickets</span>
                     <span>¥<span id="quote_lift">0</span></span>
                 </div>
                 <div class="spcu-quote-item">
-                    <span>Gear Rental (<span id="quote_skidays_display2">3</span> days)</span>
+                    <span>Gear Rental</span>
                     <span>¥<span id="quote_gear">0</span></span>
                 </div>
                 <div class="spcu-quote-item">
                     <span>Transport (round trip)</span>
                     <span>¥<span id="quote_transport">0</span></span>
+                </div>
+                <div class="spcu-quote-item spcu-quote-item-full spcu-quote-item-accent">
+                    <span>Minimum Rate / Day</span>
+                    <span>¥<span id="quote_min_day_rate">0</span></span>
                 </div>
             </div>
 
@@ -672,7 +684,20 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
     transition: all 0.2s;
 }
 
+.spcu-quote-col input[type="date"] {
+    padding: 12px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    transition: all 0.2s;
+}
+
 .spcu-quote-col select:hover {
+    border-color: #2563eb;
+}
+
+.spcu-quote-col input[type="date"]:hover {
     border-color: #2563eb;
 }
 
@@ -680,6 +705,30 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
     outline: none;
     border-color: #2563eb;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.spcu-quote-col input[type="date"]:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.spcu-quote-date-range {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 8px;
+    align-items: center;
+}
+
+.spcu-quote-date-sep {
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+}
+
+.spcu-quote-date-hint {
+    font-size: 12px;
+    color: #666;
 }
 
 .spcu-quote-pricing {
@@ -769,6 +818,14 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
     font-size: 14px;
 }
 
+.spcu-quote-item-full {
+    grid-column: 1 / -1;
+}
+
+.spcu-quote-item-accent {
+    border-bottom-color: rgba(255,165,0,0.35);
+}
+
 .spcu-quote-item span:first-child {
     color: #bbb;
 }
@@ -843,8 +900,33 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         var areaSelect = document.getElementById('quote_area');
         var levelSelect = document.getElementById('quote_level');
         var durationSelect = document.getElementById('quote_duration');
+        var checkinInput = document.getElementById('quote_checkin');
+        var checkoutInput = document.getElementById('quote_checkout');
         var guestsSelect = document.getElementById('quote_guests');
         var seasonSelect = document.getElementById('quote_season');
+
+        var today = new Date();
+        var checkinDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 30);
+        var checkoutDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 35);
+
+        function formatDate(d) {
+            var month = String(d.getMonth() + 1).padStart(2, '0');
+            var day = String(d.getDate()).padStart(2, '0');
+            return d.getFullYear() + '-' + month + '-' + day;
+        }
+
+        if (checkinInput) {
+            checkinInput.min = formatDate(today);
+            if (!checkinInput.value) {
+                checkinInput.value = formatDate(checkinDate);
+            }
+        }
+        if (checkoutInput) {
+            checkoutInput.min = checkinInput && checkinInput.value ? checkinInput.value : formatDate(today);
+            if (!checkoutInput.value) {
+                checkoutInput.value = formatDate(checkoutDate);
+            }
+        }
 
         // Ensure selects have values
         if(areaSelect && !areaSelect.value && areaSelect.options.length > 0) {
@@ -853,8 +935,8 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         if(levelSelect && !levelSelect.value && levelSelect.options.length > 0) {
             levelSelect.value = levelSelect.options[0].value;
         }
-        if(durationSelect && !durationSelect.value && durationSelect.options.length > 0) {
-            durationSelect.value = durationSelect.options[0].value;
+        if(durationSelect && !durationSelect.value) {
+            durationSelect.value = '5';
         }
         if(guestsSelect && !guestsSelect.value && guestsSelect.options.length > 0) {
             guestsSelect.value = guestsSelect.options[0].value;
@@ -864,7 +946,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         }
 
         // Attach change listeners
-        ['quote_area', 'quote_level', 'quote_duration', 'quote_guests', 'quote_season'].forEach(function(id){
+        ['quote_area', 'quote_level', 'quote_checkin', 'quote_checkout', 'quote_guests', 'quote_season'].forEach(function(id){
             var el = document.getElementById(id);
             if(el) el.addEventListener('change', calculatePrice);
         });
@@ -890,9 +972,50 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
     function calculatePrice(){
         var areaId = document.getElementById('quote_area').value;
         var level = document.getElementById('quote_level').value;
-        var nights = parseInt(document.getElementById('quote_duration').value) || 0;
+        var checkin = document.getElementById('quote_checkin').value;
+        var checkout = document.getElementById('quote_checkout').value;
         var guests = parseInt(document.getElementById('quote_guests').value) || 1;
         var season = document.getElementById('quote_season').value;
+        var durationInput = document.getElementById('quote_duration');
+        var durationHint = document.getElementById('quote_duration_hint');
+        var calendarMinRate = document.getElementById('quote_calendar_min_rate');
+
+        function parseDateLocal(value) {
+            if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+                return null;
+            }
+            var parts = value.split('-');
+            return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        }
+
+        var checkinDate = parseDateLocal(checkin);
+        var checkoutDate = parseDateLocal(checkout);
+        var nights = 0;
+        if (checkinDate && checkoutDate) {
+            nights = Math.round((checkoutDate.getTime() - checkinDate.getTime()) / 86400000);
+        }
+
+        if (durationInput) {
+            durationInput.value = nights > 0 ? String(nights) : '';
+        }
+
+        if (durationHint) {
+            if (!checkin || !checkout) {
+                durationHint.textContent = 'Select check-in and check-out dates';
+                durationHint.style.color = '#666';
+            } else if (nights <= 0) {
+                durationHint.textContent = 'Check-out must be after check-in';
+                durationHint.style.color = '#c2410c';
+            } else {
+                durationHint.textContent = nights + (nights === 1 ? ' night selected' : ' nights selected');
+                durationHint.style.color = '#666';
+            }
+        }
+
+        var checkoutInput = document.getElementById('quote_checkout');
+        if (checkoutInput && checkin) {
+            checkoutInput.min = checkin;
+        }
 
         // Always show pricing box
         document.getElementById('quote_pricing_box').style.display = 'block';
@@ -901,7 +1024,6 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         document.getElementById('quote_nights_display').textContent = nights || '-';
         var skiDays = nights > 0 ? Math.ceil(nights * 0.6) : 0;
         document.getElementById('quote_skidays_display').textContent = skiDays || '-';
-        document.getElementById('quote_skidays_display2').textContent = skiDays || '-';
         document.getElementById('quote_guests_display').textContent = guests || '-';
 
         // Default to showing dashes if incomplete selection or data not loaded
@@ -915,6 +1037,10 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
             document.getElementById('quote_lift').textContent = '--';
             document.getElementById('quote_gear').textContent = '--';
             document.getElementById('quote_transport').textContent = '--';
+            document.getElementById('quote_min_day_rate').textContent = '--';
+            if (calendarMinRate) {
+                calendarMinRate.textContent = 'Minimum rate/day: ¥--';
+            }
             return;
         }
 
@@ -933,6 +1059,10 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
             document.getElementById('quote_lift').textContent = '--';
             document.getElementById('quote_gear').textContent = '--';
             document.getElementById('quote_transport').textContent = '--';
+            document.getElementById('quote_min_day_rate').textContent = '--';
+            if (calendarMinRate) {
+                calendarMinRate.textContent = 'Minimum rate/day: ¥--';
+            }
             return;
         }
 
@@ -975,6 +1105,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         var lift_total = lift_price * skiDays * guests;
         var gear_total = gear_price * skiDays * guests;
         var transport_total = transport_price * guests;
+        var min_day_rate = (accom_min_per_night + lift_price + gear_price + transport_price) * guests;
 
         // Total for all guests
         var total_low = accommodation_group_low + lift_total + gear_total + transport_total;
@@ -994,6 +1125,12 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         document.getElementById('quote_lift').textContent = lift_total > 0 ? lift_total.toLocaleString() : '--';
         document.getElementById('quote_gear').textContent = gear_total > 0 ? gear_total.toLocaleString() : '--';
         document.getElementById('quote_transport').textContent = transport_total > 0 ? transport_total.toLocaleString() : '--';
+        document.getElementById('quote_min_day_rate').textContent = min_day_rate > 0 ? Math.floor(min_day_rate).toLocaleString() : '--';
+        if (calendarMinRate) {
+            calendarMinRate.textContent = min_day_rate > 0
+                ? 'Minimum rate/day: ¥' + Math.floor(min_day_rate).toLocaleString()
+                : 'Minimum rate/day: ¥--';
+        }
     }
 
     // Get exact quote
