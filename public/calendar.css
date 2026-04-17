@@ -1,0 +1,58 @@
+#price-calendar {
+  width: 100%;
+  max-width: 720px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+  font-family: Arial;
+}
+
+.calendar-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.calendar-header button {
+  background:#eee;
+  border:none;
+  padding:6px 12px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.calendar-grid {
+  display:grid;
+  grid-template-columns: repeat(7,1fr);
+  gap:6px;
+}
+
+.day-name {
+  text-align:center;
+  font-weight:bold;
+  color:#666;
+}
+
+.day {
+  border-radius:8px;
+  padding:8px;
+  min-height:70px;
+  background:#f7f7f7;
+}
+
+.day-number {
+  font-weight:bold;
+}
+
+.price {
+  margin-top:6px;
+  font-size:14px;
+  font-weight:bold;
+}
+
+/* màu giá */
+.price.low { color:#0a8f3c; }
+.price.mid { color:#e67e22; }
+.price.high { color:#e74c3c; }

@@ -304,3 +304,129 @@
     .spcu-brow { grid-template-columns: 1fr auto; }
     .spcu-brow-unit { display: none; }
 }
+
+/* ── Price Calendar ─────────────────────────────────────────────── */
+.spcu-cal-wrap {
+    background: #fff;
+    border-radius: 12px;
+    border: 1.5px solid var(--spcu-border);
+    overflow: hidden;
+    user-select: none;
+}
+
+.spcu-cal-hint {
+    padding: 1rem;
+    color: var(--spcu-muted);
+    font-size: .85rem;
+    margin: 0;
+    text-align: center;
+}
+
+.spcu-cal {
+    width: 100%;
+}
+
+.spcu-cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid var(--spcu-border);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--spcu-ink);
+}
+
+.spcu-cal-nav {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.4rem;
+    color: var(--spcu-brand);
+    line-height: 1;
+    padding: 0 .25rem;
+    transition: color .15s;
+}
+.spcu-cal-nav:hover { color: var(--spcu-brand-strong); }
+
+.spcu-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.spcu-cal-dow {
+    text-align: center;
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--spcu-muted);
+    padding: .45rem 0;
+    border-bottom: 1px solid var(--spcu-border);
+    background: #f8fbfa;
+}
+
+.spcu-cal-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: .35rem .1rem .4rem;
+    min-height: 54px;
+    border-right: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background .15s;
+    position: relative;
+}
+.spcu-cal-cell:nth-child(7n) { border-right: none; }
+.spcu-cal-cell:hover:not(.spcu-cal-past):not(.spcu-cal-empty) {
+    background: #edf7f5;
+}
+
+.spcu-cal-empty { cursor: default; background: #fafafa; }
+
+.spcu-cal-past {
+    cursor: default;
+    opacity: .4;
+}
+
+.spcu-cal-selected {
+    background: var(--spcu-brand) !important;
+    border-radius: 0;
+}
+.spcu-cal-selected .spcu-cal-day,
+.spcu-cal-selected .spcu-cal-price { color: #fff !important; }
+
+.spcu-cal-day {
+    font-size: .88rem;
+    font-weight: 500;
+    color: var(--spcu-ink);
+    line-height: 1.3;
+}
+
+.spcu-cal-dot {
+    display: block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--spcu-muted);
+    margin-top: 2px;
+}
+
+.spcu-cal-price {
+    font-size: .68rem;
+    font-weight: 600;
+    color: #2c9e6e;
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
+/* Peak pricing (higher tier) */
+.spcu-cal-peak .spcu-cal-price { color: #c0392b; }
+
+/* Low pricing */
+.spcu-cal-low .spcu-cal-price  { color: #2c9e6e; }
+
+@media (max-width: 600px) {
+    .spcu-cal-cell { min-height: 44px; padding: .3rem .05rem; }
+    .spcu-cal-price { font-size: .6rem; }
+    .spcu-cal-day { font-size: .8rem; }
+}

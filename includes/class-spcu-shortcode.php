@@ -15,7 +15,7 @@ class SPCU_Shortcode {
             'spcu-public',
             SPCU_URL . 'public/public.css',
             [],
-            '2.0'
+            '2.2'
         );
     }
 
@@ -45,8 +45,11 @@ class SPCU_Shortcode {
     <!-- Step 2: Pick check-in date + nights -->
     <div class="spcu-step" id="spcu-step-2" style="display:none;">
         <div class="spcu-field">
-            <label for="spcu_checkin">Check-in Date</label>
-            <input type="date" id="spcu_checkin">
+            <label>Check-in Date</label>
+            <div id="spcu_cal_wrap" class="spcu-cal-wrap">
+                <p class="spcu-cal-hint">&#8592; Select a hotel first to see prices</p>
+            </div>
+            <input type="hidden" id="spcu_checkin">
         </div>
 
         <div class="spcu-field">
@@ -105,6 +108,7 @@ class SPCU_Shortcode {
 var API = <?= json_encode($api_base) ?>;
 var allPrices = [];
 var hotels    = [];
+var calState  = { year: 0, month: 0, rules: [], selectedDate: '' };
 
 /* ── Boot ─────────────────────────────────────────────────────── */
 fetch(API + '/hotels')
@@ -160,6 +164,24 @@ document.getElementById('spcu_hotel').addEventListener('change', function(){
     show('spcu-step-info', true);
     document.getElementById('spcu-btn-calc').style.display = '';
     document.getElementById('spcu_result_box').style.display = 'none';
+
+    // Init price calendar for this hotel
+    calState.selectedDate = '';
+    document.getElementById('spcu_checkin').value = '';
+    var _now = new Date();
+    // If past the 15th, open on next month so most dates are visible with prices
+    var calYear  = _now.getFullYear();
+    var calMonth = _now.getMonth();
+    if(_now.getDate() > 15){
+        calMonth++;
+        if(calMonth > 11){ calMonth = 0; calYear++; }
+    }
+    loadHotelCalendar(h, calYear, calMonth);
+});
+
+/* Re-render calendar when currency changes */
+document.getElementById('spcu_currency').addEventListener('change', function(){
+    if(calState.rules.length) renderCalendar(calState.rules, calState.year, calState.month);
 });
 
 /* ── Populate add-ons (lift/gear/transport for area) ───────────── */
@@ -286,6 +308,204 @@ function scheduleLabel(rule){
         case 'specific_dates':return (rule.dates||[]).join(', ');
         default:              return rule.price_type;
     }
+}
+
+function loadHotelCalendar(hotel, year, month){
+    var wrap = document.getElementById('spcu_cal_wrap');
+    var embeddedRules = hotelRulesFor(hotel);
+
+    if(embeddedRules.length){
+        renderCalendar(embeddedRules, year, month);
+    } else {
+        wrap.innerHTML = '<p class="spcu-cal-hint">Loading prices…</p>';
+    }
+
+    fetch(API + '/hotel-price?hotel_id=' + encodeURIComponent(hotel.id))
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            var rules = Array.isArray(data && data.rules) ? data.rules : [];
+            if(rules.length){
+                hotel.prices = rules;
+                renderCalendar(rules, year, month);
+                return;
+            }
+
+            var fallbackRules = embeddedRules.length ? embeddedRules : hotelRulesFor(hotel);
+            if(fallbackRules.length){
+                renderCalendar(fallbackRules, year, month);
+            } else {
+                wrap.innerHTML = '<p class="spcu-cal-hint">No hotel prices found for this calendar.</p>';
+            }
+        })
+        .catch(function(){
+            var fallbackRules = embeddedRules.length ? embeddedRules : hotelRulesFor(hotel);
+            if(fallbackRules.length){
+                renderCalendar(fallbackRules, year, month);
+            } else {
+                wrap.innerHTML = '<p class="spcu-cal-hint">Could not load calendar prices.</p>';
+            }
+        });
+}
+
+function hotelRulesFor(hotel){
+    if(hotel && Array.isArray(hotel.prices) && hotel.prices.length){
+        return hotel.prices;
+    }
+
+    var hotelId = hotel && hotel.id ? String(hotel.id) : '';
+    if(!hotelId || !Array.isArray(allPrices) || !allPrices.length){
+        return [];
+    }
+
+    return allPrices.filter(function(price){
+        return price && price.category === 'hotel' && String(price.hotel_id || '') === hotelId;
+    });
+}
+
+/* ── Price Calendar ────────────────────────────────────────────── */
+function renderCalendar(rules, year, month){
+    calState.rules = rules;
+    calState.year  = year;
+    calState.month = month;
+
+    var currency = document.getElementById('spcu_currency').value;
+    var sym      = currency === 'USD' ? '$' : '¥';
+    var wrap     = document.getElementById('spcu_cal_wrap');
+    var DAYS     = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+    var MONTHS   = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+
+    // First day of month (convert Sun=0 to Mon=0 index)
+    var firstDay  = new Date(year, month, 1).getDay(); // 0=Sun
+    var startCol  = (firstDay + 6) % 7;                // Mon-based offset
+    var daysInMon = new Date(year, month + 1, 0).getDate();
+
+    var prevY = month === 0 ? year - 1 : year;
+    var prevM = month === 0 ? 11 : month - 1;
+    var nextY = month === 11 ? year + 1 : year;
+    var nextM = month === 11 ? 0 : month + 1;
+
+    var html = '<div class="spcu-cal">';
+    // Header
+    html += '<div class="spcu-cal-header">';
+    html += '<button class="spcu-cal-nav" data-y="'+prevY+'" data-m="'+prevM+'">&#8249;</button>';
+    html += '<span>'+MONTHS[month]+' '+year+'</span>';
+    html += '<button class="spcu-cal-nav" data-y="'+nextY+'" data-m="'+nextM+'">&#8250;</button>';
+    html += '</div>';
+    // Day-of-week headers
+    html += '<div class="spcu-cal-grid">';
+    DAYS.forEach(function(d){
+        html += '<div class="spcu-cal-dow">'+d+'</div>';
+    });
+    // Leading empty cells
+    for(var e = 0; e < startCol; e++){
+        html += '<div class="spcu-cal-cell spcu-cal-empty"></div>';
+    }
+    // Day cells
+    var today = new Date(); today.setHours(0,0,0,0);
+    for(var d = 1; d <= daysInMon; d++){
+        var ymd    = year+'-'+pad(month+1)+'-'+pad(d);
+        var dObj   = new Date(year, month, d);
+        var isPast = dObj < today; // today itself is NOT past and shows a price
+        var isSel  = (calState.selectedDate === ymd);
+        var rule   = isPast ? null : priceForDate(rules, ymd, dObj);
+        var priceHtml = '';
+        var highlight = '';
+        if(rule){
+            var minVal = currency === 'USD' ? rule.price_min_usd : rule.price_min_jpy;
+            var maxVal = currency === 'USD' ? rule.price_max_usd : rule.price_max_jpy;
+            var singleVal = currency === 'USD' ? rule.price_usd : rule.price_jpy;
+            var displayVal = minVal || singleVal || null;
+            if(displayVal){
+                priceHtml = '<span class="spcu-cal-price">'+fmtK(displayVal, currency)+'</span>';
+                highlight = rule._highlight || '';
+            } else {
+                priceHtml = '<span class="spcu-cal-dot"></span>';
+            }
+        }
+        var cls = 'spcu-cal-cell';
+        if(isPast)  cls += ' spcu-cal-past';
+        if(isSel)   cls += ' spcu-cal-selected';
+        if(highlight === 'red')   cls += ' spcu-cal-peak';
+        if(highlight === 'green') cls += ' spcu-cal-low';
+        var dayLabel = isSel ? '<strong>'+d+'</strong>' : d;
+        html += '<div class="'+cls+'" data-ymd="'+ymd+'">';
+        html +=   '<span class="spcu-cal-day">'+dayLabel+'</span>';
+        html +=   priceHtml;
+        html += '</div>';
+    }
+    html += '</div></div>'; // grid + cal
+
+    wrap.innerHTML = html;
+
+    // Nav buttons
+    wrap.querySelectorAll('.spcu-cal-nav').forEach(function(btn){
+        btn.addEventListener('click', function(){
+            renderCalendar(calState.rules, parseInt(this.dataset.y), parseInt(this.dataset.m));
+        });
+    });
+
+    // Day click
+    wrap.querySelectorAll('.spcu-cal-cell:not(.spcu-cal-empty):not(.spcu-cal-past)').forEach(function(cell){
+        cell.addEventListener('click', function(){
+            calState.selectedDate = this.dataset.ymd;
+            document.getElementById('spcu_checkin').value = calState.selectedDate;
+            renderCalendar(calState.rules, calState.year, calState.month);
+        });
+    });
+}
+
+/* Resolve the best matching price rule for a given date */
+function priceForDate(rules, ymd, dObj){
+    var dow = dObj.toLocaleDateString('en-US',{weekday:'long'}).toLowerCase();
+    var matched = null;
+    for(var i = 0; i < rules.length; i++){
+        var r = rules[i];
+        switch(r.price_type){
+            case 'specific_dates':
+                if((r.dates||[]).indexOf(ymd) !== -1){ matched = r; break; }
+                break;
+            case 'date_range':
+                if(r.date_from && r.date_to && ymd >= r.date_from && ymd <= r.date_to){
+                    matched = r; break;
+                }
+                break;
+            case 'weekend':
+                if(dow === 'saturday' || dow === 'sunday'){ matched = r; break; }
+                break;
+            case 'selected_days':
+                if((r.weekdays||[]).indexOf(dow) !== -1){ matched = r; break; }
+                break;
+        }
+        if(matched) break;
+    }
+    if(!matched && rules.length) matched = rules[0];
+    if(matched){
+        // Determine highlight colour: compare min_jpy vs others
+        var allMins = rules.map(function(x){ return parseFloat(x.price_min_jpy||x.price_jpy||0); }).filter(Boolean);
+        if(allMins.length > 1){
+            var globalMin = Math.min.apply(null, allMins);
+            var globalMax = Math.max.apply(null, allMins);
+            var thisVal   = parseFloat(matched.price_min_jpy||matched.price_jpy||0);
+            var copy = Object.assign({}, matched);
+            if(thisVal > 0 && globalMax > globalMin){
+                var ratio = (thisVal - globalMin)/(globalMax - globalMin);
+                copy._highlight = ratio > 0.5 ? 'red' : 'green';
+            }
+            return copy;
+        }
+    }
+    return matched;
+}
+
+function pad(n){ return n < 10 ? '0'+n : ''+n; }
+function fmtK(n, currency){
+    var v = parseFloat(n);
+    if(!v) return '';
+    if(currency === 'USD') return '$'+v.toLocaleString(undefined,{maximumFractionDigits:0});
+    // JPY: show as e.g. 1,278K
+    if(v >= 1000) return (v/1000).toLocaleString(undefined,{maximumFractionDigits:0})+'K';
+    return '¥'+v.toLocaleString(undefined,{maximumFractionDigits:0});
 }
 
 /* ── Utilities ─────────────────────────────────────────────────── */
