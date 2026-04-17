@@ -524,16 +524,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                 <!-- Column 4: Number of Guests -->
                 <div class="spcu-quote-col">
                     <label>NUMBER OF GUESTS</label>
-                    <select id="quote_guests" name="guests" required>
-                        <option value="1" selected>1 guest</option>
-                        <option value="2">2 guests</option>
-                        <option value="3">3 guests</option>
-                        <option value="4">4 guests</option>
-                        <option value="5">5 guests</option>
-                        <option value="6">6 guests</option>
-                        <option value="7">7 guests</option>
-                        <option value="8">8+ guests</option>
-                    </select>
+                    <input type="number" id="quote_guests" name="guests" min="2" step="1" value="2" required>
                 </div>
 
                 <!-- Column 5: Season -->
@@ -693,11 +684,24 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
     transition: all 0.2s;
 }
 
+.spcu-quote-col input[type="number"] {
+    padding: 12px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    transition: all 0.2s;
+}
+
 .spcu-quote-col select:hover {
     border-color: #2563eb;
 }
 
 .spcu-quote-col input[type="date"]:hover {
+    border-color: #2563eb;
+}
+
+.spcu-quote-col input[type="number"]:hover {
     border-color: #2563eb;
 }
 
@@ -708,6 +712,12 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
 }
 
 .spcu-quote-col input[type="date"]:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.spcu-quote-col input[type="number"]:focus {
     outline: none;
     border-color: #2563eb;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
@@ -902,7 +912,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         var durationSelect = document.getElementById('quote_duration');
         var checkinInput = document.getElementById('quote_checkin');
         var checkoutInput = document.getElementById('quote_checkout');
-        var guestsSelect = document.getElementById('quote_guests');
+        var guestsInput = document.getElementById('quote_guests');
         var seasonSelect = document.getElementById('quote_season');
 
         var today = new Date();
@@ -938,8 +948,11 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         if(durationSelect && !durationSelect.value) {
             durationSelect.value = '5';
         }
-        if(guestsSelect && !guestsSelect.value && guestsSelect.options.length > 0) {
-            guestsSelect.value = guestsSelect.options[0].value;
+        if(guestsInput) {
+            var parsedGuests = parseInt(guestsInput.value, 10);
+            if(!parsedGuests || parsedGuests < 2) {
+                guestsInput.value = '2';
+            }
         }
         if(seasonSelect && !seasonSelect.value && seasonSelect.options.length > 0) {
             seasonSelect.value = seasonSelect.options[0].value;
@@ -949,6 +962,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         ['quote_area', 'quote_level', 'quote_checkin', 'quote_checkout', 'quote_guests', 'quote_season'].forEach(function(id){
             var el = document.getElementById(id);
             if(el) el.addEventListener('change', calculatePrice);
+            if(el && id === 'quote_guests') el.addEventListener('input', calculatePrice);
         });
 
         // Calculate once DOM is ready (data might still be loading)
@@ -974,7 +988,12 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         var level = document.getElementById('quote_level').value;
         var checkin = document.getElementById('quote_checkin').value;
         var checkout = document.getElementById('quote_checkout').value;
-        var guests = parseInt(document.getElementById('quote_guests').value) || 1;
+        var guestsInput = document.getElementById('quote_guests');
+        var guests = parseInt(guestsInput.value, 10);
+        if(!guests || guests < 2) {
+            guests = 2;
+            guestsInput.value = '2';
+        }
         var season = document.getElementById('quote_season').value;
         var durationInput = document.getElementById('quote_duration');
         var durationHint = document.getElementById('quote_duration_hint');
