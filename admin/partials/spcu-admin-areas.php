@@ -113,7 +113,9 @@ wp_enqueue_media();
     <?php if($area_error): ?>
         <div class="notice notice-error"><p><?= esc_html($area_error) ?></p></div>
         <div class="spcu-toast-source" data-type="error" data-message="<?= esc_attr($area_error) ?>"></div>
-      <div id="col-container" class="wp-clearfix">
+    <?php endif; ?>
+
+    <div id="col-container" class="wp-clearfix">
         <div id="col-left">
             <div class="col-wrap">
                 <div class="form-wrap">
@@ -124,29 +126,13 @@ wp_enqueue_media();
                             <input type='hidden' name='area_id' value='<?= esc_attr($edit_area->id) ?>'>
                         <?php endif; ?>
                         
-                        <div class="form-field form-required">
-                            <label for="prefecture_id">Prefecture</label>
-                            <select name='prefecture_id' id='prefecture_id' required>
-                                <option value=''>-- Select Prefecture --</option>
-                                <?php foreach($prefectures as $pref): ?>
-                                    <option value='<?= esc_attr($pref->id) ?>' <?= selected(($edit_area->prefecture_id ?? ''), $pref->id, false) ?>><?= esc_html($pref->name) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <div class="form-field form-required">
-                            <label for="type">Area Type</label>
-                            <select name='type' id='type' required>
-                                <option value='City' <?= selected(($edit_area->type ?? ''), 'City', false) ?>>City</option>
-                                <option value='Town' <?= selected(($edit_area->type ?? ''), 'Town', false) ?>>Town</option>
-                                <option value='Village' <?= selected(($edit_area->type ?? ''), 'Village', false) ?>>Village</option>
-                            </select>
-                        </div>
+                        
 
                         <div class="form-field form-required">
                             <label for="name">Area Name</label>
                             <input name='name' id='name' type="text" placeholder='Hakuba' required value='<?= esc_attr($edit_area->name ?? '') ?>'>
                         </div>
+                        
 
                         <div class="form-field">
                             <label for="name_ja">Name (Japanese)</label>
@@ -158,7 +144,25 @@ wp_enqueue_media();
                             <textarea name='short_description' id='short_description' rows="2" maxlength="255" placeholder='Compact overview for the area header'><?= esc_textarea($edit_area->short_description ?? '') ?></textarea>
                             <p>255 character limit.</p>
                         </div>
+                        <div class="form-field form-required">
+                            <label for="type">Area Type</label>
+                            <select name='type' id='type' required>
+                                <option value='City' <?= selected(($edit_area->type ?? ''), 'City', false) ?>>City</option>
+                                <option value='Town' <?= selected(($edit_area->type ?? ''), 'Town', false) ?>>Town</option>
+                                <option value='Village' <?= selected(($edit_area->type ?? ''), 'Village', false) ?>>Village</option>
+                            </select>
+                        </div>
+                        <div class="form-field form-required">
+                            <label for="prefecture_id">Prefecture</label>
+                            <select name='prefecture_id' id='prefecture_id' required>
+                                <option value=''>-- Select Prefecture --</option>
+                                <?php foreach($prefectures as $pref): ?>
+                                    <option value='<?= esc_attr($pref->id) ?>' <?= selected(($edit_area->prefecture_id ?? ''), $pref->id, false) ?>><?= esc_html($pref->name) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
+                        
                         <div class="form-field">
                             <label for="description">Description</label>
                             <?php wp_editor($edit_area->description ?? '', 'description', ['media_buttons' => true, 'teeny' => false, 'textarea_rows' => 10]); ?>
@@ -251,7 +255,6 @@ wp_enqueue_media();
                 </table>
             </div>
         </div>
-    </div>        </div>
     </div>
 </div>
 
