@@ -66,7 +66,10 @@ INSERT INTO wp_spcu_areas (prefecture_id, type, name, name_ja, short_description
 
 -- ── HOTELS ────────────────────────────────────────────────────────────────
 -- area_id: 1=Hakuba, 2=Niseko, 3=Yuzawa, 4=Shiga, 5=Rusutsu, 6=Nozawa, 7=Myoko, 8=Tomamu, 9=Appi, 10=Zao
-INSERT INTO wp_spcu_hotels (area_id, name, name_ja, grade, short_description, address, is_featured) VALUES
+-- Backfill slugs for any existing hotels that don't have one
+UPDATE wp_spcu_hotels SET slug = LOWER(REGEXP_REPLACE(REGEXP_REPLACE(name, '[^a-zA-Z0-9 ]', ''), ' +', '-')) WHERE slug IS NULL OR slug = '';
+
+INSERT INTO wp_spcu_hotels (area_id, name, name_ja, slug, grade, short_description, address, is_featured) VALUES
 -- HAKUBA
 (1,'Hakuba Highland Hotel','白馬ハイランドホテル','premium','Breathtaking panoramic views with a scenic outdoor onsen and shuttle to Happo-one lifts.','3581 Hakuba, Nagano',1),
 (1,'Hakuba Grandvaux','白馬グランボー','exclusive','Refined luxury lodge combining French elegance with concierge ski services.','3593 Hakuba, Nagano',1),

@@ -45,12 +45,14 @@ function spcu_handle_hotels_post(){
     }
 
     $schema_columns = [
-        'area_id' => 'INT NULL',
-        'grade' => 'VARCHAR(50) NULL',
-        'short_description' => 'VARCHAR(200) NULL',
-        'description' => 'TEXT NULL',
-        'facilities' => 'TEXT NULL',
-        'featured_image' => 'INT NULL',
+        'slug'             => 'VARCHAR(200) NULL',
+        'area_id'          => 'INT NULL',
+        'grade'            => 'VARCHAR(50) NULL',
+        'is_featured'      => 'TINYINT(1) NOT NULL DEFAULT 0',
+        'short_description'=> 'VARCHAR(200) NULL',
+        'description'      => 'TEXT NULL',
+        'facilities'       => 'TEXT NULL',
+        'featured_image'   => 'INT NULL',
     ];
     $missing_columns = [];
 
@@ -89,6 +91,21 @@ function spcu_handle_hotels_post(){
     $area_id = intval($_POST['area_id'] ?? 0);
     $grade   = sanitize_text_field($_POST['grade'] ?? '');
 
+    // Build slug: use submitted value or generate from name
+    $name_for_slug = sanitize_text_field($_POST['name'] ?? '');
+    $slug_raw      = sanitize_text_field($_POST['slug'] ?? '');
+    $slug          = $slug_raw !== '' ? sanitize_title( $slug_raw ) : sanitize_title( $name_for_slug );
+
+    // Ensure slug uniqueness (exclude current record on edit)
+    $hotel_id_for_unique = $is_edit ? intval($_POST['hotel_id'] ?? 0) : 0;
+    $existing_slug = $wpdb->get_var( $wpdb->prepare(
+        "SELECT id FROM {$hotel_table} WHERE slug = %s AND id != %d LIMIT 1",
+        $slug, $hotel_id_for_unique
+    ));
+    if ( $existing_slug ) {
+        $slug = $slug . '-' . time();
+    }
+
     if($area_id <= 0 || $grade === ''){
         $msg = $is_add
             ? 'Please choose both an Area and Grade before saving a hotel.'
@@ -111,6 +128,7 @@ function spcu_handle_hotels_post(){
     $data = [
         'name'              => sanitize_text_field($_POST['name'] ?? ''),
         'name_ja'           => sanitize_text_field($_POST['name_ja'] ?? ''),
+        'slug'              => $slug,
         'short_description' => sanitize_textarea_field($_POST['short_description'] ?? ''),
         'description'       => wp_kses_post($_POST['description'] ?? ''),
         'address'           => sanitize_textarea_field($_POST['address'] ?? ''),

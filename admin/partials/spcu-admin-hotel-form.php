@@ -109,6 +109,30 @@ wp_enqueue_media();
                 <td><input name='name_ja' id='name_ja' class="regular-text" placeholder='白馬グランドホテル' value="<?= esc_attr($edit_hotel->name_ja ?? '') ?>"></td>
             </tr>
             <tr>
+                <th scope="row"><label for="slug">Slug</label></th>
+                <td>
+                    <input name='slug' id='slug' class="regular-text" placeholder='hakuba-grand-hotel' value="<?= esc_attr($edit_hotel->slug ?? '') ?>">
+                    <p class="description">Used in the URL: <code>/hotels/<strong id="slug-preview"><?= esc_html($edit_hotel->slug ?? 'hotel-slug') ?></strong>/</code>. Auto-generated from name if left blank.</p>
+                </td>
+            </tr>
+            <script>
+            (function(){
+                var nameEl = document.getElementById('name');
+                var slugEl = document.getElementById('slug');
+                var preview = document.getElementById('slug-preview');
+                var slugEdited = slugEl.value !== '';
+                slugEl.addEventListener('input', function(){ slugEdited = true; updatePreview(this.value); });
+                nameEl.addEventListener('input', function(){
+                    if(!slugEdited){
+                        var s = this.value.toLowerCase().replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-').replace(/-+/g,'-');
+                        slugEl.value = s;
+                        updatePreview(s);
+                    }
+                });
+                function updatePreview(v){ if(preview) preview.textContent = v || 'hotel-slug'; }
+            })();
+            </script>
+            <tr>
                 <th scope="row"><label for="short_description">Short Description</label></th>
                 <td>
                     <textarea name='short_description' id='short_description' class="large-text" rows="2" maxlength="255" placeholder='Ski-in, ski-out hotel with mountain views'><?= esc_textarea($edit_hotel->short_description ?? '') ?></textarea>
