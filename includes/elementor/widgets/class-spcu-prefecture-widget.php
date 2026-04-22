@@ -221,8 +221,12 @@ class SPCU_Prefecture_Widget extends \Elementor\Widget_Base {
 
 		?>
 		<div class="spcu-prefecture-areas-wrapper">
-			<div class="spcu-areas-horizontal">
-				<?php foreach ( $areas as $area ) : 
+			<div class="spcu-areas-carousel-container">
+				<?php if ( count( $areas ) > 3 ) : ?>
+					<button class="spcu-carousel-button spcu-carousel-prev" aria-label="Previous areas">‹</button>
+				<?php endif; ?>
+				<div class="spcu-areas-horizontal" data-carousel-container>
+					<?php foreach ( $areas as $area ) : 
 					$img_url = wp_get_attachment_image_url( $area->featured_image, 'medium' );
                     // Fallback to placeholder if no image
                     if ( ! $img_url ) {
@@ -247,8 +251,10 @@ class SPCU_Prefecture_Widget extends \Elementor\Widget_Base {
 						</div>
 						
 						<div class="spcu-area-card__content">
+							<!-- Row 1: Name -->
 							<h4 class="spcu-area-card__title"><?php echo esc_html( $area->name ); ?></h4>
 							
+							<!-- Row 2: Prefecture - Distance with Tokyo -->
 							<?php if ( $settings['show_location_info'] === 'yes' && ! empty( $area->distance ) ) : ?>
 								<p class="spcu-area-card__location">
 									<?php if ( ! empty( $prefecture->name ) ) : ?>
@@ -258,12 +264,18 @@ class SPCU_Prefecture_Widget extends \Elementor\Widget_Base {
 								</p>
 							<?php endif; ?>
 							
-							<?php if ( $settings['show_description'] === 'yes' && ! empty( $area->description ) ) : ?>
-								<p class="spcu-area-card__description">
+							<!-- Row 3: Short Description -->
+							<?php if ( $settings['show_description'] === 'yes' && ! empty( $area->short_description ) ) : ?>
+								<p class="spcu-area-card__short-description">
+									<?php echo esc_html( $area->short_description ); ?>
+								</p>
+							<?php elseif ( $settings['show_description'] === 'yes' && ! empty( $area->description ) ) : ?>
+								<p class="spcu-area-card__short-description">
 									<?php echo wp_kses_post( wp_trim_words( $area->description, 20 ) ); ?>
 								</p>
 							<?php endif; ?>
 							
+							<!-- Row 4: Tags -->
 							<?php if ( $settings['show_tags'] === 'yes' && ! empty( $tags ) ) : ?>
 								<div class="spcu-area-card__tags">
 									<?php foreach ( $tags as $tag ) : ?>
@@ -272,6 +284,7 @@ class SPCU_Prefecture_Widget extends \Elementor\Widget_Base {
 								</div>
 							<?php endif; ?>
 							
+							<!-- Row 5: Quote Button -->
 							<?php if ( $settings['show_button'] === 'yes' ) : ?>
 								<a href="<?php echo esc_url( $settings['button_link'] ?: '#' ); ?>" class="spcu-area-card__button">
 									<?php echo esc_html( $settings['button_text'] ?: 'View & Quote →' ); ?>
@@ -280,8 +293,49 @@ class SPCU_Prefecture_Widget extends \Elementor\Widget_Base {
 						</div>
 					</div>
 				<?php endforeach; ?>
+				</div>
+				<?php if ( count( $areas ) > 3 ) : ?>
+					<button class="spcu-carousel-button spcu-carousel-next" aria-label="Next areas">›</button>
+				<?php endif; ?>
 			</div>
 		</div>
+		
+		<script>
+		(function() {
+			const container = document.querySelector('[data-carousel-container]');
+			const prevBtn = document.querySelector('.spcu-carousel-prev');
+			const nextBtn = document.querySelector('.spcu-carousel-next');
+			
+			if (!container || !prevBtn || !nextBtn) return;
+			
+			const cardWidth = container.querySelector('.spcu-area-card');
+			if (!cardWidth) return;
+			
+			// Get card width and gap
+			const style = window.getComputedStyle(cardWidth);
+			const width = cardWidth.offsetWidth;
+			const gap = parseInt(window.getComputedStyle(container).gap);
+			const scrollAmount = width + gap;
+			
+			function updateButtonStates() {
+				prevBtn.disabled = container.scrollLeft === 0;
+				nextBtn.disabled = container.scrollLeft >= container.scrollWidth - container.clientWidth - 10;
+			}
+			
+			prevBtn.addEventListener('click', () => {
+				container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+				setTimeout(updateButtonStates, 300);
+			});
+			
+			nextBtn.addEventListener('click', () => {
+				container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+				setTimeout(updateButtonStates, 300);
+			});
+			
+			container.addEventListener('scroll', updateButtonStates);
+			updateButtonStates();
+		})();
+		</script>
 		<?php
 	}
 }
