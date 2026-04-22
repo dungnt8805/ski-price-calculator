@@ -33,6 +33,7 @@ function spcu_handle_prefectures_post(){
         'description' => 'TEXT NULL',
         'featured_image' => 'INT NULL',
         'images' => 'TEXT NULL',
+        'is_featured' => 'TINYINT(1) NOT NULL DEFAULT 0',
     ];
 
     if($table_exists){
@@ -51,6 +52,7 @@ function spcu_handle_prefectures_post(){
         'description' => wp_kses_post($_POST['description'] ?? ''),
         'featured_image' => ($featured_image = absint($_POST['featured_image'] ?? 0)) > 0 ? $featured_image : null,
         'images' => sanitize_text_field($_POST['images'] ?? ''),
+        'is_featured' => isset($_POST['is_featured']) ? 1 : 0,
     ];
 
     $prefecture_id = intval($_POST['prefecture_id'] ?? 0);

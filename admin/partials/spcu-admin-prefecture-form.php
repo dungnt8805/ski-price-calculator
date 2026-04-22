@@ -69,6 +69,13 @@ wp_enqueue_media();
                         <td><input name='name_ja' id='name_ja' class="regular-text" placeholder='長野県' value='<?= esc_attr($edit_area->name_ja ?? '') ?>'></td>
                     </tr>
                     <tr>
+                        <th scope="row"><label for="is_featured">Featured Prefecture?</label></th>
+                        <td>
+                            <input type="checkbox" name="is_featured" id="is_featured" value="1" <?= (!empty($edit_area->is_featured)) ? 'checked' : '' ?>>
+                            <span class="description">Show this prefecture as a featured destination.</span>
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><label for="short_description">Short Description</label></th>
                         <td>
                             <textarea name='short_description' id='short_description' class="large-text" rows="2" maxlength="255" placeholder='Compact overview for the header'><?= esc_textarea($edit_area->short_description ?? '') ?></textarea>

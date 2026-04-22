@@ -37,6 +37,7 @@ $schema_columns = [
     'description' => 'TEXT NULL',
     'featured_image' => 'INT NULL',
     'images' => 'TEXT NULL',
+    'is_featured' => 'TINYINT(1) NOT NULL DEFAULT 0',
 ];
 
 if($table_exists){
@@ -59,11 +60,6 @@ wp_enqueue_media();
         ['label' => 'Prefectures']
     ]); ?>
 
-<div class='wrap'>
-    <?php spcu_admin_breadcrumb([
-        ['label' => 'Ski Engine', 'url' => admin_url('admin.php?page=spcu-dashboard')],
-        ['label' => 'Prefectures']
-    ]); ?>
 
     <div class="spcu-header-row">
         <h1>Prefectures</h1>
@@ -77,13 +73,20 @@ wp_enqueue_media();
 
     <div class='spcu-table'>
         <table class="wp-list-table widefat fixed striped table-view-list">
-            <tr><th>ID</th><th>Name</th><th>Featured Image</th><th>Action</th></tr>
+            <tr><th>ID</th><th>Name</th><th>Featured</th><th>Featured Image</th><th>Action</th></tr>
             <?php foreach($rows as $r): ?>
             <tr>
                 <td><?= esc_html($r->id) ?></td>
                 <td>
                     <strong><?= esc_html($r->name) ?></strong>
                     <?php if(!empty($r->name_ja)): ?><br><span style="color:#6f7f8f;font-size:0.9em;"><?= esc_html($r->name_ja) ?></span><?php endif; ?>
+                </td>
+                <td>
+                    <?php if(!empty($r->is_featured)): ?>
+                        <span class="dashicons dashicons-star-filled" style="color:#f59e0b;" title="Featured"></span>
+                    <?php else: ?>
+                        <span class="dashicons dashicons-star-empty" style="color:#cbd5e1;" title="Not Featured"></span>
+                    <?php endif; ?>
                 </td>
                 <td>
                     <?php if(!empty($r->featured_image)):

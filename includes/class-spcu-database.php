@@ -14,7 +14,8 @@ class SPCU_Database {
             short_description VARCHAR(200) NULL,
             description TEXT NULL,
             featured_image INT NULL,
-            images TEXT NULL
+            images TEXT NULL,
+            is_featured TINYINT(1) NOT NULL DEFAULT 0
         ) $charset;";
 
         $areas = "CREATE TABLE {$wpdb->prefix}spcu_areas(

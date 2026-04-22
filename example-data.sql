@@ -71,53 +71,53 @@ UPDATE wp_spcu_hotels SET slug = LOWER(REGEXP_REPLACE(REGEXP_REPLACE(name, '[^a-
 
 INSERT INTO wp_spcu_hotels (area_id, name, name_ja, slug, grade, short_description, address, is_featured) VALUES
 -- HAKUBA
-(1,'Hakuba Highland Hotel','白馬ハイランドホテル','premium','Breathtaking panoramic views with a scenic outdoor onsen and shuttle to Happo-one lifts.','3581 Hakuba, Nagano',1),
-(1,'Hakuba Grandvaux','白馬グランボー','exclusive','Refined luxury lodge combining French elegance with concierge ski services.','3593 Hakuba, Nagano',1),
-(1,'Alpine Valley Lodge','アルパインバレーロッジ','standard','Family-run lodge with hearty breakfasts, near beginner-friendly slopes.','3500 Hakuba, Nagano',0),
-(1,'Ezo Powder House','エゾパウダーハウス','premium','Stylish modern lodge for groups with gear-drying facilities and communal kitchen.','3585 Hakuba, Nagano',0),
-(1,'Hakuba Mominoki Hotel','白馬樅の木ホテル','exclusive','Alpine luxury in the Wadano forest with alkaline onsen and wine cellar.','4683-2 Hokujo, Hakuba, Nagano',0),
+(1,'Hakuba Highland Hotel','白馬ハイランドホテル','hakuba-highland-hotel','premium','Breathtaking panoramic views with a scenic outdoor onsen and shuttle to Happo-one lifts.','3581 Hakuba, Nagano',1),
+(1,'Hakuba Grandvaux','白馬グランボー','hakuba-grandvaux','exclusive','Refined luxury lodge combining French elegance with concierge ski services.','3593 Hakuba, Nagano',1),
+(1,'Alpine Valley Lodge','アルパインバレーロッジ','alpine-valley-lodge','standard','Family-run lodge with hearty breakfasts, near beginner-friendly slopes.','3500 Hakuba, Nagano',0),
+(1,'Ezo Powder House','エゾパウダーハウス','ezo-powder-house','premium','Stylish modern lodge for groups with gear-drying facilities and communal kitchen.','3585 Hakuba, Nagano',0),
+(1,'Hakuba Mominoki Hotel','白馬樅の木ホテル','hakuba-mominoki-hotel','exclusive','Alpine luxury in the Wadano forest with alkaline onsen and wine cellar.','4683-2 Hokujo, Hakuba, Nagano',0),
 -- NISEKO
-(2,'Park Hyatt Niseko Hanazono','パークハイアットニセコ','exclusive','Ski-in/ski-out luxury with private onsens and Mt. Yotei views.','328-47 Iwaobetsu, Kutchan, Hokkaido',1),
-(2,'Niseko Grand Hotel','ニセコグランドホテル','premium','Largest mixed outdoor onsen in Niseko with authentic Japanese buffets.','204 Niseko, Hokkaido',1),
-(2,'Hilton Niseko Village','ヒルトンニセコビレッジ','exclusive','Ski-in/ski-out resort with iconic outdoor onsen and direct gondola access.','Higashiyama-onsen, Niseko, Hokkaido',0),
-(2,'Niseko Powder Lodge','ニセコパウダーロッジ','standard','Budget-friendly lodge in Annupuri for powder lovers.','210 Niseko, Hokkaido',0),
-(2,'Niseko Base Camp','ニセコベースキャンプ','standard','Self-catering apartments for families and groups near the village.','198 Niseko, Hokkaido',0),
+(2,'Park Hyatt Niseko Hanazono','パークハイアットニセコ','park-hyatt-niseko-hanazono','exclusive','Ski-in/ski-out luxury with private onsens and Mt. Yotei views.','328-47 Iwaobetsu, Kutchan, Hokkaido',1),
+(2,'Niseko Grand Hotel','ニセコグランドホテル','niseko-grand-hotel','premium','Largest mixed outdoor onsen in Niseko with authentic Japanese buffets.','204 Niseko, Hokkaido',1),
+(2,'Hilton Niseko Village','ヒルトンニセコビレッジ','hilton-niseko-village','exclusive','Ski-in/ski-out resort with iconic outdoor onsen and direct gondola access.','Higashiyama-onsen, Niseko, Hokkaido',0),
+(2,'Niseko Powder Lodge','ニセコパウダーロッジ','niseko-powder-lodge','standard','Budget-friendly lodge in Annupuri for powder lovers.','210 Niseko, Hokkaido',0),
+(2,'Niseko Base Camp','ニセコベースキャンプ','niseko-base-camp','standard','Self-catering apartments for families and groups near the village.','198 Niseko, Hokkaido',0),
 -- YUZAWA
-(3,'NASPA New Otani','NASPAニューオータニ','exclusive','Ski-only resort with premium facilities and private ski lockers.','2117-9 Yuzawa, Niigata',1),
-(3,'Hotel Futaba','ホテル双葉','premium','28 mineral hot spring baths with authentic ryokan hospitality.','419 Yuzawa, Niigata',1),
-(3,'Yuzawa Prince Hotel','湯沢プリンスホテル','premium','Convenient hotel near the Shinkansen for beginners and weekend travelers.','1800 Yuzawa, Niigata',0),
-(3,'Snow Ridge Inn','スノーリッジイン','standard','Affordable inn popular with solo travelers and students.','1770 Yuzawa, Niigata',0),
+(3,'NASPA New Otani','NASPAニューオータニ','naspa-new-otani','exclusive','Ski-only resort with premium facilities and private ski lockers.','2117-9 Yuzawa, Niigata',1),
+(3,'Hotel Futaba','ホテル双葉','hotel-futaba','premium','28 mineral hot spring baths with authentic ryokan hospitality.','419 Yuzawa, Niigata',1),
+(3,'Yuzawa Prince Hotel','湯沢プリンスホテル','yuzawa-prince-hotel','premium','Convenient hotel near the Shinkansen for beginners and weekend travelers.','1800 Yuzawa, Niigata',0),
+(3,'Snow Ridge Inn','スノーリッジイン','snow-ridge-inn','standard','Affordable inn popular with solo travelers and students.','1770 Yuzawa, Niigata',0),
 -- SHIGA KOGEN
-(4,'Hotel Grand Phenix Okushiga','ホテルグランフェニックス奥志賀','exclusive','Prestigious Swiss chalet-style hotel with fine dining and elegant alpine ambiance.','Okushiga Kogen, Nagano',1),
-(4,'Nagano Olympic Lodge','長野オリンピックロッジ','premium','Historic hotel that hosted Olympic athletes with modern comfort.','3680 Nagano, Nagano',1),
-(4,'Shiga Grand Hotel','志賀グランドホテル','standard','Large practical hotel with excellent lift access and buffet dining.','7148-31 Ichinose, Nagano',0),
+(4,'Hotel Grand Phenix Okushiga','ホテルグランフェニックス奥志賀','hotel-grand-phenix-okushiga','exclusive','Prestigious Swiss chalet-style hotel with fine dining and elegant alpine ambiance.','Okushiga Kogen, Nagano',1),
+(4,'Nagano Olympic Lodge','長野オリンピックロッジ','nagano-olympic-lodge','premium','Historic hotel that hosted Olympic athletes with modern comfort.','3680 Nagano, Nagano',1),
+(4,'Shiga Grand Hotel','志賀グランドホテル','shiga-grand-hotel','standard','Large practical hotel with excellent lift access and buffet dining.','7148-31 Ichinose, Nagano',0),
 -- RUSUTSU
-(5,'The Vale Rusutsu','ザ・ヴェール・ルスツ','exclusive','Luxury designer condos with private onsens and premium interiors.','27-6 Izumikawa, Rusutsu, Hokkaido',1),
-(5,'The Westin Rusutsu Resort','ウェスティン ルスツリゾート','exclusive','Landmark tower hotel with bi-level suites and Heavenly Beds.','133 Izumikawa, Rusutsu, Hokkaido',1),
-(5,'Rusutsu Resort Hotel','ルスツリゾートホテル','premium','Connected to shopping, dining, and the monorail. Great for families.','133 Izumikawa, Rusutsu, Hokkaido',0),
-(5,'Hotel Lilla Huset','ホテルリラハセット','standard','Scandinavian-inspired boutique hotel near the gondola.','13-3 Izumikawa, Rusutsu, Hokkaido',0),
+(5,'The Vale Rusutsu','ザ・ヴェール・ルスツ','the-vale-rusutsu','exclusive','Luxury designer condos with private onsens and premium interiors.','27-6 Izumikawa, Rusutsu, Hokkaido',1),
+(5,'The Westin Rusutsu Resort','ウェスティン ルスツリゾート','the-westin-rusutsu-resort','exclusive','Landmark tower hotel with bi-level suites and Heavenly Beds.','133 Izumikawa, Rusutsu, Hokkaido',1),
+(5,'Rusutsu Resort Hotel','ルスツリゾートホテル','rusutsu-resort-hotel','premium','Connected to shopping, dining, and the monorail. Great for families.','133 Izumikawa, Rusutsu, Hokkaido',0),
+(5,'Hotel Lilla Huset','ホテルリラハセット','hotel-lilla-huset','standard','Scandinavian-inspired boutique hotel near the gondola.','13-3 Izumikawa, Rusutsu, Hokkaido',0),
 -- NOZAWA ONSEN
-(6,'Ryokan Sakaya','旅館さかや','exclusive','18-generation luxury ryokan with stunning timber architecture and traditional bathhouse.','9329 Toyosato, Nozawa Onsen, Nagano',1),
-(6,'The Ridge Nozawa','ザ・リッジ野沢','premium','Modern ski apartments beside the Nagasaka Gondola.','9806 Toyosato, Nozawa Onsen, Nagano',1),
-(6,'Nozawa Hospitality','野沢ホスピタリティ','standard','Renovated traditional houses blending local charm with modern comfort.','9285 Toyosato, Nozawa Onsen, Nagano',0),
+(6,'Ryokan Sakaya','旅館さかや','ryokan-sakaya','exclusive','18-generation luxury ryokan with stunning timber architecture and traditional bathhouse.','9329 Toyosato, Nozawa Onsen, Nagano',1),
+(6,'The Ridge Nozawa','ザ・リッジ野沢','the-ridge-nozawa','premium','Modern ski apartments beside the Nagasaka Gondola.','9806 Toyosato, Nozawa Onsen, Nagano',1),
+(6,'Nozawa Hospitality','野沢ホスピタリティ','nozawa-hospitality','standard','Renovated traditional houses blending local charm with modern comfort.','9285 Toyosato, Nozawa Onsen, Nagano',0),
 -- MYOKO
-(7,'Akakura Kanko Hotel','赤倉観光ホテル','exclusive','Historic luxury hotel with an infinity onsen terrace overlooking the mountains.','216 Tagiri, Myoko, Niigata',1),
-(7,'Lotte Arai Resort','ロッテアライリゾート','exclusive','Upscale resort village with spa and guided powder experiences.','1966 Ryozenji, Myoko, Niigata',1),
-(7,'Akakura Hotel','赤倉ホテル','premium','Traditional village hotel with expansive baths and classic charm.','441 Akakura Onsen, Myoko, Niigata',0),
-(7,'Hotel Taizan','ホテル太山','standard','Friendly lodge with natural volcanic hot spring water.','351 Akakura Onsen, Myoko, Niigata',0),
+(7,'Akakura Kanko Hotel','赤倉観光ホテル','akakura-kanko-hotel','exclusive','Historic luxury hotel with an infinity onsen terrace overlooking the mountains.','216 Tagiri, Myoko, Niigata',1),
+(7,'Lotte Arai Resort','ロッテアライリゾート','lotte-arai-resort','exclusive','Upscale resort village with spa and guided powder experiences.','1966 Ryozenji, Myoko, Niigata',1),
+(7,'Akakura Hotel','赤倉ホテル','akakura-hotel','premium','Traditional village hotel with expansive baths and classic charm.','441 Akakura Onsen, Myoko, Niigata',0),
+(7,'Hotel Taizan','ホテル太山','hotel-taizan','standard','Friendly lodge with natural volcanic hot spring water.','351 Akakura Onsen, Myoko, Niigata',0),
 -- TOMAMU
-(8,'Hoshino Risonare Tomamu','リゾナーレトマム','exclusive','Luxury family suites with private whirlpool baths and premium services.','Nakatomamu, Shimukappu, Hokkaido',1),
-(8,'Club Med Tomamu','クラブメッドトマム','exclusive','All-inclusive experience covering lift passes, lessons, dining, and entertainment.','Nakatomamu, Shimukappu, Hokkaido',1),
-(8,'Tomamu The Tower','トマム ザ・タワー','premium','Central landmark hotel with easy access to resort attractions.','Nakatomamu, Shimukappu, Hokkaido',0),
-(8,'Pension Woody Note','ペンションウッディノート','standard','Cozy guesthouse famous for warm hospitality and local knowledge.','3073 Shimukappu, Hokkaido',0),
+(8,'Hoshino Risonare Tomamu','リゾナーレトマム','hoshino-risonare-tomamu','exclusive','Luxury family suites with private whirlpool baths and premium services.','Nakatomamu, Shimukappu, Hokkaido',1),
+(8,'Club Med Tomamu','クラブメッドトマム','club-med-tomamu','exclusive','All-inclusive experience covering lift passes, lessons, dining, and entertainment.','Nakatomamu, Shimukappu, Hokkaido',1),
+(8,'Tomamu The Tower','トマム ザ・タワー','tomamu-the-tower','premium','Central landmark hotel with easy access to resort attractions.','Nakatomamu, Shimukappu, Hokkaido',0),
+(8,'Pension Woody Note','ペンションウッディノート','pension-woody-note','standard','Cozy guesthouse famous for warm hospitality and local knowledge.','3073 Shimukappu, Hokkaido',0),
 -- APPI
-(9,'ANA InterContinental Appi','ANAインターコンチネンタル安比高原','exclusive','Five-star ski resort with refined dining and a private club lounge.','117-46 Appi Kogen, Iwate',1),
-(9,'ANA Crowne Plaza Appi','ANAクラウンプラザリゾート安比高原','premium','Large resort with pools and one of Tohoku''s biggest onsen facilities.','117-17 Appi Kogen, Iwate',1),
-(9,'ANA Holiday Inn Appi','ANAホリデイ・インリゾート安比高原','standard','Family-friendly hotel with direct slope access and spacious rooms.','117-1 Appi Kogen, Iwate',0),
+(9,'ANA InterContinental Appi','ANAインターコンチネンタル安比高原','ana-intercontinental-appi','exclusive','Five-star ski resort with refined dining and a private club lounge.','117-46 Appi Kogen, Iwate',1),
+(9,'ANA Crowne Plaza Appi','ANAクラウンプラザリゾート安比高原','ana-crowne-plaza-appi','premium','Large resort with pools and one of Tohoku''s biggest onsen facilities.','117-17 Appi Kogen, Iwate',1),
+(9,'ANA Holiday Inn Appi','ANAホリデイ・インリゾート安比高原','ana-holiday-inn-appi','standard','Family-friendly hotel with direct slope access and spacious rooms.','117-1 Appi Kogen, Iwate',0),
 -- ZAO
-(10,'Takamiya Ryokan Miyamaso','深山荘 高見屋','exclusive','300-year-old ryokan with traditional architecture and antique interiors.','54 Zao Onsen, Yamagata',1),
-(10,'Zao Kokusai Hotel','蔵王国際ホテル','premium','Famous for its all-wood hot spring building and milky sulfur baths.','933 Zao Onsen, Yamagata',0),
-(10,'Zao Astraea Hotel','蔵王アストリアホテル','standard','Mountain hotel offering first access to the slopes every morning.','801 Zao Onsen, Yamagata',0);
+(10,'Takamiya Ryokan Miyamaso','深山荘 高見屋','takamiya-ryokan-miyamaso','exclusive','300-year-old ryokan with traditional architecture and antique interiors.','54 Zao Onsen, Yamagata',1),
+(10,'Zao Kokusai Hotel','蔵王国際ホテル','zao-kokusai-hotel','premium','Famous for its all-wood hot spring building and milky sulfur baths.','933 Zao Onsen, Yamagata',0),
+(10,'Zao Astraea Hotel','蔵王アストリアホテル','zao-astraea-hotel','standard','Mountain hotel offering first access to the slopes every morning.','801 Zao Onsen, Yamagata',0);
 
 -- ── HOTEL PRICES ─────────────────────────────────────────────────────────
 DELETE FROM wp_spcu_prices WHERE category = 'hotel';
