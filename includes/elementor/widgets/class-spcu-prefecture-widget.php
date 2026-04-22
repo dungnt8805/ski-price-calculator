@@ -44,14 +44,86 @@ class SPCU_Prefecture_Widget extends \Elementor\Widget_Base {
 		);
 
 		$this->add_control(
-			'show_name_ja',
+			'show_prefecture_header',
 			[
-				'label' => esc_html__( 'Show Japanese Name', 'ski-price-calculator' ),
+				'label' => esc_html__( 'Show Prefecture Header', 'ski-price-calculator' ),
 				'type' => \Elementor\Controls_Manager::SWITCHER,
 				'label_on' => esc_html__( 'Show', 'ski-price-calculator' ),
 				'label_off' => esc_html__( 'Hide', 'ski-price-calculator' ),
 				'return_value' => 'yes',
-				'default' => 'no',
+				'default' => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'show_description',
+			[
+				'label' => esc_html__( 'Show Area Description', 'ski-price-calculator' ),
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'label_on' => esc_html__( 'Show', 'ski-price-calculator' ),
+				'label_off' => esc_html__( 'Hide', 'ski-price-calculator' ),
+				'return_value' => 'yes',
+				'default' => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'show_location_info',
+			[
+				'label' => esc_html__( 'Show Location Info', 'ski-price-calculator' ),
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'label_on' => esc_html__( 'Show', 'ski-price-calculator' ),
+				'label_off' => esc_html__( 'Hide', 'ski-price-calculator' ),
+				'return_value' => 'yes',
+				'default' => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'show_tags',
+			[
+				'label' => esc_html__( 'Show Area Tags', 'ski-price-calculator' ),
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'label_on' => esc_html__( 'Show', 'ski-price-calculator' ),
+				'label_off' => esc_html__( 'Hide', 'ski-price-calculator' ),
+				'return_value' => 'yes',
+				'default' => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'show_button',
+			[
+				'label' => esc_html__( 'Show Button', 'ski-price-calculator' ),
+				'type' => \Elementor\Controls_Manager::SWITCHER,
+				'label_on' => esc_html__( 'Show', 'ski-price-calculator' ),
+				'label_off' => esc_html__( 'Hide', 'ski-price-calculator' ),
+				'return_value' => 'yes',
+				'default' => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'button_text',
+			[
+				'label' => esc_html__( 'Button Text', 'ski-price-calculator' ),
+				'type' => \Elementor\Controls_Manager::TEXT,
+				'default' => 'View & Quote →',
+				'condition' => [
+					'show_button' => 'yes',
+				],
+			]
+		);
+
+		$this->add_control(
+			'button_link',
+			[
+				'label' => esc_html__( 'Button Link', 'ski-price-calculator' ),
+				'type' => \Elementor\Controls_Manager::TEXT,
+				'placeholder' => 'https://example.com/area',
+				'condition' => [
+					'show_button' => 'yes',
+				],
 			]
 		);
 
@@ -74,14 +146,14 @@ class SPCU_Prefecture_Widget extends \Elementor\Widget_Base {
 				'size_units' => [ 'px' ],
 				'range' => [
 					'px' => [
-						'min' => 200,
-						'max' => 800,
+						'min' => 100,
+						'max' => 500,
 						'step' => 1,
 					],
 				],
 				'default' => [
 					'unit' => 'px',
-					'size' => 450,
+					'size' => 320,
 				],
 				'selectors' => [
 					'{{WRAPPER}} .spcu-area-card' => 'width: {{SIZE}}{{UNIT}}; min-width: {{SIZE}}{{UNIT}};',
@@ -115,70 +187,96 @@ class SPCU_Prefecture_Widget extends \Elementor\Widget_Base {
 		}
 
 		global $wpdb;
-        $prefecture = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}spcu_prefectures WHERE id = %d", $prefecture_id ) );
+		
+		// Get prefecture data
+		$prefecture = $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}spcu_prefectures WHERE id = %d",
+			$prefecture_id
+		) );
+
+		// Get areas for this prefecture
 		$areas = $wpdb->get_results( $wpdb->prepare(
 			"SELECT * FROM {$wpdb->prefix}spcu_areas WHERE prefecture_id = %d ORDER BY name ASC",
 			$prefecture_id
 		) );
 
-		if ( empty( $areas ) || ! $prefecture ) {
-			echo '<p>No data found.</p>';
+		if ( empty( $areas ) ) {
+			echo '<p>No areas found for this prefecture.</p>';
 			return;
 		}
 
-		?>
-		<div class="spcu-prefecture-section">
-            <div class="spcu-prefecture-header">
-                <?php if ( ! empty( $prefecture->name_ja ) ) : ?>
-                    <span class="spcu-pref-badge"><?php echo esc_html( $prefecture->name_ja ); ?></span>
-                <?php endif; ?>
-                <h2 class="spcu-pref-title"><?php echo esc_html( $prefecture->name ); ?></h2>
-                <div class="spcu-pref-line"></div>
-            </div>
+		// Prefecture header
+		if ( $settings['show_prefecture_header'] === 'yes' && ! empty( $prefecture ) ) {
+			?>
+			<div class="spcu-prefecture-header">
+				<div class="spcu-prefecture-header__content">
+					<?php if ( ! empty( $prefecture->name_ja ) ) : ?>
+						<span class="spcu-prefecture-label"><?php echo esc_html( $prefecture->name_ja ); ?></span>
+					<?php endif; ?>
+					<h2 class="spcu-prefecture-title"><?php echo esc_html( $prefecture->name ); ?> Prefecture</h2>
+				</div>
+			</div>
+			<?php
+		}
 
+		?>
+		<div class="spcu-prefecture-areas-wrapper">
 			<div class="spcu-areas-horizontal">
 				<?php foreach ( $areas as $area ) : 
-					$img_url = wp_get_attachment_image_url( $area->featured_image, 'large' );
+					$img_url = wp_get_attachment_image_url( $area->featured_image, 'medium' );
+                    // Fallback to placeholder if no image
                     if ( ! $img_url ) {
-                        $img_url = 'https://via.placeholder.com/600x400?text=' . urlencode($area->name);
+                        $img_url = 'https://via.placeholder.com/400x300?text=' . urlencode($area->name);
                     }
+					
+					// Parse area tags
+					$tags = [];
+					if ( ! empty( $area->area_tags ) ) {
+						$tags = json_decode( $area->area_tags, true ) ?: [];
+					}
 				?>
 					<div class="spcu-area-card">
-						<div class="spcu-area-card__image-wrap">
+						<?php if ( ! empty( $area->featured_badge ) ) : ?>
+							<div class="spcu-area-card__badge">
+								<?php echo esc_html( $area->featured_badge ); ?>
+							</div>
+						<?php endif; ?>
+						
+						<div class="spcu-area-card__image">
 							<img src="<?php echo esc_url( $img_url ); ?>" alt="<?php echo esc_attr( $area->name ); ?>">
-                            <?php if ( ! empty( $area->type ) ) : ?>
-                                <span class="spcu-area-card__tag"><?php echo esc_html( strtoupper( $area->type ) ); ?></span>
-                            <?php endif; ?>
 						</div>
-						<div class="spcu-area-card__body">
-                            <h3 class="spcu-area-card__title"><?php echo esc_html( $area->name ); ?></h3>
-                            
-                            <div class="spcu-area-card__meta">
-                                <?php echo esc_html( $prefecture->name ); ?> 
-                                <?php if ( ! empty( $area->distance ) ) : ?>
-                                    &nbsp;&middot;&nbsp; <?php echo esc_html( $area->distance ); ?>
-                                <?php endif; ?>
-                            </div>
-
-                            <div class="spcu-area-card__desc">
-                                <?php echo wp_kses_post( wp_trim_words( $area->short_description, 25, '...' ) ); ?>
-                            </div>
-
-                            <div class="spcu-area-card__pills">
-                                <?php if ( ! empty( $area->total_resorts ) ) : ?>
-                                    <span class="spcu-pill"><?php echo esc_html( $area->total_resorts ); ?> Resorts</span>
-                                <?php endif; ?>
-                                <?php if ( ! empty( $area->total_runs ) ) : ?>
-                                    <span class="spcu-pill"><?php echo esc_html( $area->total_runs ); ?> Runs</span>
-                                <?php endif; ?>
-                                <?php if ( ! empty( $area->season ) ) : ?>
-                                    <span class="spcu-pill"><?php echo esc_html( $area->season ); ?></span>
-                                <?php endif; ?>
-                            </div>
-
-                            <div class="spcu-area-card__footer">
-                                <a href="#" class="spcu-area-card__btn">View & Quote &rarr;</a>
-                            </div>
+						
+						<div class="spcu-area-card__content">
+							<h4 class="spcu-area-card__title"><?php echo esc_html( $area->name ); ?></h4>
+							
+							<?php if ( $settings['show_location_info'] === 'yes' && ! empty( $area->distance ) ) : ?>
+								<p class="spcu-area-card__location">
+									<?php if ( ! empty( $prefecture->name ) ) : ?>
+										<?php echo esc_html( $prefecture->name ); ?> · 
+									<?php endif; ?>
+									<?php echo esc_html( $area->distance ); ?>
+								</p>
+							<?php endif; ?>
+							
+							<?php if ( $settings['show_description'] === 'yes' && ! empty( $area->description ) ) : ?>
+								<p class="spcu-area-card__description">
+									<?php echo wp_kses_post( wp_trim_words( $area->description, 20 ) ); ?>
+								</p>
+							<?php endif; ?>
+							
+							<?php if ( $settings['show_tags'] === 'yes' && ! empty( $tags ) ) : ?>
+								<div class="spcu-area-card__tags">
+									<?php foreach ( $tags as $tag ) : ?>
+										<span class="spcu-area-card__tag"><?php echo esc_html( $tag ); ?></span>
+									<?php endforeach; ?>
+								</div>
+							<?php endif; ?>
+							
+							<?php if ( $settings['show_button'] === 'yes' ) : ?>
+								<a href="<?php echo esc_url( $settings['button_link'] ?: '#' ); ?>" class="spcu-area-card__button">
+									<?php echo esc_html( $settings['button_text'] ?: 'View & Quote →' ); ?>
+								</a>
+							<?php endif; ?>
 						</div>
 					</div>
 				<?php endforeach; ?>
@@ -187,3 +285,4 @@ class SPCU_Prefecture_Widget extends \Elementor\Widget_Base {
 		<?php
 	}
 }
+

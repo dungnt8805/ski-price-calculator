@@ -41,6 +41,8 @@ function spcu_handle_areas_post(){
         'summit' => 'INT NULL',
         'distance' => 'VARCHAR(100) NULL',
         'difficulties_json' => 'TEXT NULL',
+        'featured_badge' => 'VARCHAR(100) NULL',
+        'area_tags' => 'TEXT NULL',
     ];
 
     if($table_exists){
@@ -67,7 +69,19 @@ function spcu_handle_areas_post(){
         'season' => sanitize_text_field($_POST['season'] ?? ''),
         'summit' => isset($_POST['summit']) && $_POST['summit'] !== '' ? intval($_POST['summit']) : null,
         'distance' => sanitize_text_field($_POST['distance'] ?? ''),
+        'featured_badge' => sanitize_text_field($_POST['featured_badge'] ?? ''),
     ];
+
+    // Handle area tags
+    if(isset($_POST['area_tags'])){
+        $tags_raw = sanitize_textarea_field($_POST['area_tags'] ?? '');
+        if(!empty($tags_raw)){
+            $tags_array = array_filter(array_map('trim', explode("\n", $tags_raw)));
+            $data['area_tags'] = !empty($tags_array) ? wp_json_encode($tags_array) : null;
+        } else {
+            $data['area_tags'] = null;
+        }
+    }
 
     if(isset($_POST['difficulties']) && is_array($_POST['difficulties'])){
         $diffs = [];

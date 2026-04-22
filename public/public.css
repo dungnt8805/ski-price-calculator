@@ -432,166 +432,183 @@
 }
 
 /* ── Prefecture Areas Widget ────────────────────────────────────── */
-.spcu-prefecture-section {
+.spcu-prefecture-areas-wrapper {
     width: 100%;
-    margin-bottom: 60px;
+    margin: 20px 0;
 }
 
 .spcu-prefecture-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 35px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e5e7eb;
 }
 
-.spcu-pref-badge {
-    background: #0f172a;
-    color: #fff;
-    padding: 6px 14px;
-    border-radius: 999px;
+.spcu-prefecture-header__content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.spcu-prefecture-label {
+    display: inline-block;
     font-size: 0.75rem;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #1f2937;
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    width: fit-content;
 }
 
-.spcu-pref-title {
+.spcu-prefecture-title {
     margin: 0;
-    font-size: 1.4rem;
+    font-size: 2rem;
     font-weight: 800;
     color: #0f172a;
-    white-space: nowrap;
-}
-
-.spcu-pref-line {
-    flex: 1;
-    height: 1px;
-    background: #e2e8f0;
+    line-height: 1.2;
 }
 
 .spcu-areas-horizontal {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 40px;
-    overflow-x: auto;
-    padding-bottom: 30px;
-    scrollbar-width: thin;
-    scrollbar-color: #0f172a #f1f5f9;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 20px 5px 30px;
 }
 
-.spcu-areas-horizontal::-webkit-scrollbar { height: 6px; }
-.spcu-areas-horizontal::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-.spcu-areas-horizontal::-webkit-scrollbar-thumb { background: #0f172a; border-radius: 10px; }
-
 .spcu-area-card {
-    flex: 0 0 auto;
-    width: 450px;
+    flex: 0 1 calc(33.333% - 16px);
     background: #fff;
-    border-radius: 14px;
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 10px 35px rgba(15, 23, 42, 0.08);
-    border: 1px solid #f1f5f9;
-    transition: transform 0.3s ease;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-width: 280px;
+}
+
+@media (max-width: 1024px) {
+    .spcu-area-card {
+        flex: 0 1 calc(50% - 12px);
+    }
+}
+
+@media (max-width: 640px) {
+    .spcu-area-card {
+        flex: 0 1 100%;
+    }
 }
 
 .spcu-area-card:hover {
     transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+    border-color: #d97706;
 }
 
-.spcu-area-card__image-wrap {
-    position: relative;
+.spcu-area-card__badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #1f2937;
+    color: #ffffff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.spcu-area-card__image {
     width: 100%;
-    aspect-ratio: 1.6 / 1;
+    aspect-ratio: 4/3;
     overflow: hidden;
+    background: #f1f5f9;
 }
 
-.spcu-area-card__image-wrap img {
+.spcu-area-card__image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.5s ease;
 }
 
-.spcu-area-card:hover .spcu-area-card__image-wrap img {
+.spcu-area-card:hover .spcu-area-card__image img {
     transform: scale(1.1);
 }
 
-.spcu-area-card__tag {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    background: rgba(15, 23, 42, 0.7);
-    color: #fff;
-    padding: 6px 14px;
-    border-radius: 4px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    z-index: 2;
-}
-
-.spcu-area-card__body {
-    padding: 28px;
+.spcu-area-card__content {
+    padding: 20px;
+    text-align: left;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .spcu-area-card__title {
-    margin: 0 0 10px;
-    font-size: 1.5rem;
-    font-weight: 800;
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
     color: #0f172a;
-    line-height: 1.2;
+    line-height: 1.3;
 }
 
-.spcu-area-card__meta {
-    font-size: 0.88rem;
+.spcu-area-card__location {
+    margin: 0;
+    font-size: 0.85rem;
     color: #64748b;
-    margin-bottom: 18px;
     font-weight: 500;
 }
 
-.spcu-area-card__desc {
-    font-size: 0.95rem;
+.spcu-area-card__description {
+    margin: 0;
+    font-size: 0.9rem;
     color: #475569;
-    line-height: 1.7;
-    margin-bottom: 26px;
-    min-height: 3.4em;
+    line-height: 1.5;
 }
 
-.spcu-area-card__pills {
+.spcu-area-card__tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 28px;
+    gap: 8px;
+    margin-top: 4px;
 }
 
-.spcu-pill {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    color: #64748b;
-    padding: 5px 14px;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 600;
-}
-
-.spcu-area-card__footer {
-    border-top: 1px solid #f1f5f9;
-    padding-top: 24px;
-}
-
-.spcu-area-card__btn {
+.spcu-area-card__tag {
     display: inline-block;
-    background: #0f172a;
-    color: #fff;
-    padding: 12px 28px;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 700;
-    text-decoration: none;
-    transition: all 0.25s ease;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid #e2e8f0;
 }
 
-.spcu-area-card__btn:hover {
-    background: #1e293b;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+.spcu-area-card__button {
+    display: inline-block;
+    margin-top: auto;
+    padding: 12px 20px;
+    background: #1f2937;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.spcu-area-card__button:hover {
+    background: #0f172a;
+    transform: translateX(4px);
 }

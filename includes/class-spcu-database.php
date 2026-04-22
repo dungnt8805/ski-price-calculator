@@ -34,7 +34,9 @@ class SPCU_Database {
             season VARCHAR(100) NULL,
             summit INT NULL,
             distance VARCHAR(100) NULL,
-            difficulties_json TEXT NULL
+            difficulties_json TEXT NULL,
+            featured_badge VARCHAR(100) NULL,
+            area_tags TEXT NULL
         ) $charset;";
 
         $hotels = "CREATE TABLE {$wpdb->prefix}spcu_hotels(

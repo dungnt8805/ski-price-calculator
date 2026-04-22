@@ -92,10 +92,13 @@ if ($edit_area && !empty($edit_area->difficulties_json)) {
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><label for="type">Banner Tag</label></th>
+                        <th scope="row"><label for="type">Area Type</label></th>
                         <td>
-                            <input name='type' id='type' class="regular-text" placeholder='e.g. MOST POPULAR' value='<?= esc_attr($edit_area->type ?? '') ?>'>
-                            <p class="description">This tag appears on the area image in the widgets.</p>
+                            <select name='type' id='type' required>
+                                <option value='City' <?= selected(($edit_area->type ?? ''), 'City', false) ?>>City</option>
+                                <option value='Town' <?= selected(($edit_area->type ?? ''), 'Town', false) ?>>Town</option>
+                                <option value='Village' <?= selected(($edit_area->type ?? ''), 'Village', false) ?>>Village</option>
+                            </select>
                         </td>
                     </tr>
                     <tr>
@@ -144,6 +147,28 @@ if ($edit_area && !empty($edit_area->difficulties_json)) {
                     <tr>
                         <th scope="row"><label for="distance">Distance from Tokyo</label></th>
                         <td><input name='distance' id='distance' class="regular-text" type="text" placeholder='e.g. 4 hrs (Bullet Train + Bus)' value='<?= esc_attr($edit_area->distance ?? '') ?>'></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="featured_badge">Featured Badge</label></th>
+                        <td>
+                            <select name='featured_badge' id='featured_badge' class="regular-text">
+                                <option value=''>-- None --</option>
+                                <option value='MOST POPULAR' <?= selected(($edit_area->featured_badge ?? ''), 'MOST POPULAR', false) ?>>MOST POPULAR</option>
+                                <option value='LARGEST IN JAPAN' <?= selected(($edit_area->featured_badge ?? ''), 'LARGEST IN JAPAN', false) ?>>LARGEST IN JAPAN</option>
+                                <option value='HOT SPRINGS' <?= selected(($edit_area->featured_badge ?? ''), 'HOT SPRINGS', false) ?>>HOT SPRINGS</option>
+                                <option value='SNOW MONKEYS' <?= selected(($edit_area->featured_badge ?? ''), 'SNOW MONKEYS', false) ?>>SNOW MONKEYS</option>
+                                <option value='FAMILY FRIENDLY' <?= selected(($edit_area->featured_badge ?? ''), 'FAMILY FRIENDLY', false) ?>>FAMILY FRIENDLY</option>
+                                <option value='BEGINNER PARADISE' <?= selected(($edit_area->featured_badge ?? ''), 'BEGINNER PARADISE', false) ?>>BEGINNER PARADISE</option>
+                            </select>
+                            <p class="description">Display a badge on the area card.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="area_tags">Area Tags (one per line)</label></th>
+                        <td>
+                            <textarea name='area_tags' id='area_tags' class="large-text" rows="6" placeholder='e.g.&#10;10 Resorts&#10;Olympic Heritage&#10;Deep Powder'><?= isset($edit_area->area_tags) ? esc_textarea(str_replace('","', "\n", str_replace('["', '', str_replace('"]', '', $edit_area->area_tags)))) : '' ?></textarea>
+                            <p class="description">Enter one tag per line. These will display as pills on the area card.</p>
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><label for="description">Description</label></th>

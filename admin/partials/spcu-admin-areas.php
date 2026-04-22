@@ -77,6 +77,8 @@ $schema_columns = [
     'summit' => 'INT NULL',
     'distance' => 'VARCHAR(100) NULL',
     'difficulties_json' => 'TEXT NULL',
+    'featured_badge' => 'VARCHAR(100) NULL',
+    'area_tags' => 'TEXT NULL',
 ];
 
 if($table_exists){
