@@ -26,7 +26,14 @@ class SPCU_Database {
             short_description VARCHAR(200) NULL,
             description TEXT NULL,
             featured_image INT NULL,
-            images TEXT NULL
+            images TEXT NULL,
+            total_runs INT NULL,
+            max_vertical INT NULL,
+            total_resorts INT NULL,
+            season VARCHAR(100) NULL,
+            summit INT NULL,
+            distance VARCHAR(100) NULL,
+            difficulties_json TEXT NULL
         ) $charset;";
 
         $hotels = "CREATE TABLE {$wpdb->prefix}spcu_hotels(

@@ -11,7 +11,8 @@ function spcu_handle_areas_post(){
     if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') return;
 
     // chỉ chạy đúng page
-    if (!isset($_GET['page']) || $_GET['page'] !== 'spcu-areas') return;
+    $page = $_GET['page'] ?? '';
+    if (!in_array($page, ['spcu-areas', 'spcu-area-form'], true)) return;
 
     // nonce check
     if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'],'spcu_save_area')){
@@ -33,6 +34,13 @@ function spcu_handle_areas_post(){
         'description' => 'TEXT NULL',
         'featured_image' => 'INT NULL',
         'images' => 'TEXT NULL',
+        'total_runs' => 'INT NULL',
+        'max_vertical' => 'INT NULL',
+        'total_resorts' => 'INT NULL',
+        'season' => 'VARCHAR(100) NULL',
+        'summit' => 'INT NULL',
+        'distance' => 'VARCHAR(100) NULL',
+        'difficulties_json' => 'TEXT NULL',
     ];
 
     if($table_exists){
@@ -53,7 +61,25 @@ function spcu_handle_areas_post(){
         'description' => wp_kses_post($_POST['description'] ?? ''),
         'featured_image' => ($featured_image = absint($_POST['featured_image'] ?? 0)) > 0 ? $featured_image : null,
         'images' => sanitize_text_field($_POST['images'] ?? ''),
+        'total_runs' => isset($_POST['total_runs']) && $_POST['total_runs'] !== '' ? intval($_POST['total_runs']) : null,
+        'max_vertical' => isset($_POST['max_vertical']) && $_POST['max_vertical'] !== '' ? intval($_POST['max_vertical']) : null,
+        'total_resorts' => isset($_POST['total_resorts']) && $_POST['total_resorts'] !== '' ? intval($_POST['total_resorts']) : null,
+        'season' => sanitize_text_field($_POST['season'] ?? ''),
+        'summit' => isset($_POST['summit']) && $_POST['summit'] !== '' ? intval($_POST['summit']) : null,
+        'distance' => sanitize_text_field($_POST['distance'] ?? ''),
     ];
+
+    if(isset($_POST['difficulties']) && is_array($_POST['difficulties'])){
+        $diffs = [];
+        foreach($_POST['difficulties'] as $k => $v){
+            if($v !== ''){
+                $diffs[sanitize_key($k)] = intval($v);
+            }
+        }
+        $data['difficulties_json'] = empty($diffs) ? null : wp_json_encode($diffs);
+    } else {
+        $data['difficulties_json'] = null;
+    }
 
     $area_id = intval($_POST['area_id'] ?? 0);
 

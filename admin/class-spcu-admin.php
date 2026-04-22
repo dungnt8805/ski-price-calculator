@@ -42,7 +42,9 @@ class SPCU_Admin {
         );
 
         add_submenu_page('spcu-dashboard','Prefectures','Prefectures','manage_options','spcu-prefectures',[$this,'prefectures']);
+        add_submenu_page('spcu-dashboard','Prefecture Form','Prefecture Form','manage_options','spcu-prefecture-form',[$this,'prefecture_form']);
         add_submenu_page('spcu-dashboard','Areas','Areas','manage_options','spcu-areas',[$this,'areas']);
+        add_submenu_page('spcu-dashboard','Area Form','Area Form','manage_options','spcu-area-form',[$this,'area_form']);
         add_submenu_page('spcu-dashboard','Hotels','Hotels','manage_options','spcu-hotels',[$this,'hotels']);
         add_submenu_page('spcu-dashboard','Difficulties','Difficulties','manage_options','spcu-difficulties',[$this,'difficulties']);
         add_submenu_page('spcu-dashboard','Tags','Tags','manage_options','edit-tags.php?taxonomy=spcu_facility&post_type=spcu_hotel');
@@ -96,8 +98,16 @@ class SPCU_Admin {
         require_once plugin_dir_path(__FILE__) . 'partials/spcu-admin-prefectures.php';
     }
 
+    public function prefecture_form(){
+        require_once plugin_dir_path(__FILE__) . 'partials/spcu-admin-prefecture-form.php';
+    }
+
     public function areas(){
         require_once plugin_dir_path(__FILE__) . 'partials/spcu-admin-areas.php';
+    }
+
+    public function area_form(){
+        require_once plugin_dir_path(__FILE__) . 'partials/spcu-admin-area-form.php';
     }
 
     public function hotels(){
@@ -125,6 +135,8 @@ class SPCU_Admin {
     public function hide_internal_submenus(){
         echo '<style>
             #toplevel_page_spcu-dashboard .wp-submenu a[href="admin.php?page=spcu-hotel-form"],
+            #toplevel_page_spcu-dashboard .wp-submenu a[href="admin.php?page=spcu-area-form"],
+            #toplevel_page_spcu-dashboard .wp-submenu a[href="admin.php?page=spcu-prefecture-form"],
             #toplevel_page_spcu-dashboard .wp-submenu a[href="admin.php?page=spcu-hotel-prices"] {
                 display: none;
             }
@@ -135,7 +147,7 @@ class SPCU_Admin {
         $page = sanitize_text_field($_GET['page'] ?? '');
         $taxonomy = sanitize_key($_GET['taxonomy'] ?? '');
 
-        if(in_array($page, ['spcu-hotel-form', 'spcu-hotel-prices'], true) || $taxonomy === 'spcu_facility'){
+        if(in_array($page, ['spcu-hotel-form', 'spcu-area-form', 'spcu-prefecture-form', 'spcu-hotel-prices'], true) || $taxonomy === 'spcu_facility'){
             return 'spcu-dashboard';
         }
 
@@ -148,6 +160,14 @@ class SPCU_Admin {
 
         if(in_array($page, ['spcu-hotel-form', 'spcu-hotel-prices'], true)){
             return 'spcu-hotels';
+        }
+
+        if($page === 'spcu-area-form'){
+            return 'spcu-areas';
+        }
+
+        if($page === 'spcu-prefecture-form'){
+            return 'spcu-prefectures';
         }
 
         if($taxonomy === 'spcu_facility'){

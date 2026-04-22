@@ -4,7 +4,6 @@ if (!defined('ABSPATH')) exit;
 global $wpdb;
 
 $areas = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}spcu_areas");
-$grade_options = SPCU_Grades::options();
 $hotel_table = $wpdb->prefix.'spcu_hotels';
 $hotel_form_error = '';
 
@@ -153,18 +152,7 @@ wp_enqueue_media();
                     </select>
                 </td>
             </tr>
-            <tr>
-                <th scope="row"><label for="grade">Difficulty</label></th>
-                <td>
-                    <select name='grade' id='grade' required>
-                        <option value=''>- Select Difficulty -</option>
-                        <?php foreach($grade_options as $grade_key => $grade_label): ?>
-                            <option value="<?= esc_attr($grade_key) ?>" <?= (($edit_hotel && $edit_hotel->grade == $grade_key) || (isset($_POST['grade']) && SPCU_Grades::normalize($_POST['grade']) === $grade_key)) ? 'selected' : '' ?>><?= esc_html($grade_label) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <p class="description">Manage difficulty names and colors in <a href="<?= esc_url(admin_url('admin.php?page=spcu-difficulties')) ?>">Difficulties</a>.</p>
-                </td>
-            </tr>
+
             <tr>
                 <th scope="row"><label for="is_featured">Featured</label></th>
                 <td>

@@ -87,12 +87,11 @@ function spcu_handle_hotels_post(){
     }
 
     $area_id = intval($_POST['area_id'] ?? 0);
-    $grade   = SPCU_Grades::normalize($_POST['grade'] ?? '');
 
-    if($area_id <= 0 || $grade === ''){
+    if($area_id <= 0){
         $msg = $is_add
-            ? 'Please choose both Area and Difficulty before saving a hotel.'
-            : 'Please choose both Area and Difficulty before updating a hotel.';
+            ? 'Please choose an Area before saving a hotel.'
+            : 'Please choose an Area before updating a hotel.';
         spcu_hotels_form_redirect('error', $msg, intval($_POST['hotel_id'] ?? 0));
     }
 
@@ -118,7 +117,6 @@ function spcu_handle_hotels_post(){
         'featured_image'    => $featured_image > 0 ? $featured_image : null,
         'images'            => isset($_POST['images']) ? sanitize_text_field($_POST['images']) : '',
         'area_id'           => $area_id,
-        'grade'             => $grade,
         'is_featured'       => isset($_POST['is_featured']) ? 1 : 0,
     ];
 

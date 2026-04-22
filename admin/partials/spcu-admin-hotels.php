@@ -63,7 +63,7 @@ if($hotel_error === ''){
         <table class="wp-list-table widefat fixed striped table-view-list">
             <tr>
                 <th>ID</th><th>Name</th><th>Name (JP)</th><th>Short Description</th><th>Address</th>
-                <th>Area</th><th>Difficulty</th><th>Featured</th><th>Action</th>
+                <th>Area</th><th>Featured</th><th>Action</th>
             </tr>
             <?php foreach($rows as $r): ?>
             <?php
@@ -85,16 +85,7 @@ if($hotel_error === ''){
                 <td style="max-width:220px;font-size:12px;"><?= esc_html($r->short_description ?: '-') ?></td>
                 <td style="max-width:220px;font-size:12px;"><?= nl2br(esc_html($r->address ?: '-')) ?></td>
                 <td><?= esc_html($r->area_name) ?></td>
-                <td>
-                    <?php $difficulty_label = SPCU_Grades::label($r->grade_name); ?>
-                    <?php if($difficulty_label): ?>
-                        <span style="display:inline-block;padding:4px 10px;border-radius:999px;background:<?= esc_attr(SPCU_Grades::color($r->grade_name)) ?>;color:<?= esc_attr(SPCU_Grades::text_color($r->grade_name)) ?>;font-size:12px;font-weight:600;">
-                            <?= esc_html($difficulty_label) ?>
-                        </span>
-                    <?php else: ?>
-                        -
-                    <?php endif; ?>
-                </td>
+
                 <td style="display:flex;align-items:center;gap:8px;">
                     <?= $featured_thumb ? "<img src='".esc_url($featured_thumb)."' style='width:40px;height:40px;object-fit:cover;border-radius:3px;'>" : '' ?>
                     <?= ($r->is_featured ? '<span style="background:#16a34a;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;white-space:nowrap;">★ Featured</span>' : '-') ?>

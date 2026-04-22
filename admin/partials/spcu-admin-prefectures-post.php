@@ -11,7 +11,8 @@ function spcu_handle_prefectures_post(){
     if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') return;
 
     // chỉ chạy đúng page
-    if (!isset($_GET['page']) || $_GET['page'] !== 'spcu-prefectures') return;
+    $page = $_GET['page'] ?? '';
+    if (!in_array($page, ['spcu-prefectures', 'spcu-prefecture-form'], true)) return;
 
     // nonce check
     if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'],'spcu_save_prefecture')){
