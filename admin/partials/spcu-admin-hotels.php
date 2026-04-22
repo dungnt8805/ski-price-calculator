@@ -61,8 +61,8 @@ if($hotel_error === ''){
 
     <div class='spcu-table'>
         <table class="wp-list-table widefat fixed striped table-view-list">
-            <tr>
-                <th>ID</th><th>Name</th><th>Name (JP)</th><th>Short Description</th><th>Address</th>
+            <tr><th>Name</th>
+            <th>Address</th>
                 <th>Area</th><th>Grade</th><th>Featured</th><th>Action</th>
             </tr>
             <?php foreach($rows as $r): ?>
@@ -79,11 +79,10 @@ if($hotel_error === ''){
                 );
             ?>
             <tr>
-                <td><?= esc_html($r->id) ?></td>
                 <td><strong><?= esc_html($r->name) ?></strong><?php if($r->name_ja) echo "<br><small>".esc_html($r->name_ja)."</small>"; ?></td>
-                <td><?= esc_html($r->name_ja ?: '-') ?></td>
-                <td style="max-width:220px;font-size:12px;"><?= esc_html($r->short_description ?: '-') ?></td>
-                <td style="max-width:220px;font-size:12px;"><?= nl2br(esc_html($r->address ?: '-')) ?></td>
+                <!-- <td><?= esc_html($r->name_ja ?: '-') ?></td> -->
+                
+                <td style="max-width:160px;font-size:12px;"><?= nl2br(esc_html($r->address ?: '-')) ?></td>
                 <td><?= esc_html($r->area_name) ?></td>
                 <td><span style="display:inline-block;padding:3px 8px;border-radius:3px;background:#e2e8f0;color:#334155;font-size:12px;font-weight:600;text-transform:capitalize;"><?= esc_html($r->grade ?: '-') ?></span></td>
                 <td style="display:flex;align-items:center;gap:8px;">

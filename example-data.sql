@@ -1,607 +1,219 @@
 -- ============================================================================
--- Ski Price Calculator Example Data
--- Realistic sample data for testing and demonstration
+-- Ski Engine Example Data (Updated Schema)
 -- ============================================================================
 
+-- ── PREFECTURES ───────────────────────────────────────────────────────────
+INSERT INTO wp_spcu_prefectures (name, name_ja, short_description) VALUES
+('Nagano', '長野県', 'The heart of Japan winter sports, host of the 1998 Olympics.'),
+('Hokkaido', '北海道', 'Japan\'s northernmost island, famous for legendary powder snow.'),
+('Niigata', '新潟県', 'Close to Tokyo with heavy snowfall and authentic village culture.'),
+('Iwate', '岩手県', 'Tohoku\'s premier ski destination, home to Appi Kogen.'),
+('Yamagata', '山形県', 'Famous for snow monsters and historic sulfur hot springs.');
+
 -- ── AREAS ────────────────────────────────────────────────────────────────
-INSERT INTO wp_spcu_areas (type, name, name_ja, short_description, description, featured_image) VALUES
-('Prefecture', 'Hakuba Valley', '白馬バレー',
-LEFT('Stretching across the dramatic Northern Japan Alps, Hakuba Valley is one of Asia’s most legendary ski destinations and host of the 1998 Winter Olympic alpine events. The valley connects multiple world-class resorts offering terrain for every level—from gentle groomers to steep backcountry bowls and tree runs loved by advanced riders. Off the slopes, Hakuba delivers a lively alpine village atmosphere with international dining, craft beer bars, cozy cafés, and soothing natural onsens overlooking snow-covered peaks. Perfect for travelers seeking powder, scenery, and nightlife in one destination.', 200),
-'Stretching across the dramatic Northern Japan Alps, Hakuba Valley is one of Asia’s most legendary ski destinations and host of the 1998 Winter Olympic alpine events. The valley connects multiple world-class resorts offering terrain for every level—from gentle groomers to steep backcountry bowls and tree runs loved by advanced riders. Off the slopes, Hakuba delivers a lively alpine village atmosphere with international dining, craft beer bars, cozy cafés, and soothing natural onsens overlooking snow-covered peaks. Perfect for travelers seeking powder, scenery, and nightlife in one destination.',
-0),
+-- prefecture_id: 1=Nagano, 2=Hokkaido, 3=Niigata, 4=Iwate, 5=Yamagata
+INSERT INTO wp_spcu_areas (prefecture_id, type, name, name_ja, short_description, total_runs, max_vertical, total_resorts, season, summit, distance, difficulties_json) VALUES
 
-('Town', 'Niseko', 'ニセコ',
-LEFT('Niseko is globally famous as the powder capital of the world, attracting skiers and snowboarders from every continent in search of legendary “Japow.” Niseko United links four major resorts across Mount Yotei, offering seamless lift access, extensive night skiing, and incredibly reliable snowfall. The town’s international atmosphere features English-friendly services, luxury chalets, gourmet restaurants, and vibrant après-ski culture, making it ideal for travelers wanting world-class facilities with Japanese hospitality.', 200),
-'Niseko is globally famous as the powder capital of the world, attracting skiers and snowboarders from every continent in search of legendary “Japow.” Niseko United links four major resorts across Mount Yotei, offering seamless lift access, extensive night skiing, and incredibly reliable snowfall. The town’s international atmosphere features English-friendly services, luxury chalets, gourmet restaurants, and vibrant après-ski culture, making it ideal for travelers wanting world-class facilities with Japanese hospitality.',
-0),
+(1, 'Valley', 'Hakuba Valley', '白馬バレー',
+ 'Host of the 1998 Winter Olympics. Nine interconnected resorts across the Northern Japan Alps.',
+ 220, 1071, 9, 'Dec to Apr', 2696, '4.5 hrs (Shinkansen + Bus)',
+ '{"beginner":30,"intermediate":40,"advanced":30}'),
 
-('Town', 'Yuzawa Snow Park', '湯沢スノーパーク',
-LEFT('Located just 80 minutes from Tokyo via Shinkansen, Yuzawa Snow Park is Japan’s most convenient ski destination. Perfect for day trips and weekend escapes, it offers gentle beginner terrain, excellent ski schools, and family-friendly snow activities. Visitors can enjoy relaxing hot springs, cozy mountain dining, and beautiful snowy landscapes without traveling far from the city.', 200),
-'Located just 80 minutes from Tokyo via Shinkansen, Yuzawa Snow Park is Japan’s most convenient ski destination. Perfect for day trips and weekend escapes, it offers gentle beginner terrain, excellent ski schools, and family-friendly snow activities. Visitors can enjoy relaxing hot springs, cozy mountain dining, and beautiful snowy landscapes without traveling far from the city.',
-0),
+(2, 'Town', 'Niseko United', 'ニセコユナイテッド',
+ 'The powder capital of the world. Four interconnected resorts on Mt. Yotei.',
+ 61, 1200, 4, 'Nov to May', 1308, '7 hrs (Flight + Transfer)',
+ '{"beginner":30,"intermediate":40,"advanced":30}'),
 
-('Prefecture', 'Nagano', '長野',
-LEFT('Nagano is the historic heart of Japan’s winter sports scene and host of the 1998 Winter Olympics. The region features world-famous resorts such as Shiga Kogen and Hakuba, known for long seasons, high-altitude terrain, and breathtaking alpine scenery. Visitors can combine skiing with cultural experiences, including traditional villages, temples, and the famous Snow Monkeys bathing in natural hot springs.', 200),
-'Nagano is the historic heart of Japan’s winter sports scene and host of the 1998 Winter Olympics. The region features world-famous resorts such as Shiga Kogen and Hakuba, known for long seasons, high-altitude terrain, and breathtaking alpine scenery. Visitors can combine skiing with cultural experiences, including traditional villages, temples, and the famous Snow Monkeys bathing in natural hot springs.',
-0),
+(3, 'Town', 'Yuzawa', '湯沢',
+ 'Just 80 minutes from Tokyo by Shinkansen. Perfect for beginners and weekend trips.',
+ 40, 600, 6, 'Dec to Mar', 1500, '1.5 hrs (Shinkansen)',
+ '{"beginner":50,"intermediate":35,"advanced":15}'),
 
-('Town', 'Rusutsu', 'ルスツ',
-LEFT('Spanning three mountains, Rusutsu is celebrated for some of the best tree skiing in the world. This purpose-built resort features high-speed lifts, wide uncrowded slopes, and consistent Hokkaido powder. Families love the indoor theme park and diverse dining, while advanced riders appreciate the endless off-piste opportunities.', 200),
-'Spanning three mountains, Rusutsu is celebrated for some of the best tree skiing in the world. This purpose-built resort features high-speed lifts, wide uncrowded slopes, and consistent Hokkaido powder. Families love the indoor theme park and diverse dining, while advanced riders appreciate the endless off-piste opportunities.',
-0),
+(1, 'Highland', 'Shiga Kogen', '志賀高原',
+ 'Japan\'s largest ski area with 80+ lifts and 19 interconnected resorts.',
+ 80, 770, 19, 'Dec to May', 2307, '4 hrs (Shinkansen + Bus)',
+ '{"beginner":40,"intermediate":40,"advanced":20}'),
 
-('Town', 'Nozawa Onsen', '野沢温泉',
-LEFT('Nozawa Onsen blends authentic Japanese culture with exceptional skiing. This charming village features narrow streets, traditional ryokans, and 13 free public hot springs. Famous for its 10km downhill run and lively festivals, it offers a unique mix of deep snow, cultural heritage, and warm hospitality.', 200),
-'Nozawa Onsen blends authentic Japanese culture with exceptional skiing. This charming village features narrow streets, traditional ryokans, and 13 free public hot springs. Famous for its 10km downhill run and lively festivals, it offers a unique mix of deep snow, cultural heritage, and warm hospitality.',
-0),
+(2, 'Town', 'Rusutsu', 'ルスツ',
+ 'Three mountains with world-class tree skiing and consistent Hokkaido powder.',
+ 37, 621, 3, 'Nov to Apr', 994, '7 hrs (Flight + Transfer)',
+ '{"beginner":25,"intermediate":45,"advanced":30}'),
 
-('Town', 'Myoko Kogen', '妙高高原',
-LEFT('Myoko Kogen is known for some of the heaviest snowfall in Japan, making it a paradise for powder lovers. The area retains an authentic, old-school charm with wide-open runs, deep tree skiing, and stunning views of Mount Myoko. Perfect for travelers seeking deep snow and a traditional Japanese atmosphere.', 200),
-'Myoko Kogen is known for some of the heaviest snowfall in Japan, making it a paradise for powder lovers. The area retains an authentic, old-school charm with wide-open runs, deep tree skiing, and stunning views of Mount Myoko. Perfect for travelers seeking deep snow and a traditional Japanese atmosphere.',
-0),
+(1, 'Village', 'Nozawa Onsen', '野沢温泉',
+ 'A 1,300-year-old hot spring village with 36 runs and a famous 10km descent.',
+ 36, 1085, 1, 'Dec to Mar', 1650, '3.5 hrs (Shinkansen + Bus)',
+ '{"beginner":30,"intermediate":40,"advanced":30}'),
 
-('Town', 'Tomamu', 'トマム',
-LEFT('Tomamu is a stylish winter wonderland managed by Hoshino Resorts, designed with families in mind. Beyond the groomed slopes, the resort features the magical Ice Village, the Mina-Mina indoor beach, and the breathtaking Unkai Terrace. A perfect destination for combining skiing with luxury resort experiences.', 200),
-'Tomamu is a stylish winter wonderland managed by Hoshino Resorts, designed with families in mind. Beyond the groomed slopes, the resort features the magical Ice Village, the Mina-Mina indoor beach, and the breathtaking Unkai Terrace. A perfect destination for combining skiing with luxury resort experiences.',
-0),
+(3, 'Highland', 'Myoko Kogen', '妙高高原',
+ 'Some of the heaviest snowfall in Japan with wide open runs and deep tree skiing.',
+ 55, 800, 6, 'Dec to Mar', 1855, '2.5 hrs (Shinkansen + Bus)',
+ '{"beginner":25,"intermediate":40,"advanced":35}'),
 
-('Town', 'Appi Kogen', '安比高原',
-LEFT('Appi Kogen is often called the “Aspen of Japan” thanks to its perfectly groomed silky snow and elegant resort atmosphere. The north-facing slopes preserve snow quality all day, while refined hotels and dining create a luxurious winter escape ideal for couples and families.', 200),
-'Appi Kogen is often called the “Aspen of Japan” thanks to its perfectly groomed silky snow and elegant resort atmosphere. The north-facing slopes preserve snow quality all day, while refined hotels and dining create a luxurious winter escape ideal for couples and families.',
-0),
+(2, 'Resort', 'Tomamu', 'トマム',
+ 'A stylish Hoshino Resorts destination famous for Ice Village and the Sea of Clouds.',
+ 26, 580, 2, 'Dec to Mar', 1239, '7 hrs (Flight + Transfer)',
+ '{"beginner":40,"intermediate":40,"advanced":20}'),
 
-('Town', 'Zao Onsen', '蔵王温泉',
-LEFT('Zao Onsen is famous for its magical “Snow Monsters” — trees encased in snow and ice that create a surreal winter landscape. Visitors can enjoy scenic skiing, night tours, and the healing waters of historic sulfur hot springs, making it a destination where adventure and relaxation meet.', 200),
-'Zao Onsen is famous for its magical “Snow Monsters” — trees encased in snow and ice that create a surreal winter landscape. Visitors can enjoy scenic skiing, night tours, and the healing waters of historic sulfur hot springs, making it a destination where adventure and relaxation meet.',
-0);
+(4, 'Highland', 'Appi Kogen', '安比高原',
+ 'The "Aspen of Japan" with perfectly groomed silky snow and elegant resort atmosphere.',
+ 22, 550, 1, 'Dec to Mar', 1304, '5 hrs (Shinkansen + Bus)',
+ '{"beginner":35,"intermediate":45,"advanced":20}'),
 
--- ── HOTELS ──────────────────────────────────────────────────────────────
+(5, 'Onsen', 'Zao Onsen', '蔵王温泉',
+ 'Famous for magical Snow Monsters and healing sulfur hot springs.',
+ 28, 715, 1, 'Dec to Mar', 1660, '3 hrs (Shinkansen + Bus)',
+ '{"beginner":40,"intermediate":35,"advanced":25}');
 
-INSERT INTO wp_spcu_hotels (area_id, name, name_ja, grade, short_description, description, address, is_featured) VALUES
-
+-- ── HOTELS ────────────────────────────────────────────────────────────────
+-- area_id: 1=Hakuba, 2=Niseko, 3=Yuzawa, 4=Shiga, 5=Rusutsu, 6=Nozawa, 7=Myoko, 8=Tomamu, 9=Appi, 10=Zao
+INSERT INTO wp_spcu_hotels (area_id, name, name_ja, grade, short_description, address, is_featured) VALUES
 -- HAKUBA
-(1,'Hakuba Highland Hotel','白馬ハイランドホテル','premium',
-LEFT('Famous for its breathtaking panoramic views of the Northern Alps, this hotel offers one of Hakuba’s most scenic outdoor onsens. Guests enjoy spacious rooms, warm hospitality, and convenient shuttle access to the Happo-one lifts. A perfect blend of comfort, scenery, and value.', 200),
-'Famous for its breathtaking panoramic views of the Northern Alps, this hotel offers one of Hakuba’s most scenic outdoor onsens. Guests enjoy spacious rooms, warm hospitality, and convenient shuttle access to the Happo-one lifts. A perfect blend of comfort, scenery, and value.',
-'3581 Hakuba, Nagano',1),
-
-(1,'Hakuba Grandvaux','白馬グランボー','exclusive',
-LEFT('A refined luxury lodge combining French elegance with alpine charm. Guests enjoy gourmet dining, concierge ski services, and a tranquil private atmosphere. Designed for travelers seeking a sophisticated ski holiday with personalized service.', 200),
-'A refined luxury lodge combining French elegance with alpine charm. Guests enjoy gourmet dining, concierge ski services, and a tranquil private atmosphere. Designed for travelers seeking a sophisticated ski holiday with personalized service.',
-'3593 Hakuba, Nagano',1),
-
-(1,'Alpine Valley Lodge','アルパインバレーロッジ','standard',
-LEFT('A welcoming family-run lodge known for its cozy atmosphere and hearty home-cooked breakfasts. Located near beginner-friendly slopes, it is ideal for families and first-time skiers seeking comfort and affordability.', 200),
-'A welcoming family-run lodge known for its cozy atmosphere and hearty home-cooked breakfasts. Located near beginner-friendly slopes, it is ideal for families and first-time skiers seeking comfort and affordability.',
-'3500 Hakuba, Nagano',0),
-
-(1,'Ezo Powder House','エゾパウダーハウス','premium',
-LEFT('A stylish modern lodge designed for groups and powder enthusiasts. Features a large communal kitchen, spacious lounge areas, and professional gear-drying facilities—perfect for adventurous skiers.', 200),
-'A stylish modern lodge designed for groups and powder enthusiasts. Features a large communal kitchen, spacious lounge areas, and professional gear-drying facilities—perfect for adventurous skiers.',
-'3585 Hakuba, Nagano',0),
-
-(1,'Hakuba Mominoki Hotel','白馬樅の木ホテル','exclusive',
-LEFT('Nestled in the tranquil Wadano forest, this hotel delivers a true alpine luxury experience with a renowned alkaline onsen and an impressive wine cellar. Perfect for travelers seeking relaxation after epic ski days.', 200),
-'Nestled in the tranquil Wadano forest, this hotel delivers a true alpine luxury experience with a renowned alkaline onsen and an impressive wine cellar. Perfect for travelers seeking relaxation after epic ski days.',
-'4683-2 Hokujo, Hakuba, Nagano',0),
-
+(1,'Hakuba Highland Hotel','白馬ハイランドホテル','premium','Breathtaking panoramic views with a scenic outdoor onsen and shuttle to Happo-one lifts.','3581 Hakuba, Nagano',1),
+(1,'Hakuba Grandvaux','白馬グランボー','exclusive','Refined luxury lodge combining French elegance with concierge ski services.','3593 Hakuba, Nagano',1),
+(1,'Alpine Valley Lodge','アルパインバレーロッジ','standard','Family-run lodge with hearty breakfasts, near beginner-friendly slopes.','3500 Hakuba, Nagano',0),
+(1,'Ezo Powder House','エゾパウダーハウス','premium','Stylish modern lodge for groups with gear-drying facilities and communal kitchen.','3585 Hakuba, Nagano',0),
+(1,'Hakuba Mominoki Hotel','白馬樅の木ホテル','exclusive','Alpine luxury in the Wadano forest with alkaline onsen and wine cellar.','4683-2 Hokujo, Hakuba, Nagano',0),
 -- NISEKO
-(2,'Park Hyatt Niseko Hanazono','パークハイアットニセコ','exclusive',
-LEFT('The pinnacle of luxury in Niseko featuring ski-in/ski-out access, private onsens, and floor-to-ceiling Mount Yotei views. World-class dining and spa experiences make it one of Japan’s most prestigious ski resorts.', 200),
-'The pinnacle of luxury in Niseko featuring ski-in/ski-out access, private onsens, and floor-to-ceiling Mount Yotei views. World-class dining and spa experiences make it one of Japan’s most prestigious ski resorts.',
-'328-47 Iwaobetsu, Kutchan, Hokkaido',1),
-
-(2,'Niseko Grand Hotel','ニセコグランドホテル','premium',
-LEFT('Home to Niseko’s largest mixed outdoor onsen, this traditional hotel offers spacious rooms, authentic Japanese hospitality, and outstanding seafood buffets after a day in deep powder.', 200),
-'Home to Niseko’s largest mixed outdoor onsen, this traditional hotel offers spacious rooms, authentic Japanese hospitality, and outstanding seafood buffets after a day in deep powder.',
-'204 Niseko, Hokkaido',1),
-
-(2,'Hilton Niseko Village','ヒルトンニセコビレッジ','exclusive',
-LEFT('A modern ski-in/ski-out resort with an iconic outdoor onsen overlooking snow-covered mountains. Guests enjoy luxury spa treatments, premium dining, and direct gondola access.', 200),
-'A modern ski-in/ski-out resort with an iconic outdoor onsen overlooking snow-covered mountains. Guests enjoy luxury spa treatments, premium dining, and direct gondola access.',
-'Higashiyama-onsen, Niseko, Hokkaido',0),
-
-(2,'Niseko Powder Lodge','ニセコパウダーロッジ','standard',
-LEFT('A lively and budget-friendly lodge in Annupuri focused on powder lovers. Perfect for travelers who prioritize snow quality and a social ski atmosphere over luxury.', 200),
-'A lively and budget-friendly lodge in Annupuri focused on powder lovers. Perfect for travelers who prioritize snow quality and a social ski atmosphere over luxury.',
-'210 Niseko, Hokkaido',0),
-
-(2,'Niseko Base Camp','ニセコベースキャンプ','standard',
-LEFT('Modern self-catering apartments offering flexibility and convenience for families and groups. Located within walking distance of restaurants and village life.', 200),
-'Modern self-catering apartments offering flexibility and convenience for families and groups. Located within walking distance of restaurants and village life.',
-'198 Niseko, Hokkaido',0),
-
+(2,'Park Hyatt Niseko Hanazono','パークハイアットニセコ','exclusive','Ski-in/ski-out luxury with private onsens and Mt. Yotei views.','328-47 Iwaobetsu, Kutchan, Hokkaido',1),
+(2,'Niseko Grand Hotel','ニセコグランドホテル','premium','Largest mixed outdoor onsen in Niseko with authentic Japanese buffets.','204 Niseko, Hokkaido',1),
+(2,'Hilton Niseko Village','ヒルトンニセコビレッジ','exclusive','Ski-in/ski-out resort with iconic outdoor onsen and direct gondola access.','Higashiyama-onsen, Niseko, Hokkaido',0),
+(2,'Niseko Powder Lodge','ニセコパウダーロッジ','standard','Budget-friendly lodge in Annupuri for powder lovers.','210 Niseko, Hokkaido',0),
+(2,'Niseko Base Camp','ニセコベースキャンプ','standard','Self-catering apartments for families and groups near the village.','198 Niseko, Hokkaido',0),
 -- YUZAWA
-(3,'NASPA New Otani','NASPAニューオータニ','exclusive',
-LEFT('A rare ski-only resort offering a quiet luxury experience. Features premium facilities, private ski lockers, and spacious rooms designed for relaxation.', 200),
-'A rare ski-only resort offering a quiet luxury experience. Features premium facilities, private ski lockers, and spacious rooms designed for relaxation.',
-'2117-9 Yuzawa, Niigata',1),
-
-(3,'Hotel Futaba','ホテル双葉','premium',
-LEFT('Known as the “bathhouse hotel,” featuring 28 mineral hot spring baths and authentic ryokan hospitality. Guests enjoy panoramic mountain views and exceptional Japanese cuisine.', 200),
-'Known as the “bathhouse hotel,” featuring 28 mineral hot spring baths and authentic ryokan hospitality. Guests enjoy panoramic mountain views and exceptional Japanese cuisine.',
-'419 Yuzawa, Niigata',1),
-
-(3,'Yuzawa Prince Hotel','湯沢プリンスホテル','premium',
-LEFT('A convenient resort hotel near the Shinkansen station, perfect for beginners and weekend travelers. Easy access to rental shops and ski lifts.', 200),
-'A convenient resort hotel near the Shinkansen station, perfect for beginners and weekend travelers. Easy access to rental shops and ski lifts.',
-'1800 Yuzawa, Niigata',0),
-
-(3,'Snow Ridge Inn','スノーリッジイン','standard',
-LEFT('A cheerful and affordable inn popular with solo travelers and students. Cozy lounge areas and night-skiing views create a relaxed atmosphere.', 200),
-'A cheerful and affordable inn popular with solo travelers and students. Cozy lounge areas and night-skiing views create a relaxed atmosphere.',
-'1770 Yuzawa, Niigata',0),
-
-(3,'Yuzawa Family Resort','湯沢ファミリーリゾート','standard',
-LEFT('Designed for families with children, offering indoor play areas, nursery services, and easy access to sledding and beginner slopes.', 200),
-'Designed for families with children, offering indoor play areas, nursery services, and easy access to sledding and beginner slopes.',
-'1750 Yuzawa, Niigata',0),
-
--- NAGANO
-(4,'Hotel Grand Phenix Okushiga','ホテルグランフェニックス奥志賀','exclusive',
-LEFT('A prestigious Swiss chalet-style hotel known for fine dining and elegant alpine ambiance. A favorite among discerning skiers visiting Shiga Kogen.', 200),
-'A prestigious Swiss chalet-style hotel known for fine dining and elegant alpine ambiance. A favorite among discerning skiers visiting Shiga Kogen.',
-'Okushiga Kogen, Nagano',1),
-
-(4,'Nagano Olympic Lodge','長野オリンピックロッジ','premium',
-LEFT('A historic hotel that hosted Olympic athletes, blending sporty atmosphere with modern comfort and memorabilia displays.', 200),
-'A historic hotel that hosted Olympic athletes, blending sporty atmosphere with modern comfort and memorabilia displays.',
-'3680 Nagano, Nagano',1),
-
-(4,'Shiga Grand Hotel','志賀グランドホテル','standard',
-LEFT('A large and practical hotel offering excellent lift access and buffet dining, perfect for groups and ski tours.', 200),
-'A large and practical hotel offering excellent lift access and buffet dining, perfect for groups and ski tours.',
-'7148-31 Ichinose, Nagano',0),
-
-(4,'Nagano Summit Hotel','長野サミットホテル','standard',
-LEFT('Located at high altitude with spectacular sunrise views. Ideal for skiers who want first tracks every morning.', 200),
-'Located at high altitude with spectacular sunrise views. Ideal for skiers who want first tracks every morning.',
-'3670 Nagano, Nagano',0),
-
+(3,'NASPA New Otani','NASPAニューオータニ','exclusive','Ski-only resort with premium facilities and private ski lockers.','2117-9 Yuzawa, Niigata',1),
+(3,'Hotel Futaba','ホテル双葉','premium','28 mineral hot spring baths with authentic ryokan hospitality.','419 Yuzawa, Niigata',1),
+(3,'Yuzawa Prince Hotel','湯沢プリンスホテル','premium','Convenient hotel near the Shinkansen for beginners and weekend travelers.','1800 Yuzawa, Niigata',0),
+(3,'Snow Ridge Inn','スノーリッジイン','standard','Affordable inn popular with solo travelers and students.','1770 Yuzawa, Niigata',0),
+-- SHIGA KOGEN
+(4,'Hotel Grand Phenix Okushiga','ホテルグランフェニックス奥志賀','exclusive','Prestigious Swiss chalet-style hotel with fine dining and elegant alpine ambiance.','Okushiga Kogen, Nagano',1),
+(4,'Nagano Olympic Lodge','長野オリンピックロッジ','premium','Historic hotel that hosted Olympic athletes with modern comfort.','3680 Nagano, Nagano',1),
+(4,'Shiga Grand Hotel','志賀グランドホテル','standard','Large practical hotel with excellent lift access and buffet dining.','7148-31 Ichinose, Nagano',0),
 -- RUSUTSU
-(5,'The Vale Rusutsu','ザ・ヴェール・ルスツ','exclusive',
-LEFT('Luxury designer condos redefining mountain living with private onsens and premium interiors. Perfect for upscale family ski holidays.', 200),
-'Luxury designer condos redefining mountain living with private onsens and premium interiors. Perfect for upscale family ski holidays.',
-'27-6 Izumikawa, Rusutsu, Hokkaido',1),
-
-(5,'The Westin Rusutsu Resort','ウェスティン ルスツリゾート','exclusive',
-LEFT('A landmark tower hotel offering bi-level suites and signature Heavenly Beds for ultimate post-ski recovery.', 200),
-'A landmark tower hotel offering bi-level suites and signature Heavenly Beds for ultimate post-ski recovery.',
-'133 Izumikawa, Rusutsu, Hokkaido',1),
-
-(5,'Rusutsu Resort Hotel','ルスツリゾートホテル','premium',
-LEFT('The heart of resort life connected to shopping, dining, and the monorail. Great for families seeking convenience and entertainment.', 200),
-'The heart of resort life connected to shopping, dining, and the monorail. Great for families seeking convenience and entertainment.',
-'133 Izumikawa, Rusutsu, Hokkaido',0),
-
-(5,'Hotel Lilla Huset','ホテルリラハセット','standard',
-LEFT('A charming boutique hotel offering Scandinavian-inspired design and peaceful surroundings near the gondola.', 200),
-'A charming boutique hotel offering Scandinavian-inspired design and peaceful surroundings near the gondola.',
-'13-3 Izumikawa, Rusutsu, Hokkaido',0),
-
-(5,'Rusutsu Pension Lilla','ペンション リラハセット','standard',
-LEFT('A cozy pension run by passionate local hosts, famous for hearty home-cooked meals and warm hospitality.', 200),
-'A cozy pension run by passionate local hosts, famous for hearty home-cooked meals and warm hospitality.',
-'13-3 Izumikawa, Rusutsu, Hokkaido',0),
-
+(5,'The Vale Rusutsu','ザ・ヴェール・ルスツ','exclusive','Luxury designer condos with private onsens and premium interiors.','27-6 Izumikawa, Rusutsu, Hokkaido',1),
+(5,'The Westin Rusutsu Resort','ウェスティン ルスツリゾート','exclusive','Landmark tower hotel with bi-level suites and Heavenly Beds.','133 Izumikawa, Rusutsu, Hokkaido',1),
+(5,'Rusutsu Resort Hotel','ルスツリゾートホテル','premium','Connected to shopping, dining, and the monorail. Great for families.','133 Izumikawa, Rusutsu, Hokkaido',0),
+(5,'Hotel Lilla Huset','ホテルリラハセット','standard','Scandinavian-inspired boutique hotel near the gondola.','13-3 Izumikawa, Rusutsu, Hokkaido',0),
 -- NOZAWA ONSEN
-(6,'Ryokan Sakaya','旅館さかや','exclusive',
-LEFT('An 18-generation luxury ryokan featuring stunning timber architecture and a spectacular traditional bathhouse.', 200),
-'An 18-generation luxury ryokan featuring stunning timber architecture and a spectacular traditional bathhouse.',
-'9329 Toyosato, Nozawa Onsen, Nagano',1),
-
-(6,'The Ridge Nozawa','ザ・リッジ野沢','premium',
-LEFT('Modern ski apartments beside the Nagasaka Gondola, perfect for international guests seeking comfort and convenience.', 200),
-'Modern ski apartments beside the Nagasaka Gondola, perfect for international guests seeking comfort and convenience.',
-'9806 Toyosato, Nozawa Onsen, Nagano',1),
-
-(6,'Address Nozawa','アドレス野沢','premium',
-LEFT('Colorful boutique studios in the village center with creative design and kitchenettes for independent travelers.', 200),
-'Colorful boutique studios in the village center with creative design and kitchenettes for independent travelers.',
-'9535 Toyosato, Nozawa Onsen, Nagano',0),
-
-(6,'Nozawa Hospitality','野沢ホスピタリティ','standard',
-LEFT('A collection of renovated traditional houses blending local charm with modern comfort.', 200),
-'A collection of renovated traditional houses blending local charm with modern comfort.',
-'9285 Toyosato, Nozawa Onsen, Nagano',0),
-
-(6,'Kamoshika Lodge','カモシカロッジ','standard',
-LEFT('A social lodge known for its lively bar and communal ski culture.', 200),
-'A social lodge known for its lively bar and communal ski culture.',
-'9330 Toyosato, Nozawa Onsen, Nagano',0),
-
+(6,'Ryokan Sakaya','旅館さかや','exclusive','18-generation luxury ryokan with stunning timber architecture and traditional bathhouse.','9329 Toyosato, Nozawa Onsen, Nagano',1),
+(6,'The Ridge Nozawa','ザ・リッジ野沢','premium','Modern ski apartments beside the Nagasaka Gondola.','9806 Toyosato, Nozawa Onsen, Nagano',1),
+(6,'Nozawa Hospitality','野沢ホスピタリティ','standard','Renovated traditional houses blending local charm with modern comfort.','9285 Toyosato, Nozawa Onsen, Nagano',0),
 -- MYOKO
-(7,'Akakura Kanko Hotel','赤倉観光ホテル','exclusive',
-LEFT('A historic luxury hotel famous for its infinity onsen terrace overlooking the mountains.', 200),
-'A historic luxury hotel famous for its infinity onsen terrace overlooking the mountains.',
-'216 Tagiri, Myoko, Niigata',1),
-
-(7,'Lotte Arai Resort','ロッテアライリゾート','exclusive',
-LEFT('A massive upscale resort village offering spa, adventure activities, and guided powder experiences.', 200),
-'A massive upscale resort village offering spa, adventure activities, and guided powder experiences.',
-'1966 Ryozenji, Myoko, Niigata',1),
-
-(7,'Akakura Hotel','赤倉ホテル','premium',
-LEFT('A traditional hotel in the heart of the village with expansive baths and classic charm.', 200),
-'A traditional hotel in the heart of the village with expansive baths and classic charm.',
-'441 Akakura Onsen, Myoko, Niigata',0),
-
-(7,'Hotel Taizan','ホテル太山','standard',
-LEFT('A friendly lodge known for natural volcanic hot spring water and great location.', 200),
-'A friendly lodge known for natural volcanic hot spring water and great location.',
-'351 Akakura Onsen, Myoko, Niigata',0),
-
-(7,'Red Horse Myoko','レッドホース妙高','standard',
-LEFT('A newly renovated lodge with modern comfort and excellent breakfasts.', 200),
-'A newly renovated lodge with modern comfort and excellent breakfasts.',
-'209-3 Tagiri, Myoko, Niigata',0),
-
+(7,'Akakura Kanko Hotel','赤倉観光ホテル','exclusive','Historic luxury hotel with an infinity onsen terrace overlooking the mountains.','216 Tagiri, Myoko, Niigata',1),
+(7,'Lotte Arai Resort','ロッテアライリゾート','exclusive','Upscale resort village with spa and guided powder experiences.','1966 Ryozenji, Myoko, Niigata',1),
+(7,'Akakura Hotel','赤倉ホテル','premium','Traditional village hotel with expansive baths and classic charm.','441 Akakura Onsen, Myoko, Niigata',0),
+(7,'Hotel Taizan','ホテル太山','standard','Friendly lodge with natural volcanic hot spring water.','351 Akakura Onsen, Myoko, Niigata',0),
 -- TOMAMU
-(8,'Hoshino Risonare Tomamu','リゾナーレトマム','exclusive',
-LEFT('Luxury family suites featuring private whirlpool baths and premium resort services.', 200),
-'Luxury family suites featuring private whirlpool baths and premium resort services.',
-'Nakatomamu, Shimukappu, Hokkaido',1),
-
-(8,'Club Med Tomamu','クラブメッドトマム','exclusive',
-LEFT('The ultimate all-inclusive ski experience covering lift passes, lessons, dining, and entertainment.', 200),
-'The ultimate all-inclusive ski experience covering lift passes, lessons, dining, and entertainment.',
-'Nakatomamu, Shimukappu, Hokkaido',1),
-
-(8,'Tomamu The Tower','トマム ザ・タワー','premium',
-LEFT('A central landmark hotel ideal for families with easy access to resort attractions.', 200),
-'A central landmark hotel ideal for families with easy access to resort attractions.',
-'Nakatomamu, Shimukappu, Hokkaido',0),
-
-(8,'Petit Hotel Grace','プチホテルグレーズ','standard',
-LEFT('A quiet and affordable hotel just outside the resort gates.', 200),
-'A quiet and affordable hotel just outside the resort gates.',
-'3070 Shimukappu, Hokkaido',0),
-
-(8,'Pension Woody Note','ペンションウッディノート','standard',
-LEFT('A cozy guesthouse famous for warm hospitality and local knowledge.', 200),
-'A cozy guesthouse famous for warm hospitality and local knowledge.',
-'3073 Shimukappu, Hokkaido',0),
-
+(8,'Hoshino Risonare Tomamu','リゾナーレトマム','exclusive','Luxury family suites with private whirlpool baths and premium services.','Nakatomamu, Shimukappu, Hokkaido',1),
+(8,'Club Med Tomamu','クラブメッドトマム','exclusive','All-inclusive experience covering lift passes, lessons, dining, and entertainment.','Nakatomamu, Shimukappu, Hokkaido',1),
+(8,'Tomamu The Tower','トマム ザ・タワー','premium','Central landmark hotel with easy access to resort attractions.','Nakatomamu, Shimukappu, Hokkaido',0),
+(8,'Pension Woody Note','ペンションウッディノート','standard','Cozy guesthouse famous for warm hospitality and local knowledge.','3073 Shimukappu, Hokkaido',0),
 -- APPI
-(9,'ANA InterContinental Appi','ANAインターコンチネンタル安比高原','exclusive',
-LEFT('A true five-star ski resort featuring refined dining and a private club lounge.', 200),
-'A true five-star ski resort featuring refined dining and a private club lounge.',
-'117-46 Appi Kogen, Iwate',1),
-
-(9,'ANA Crowne Plaza Appi','ANAクラウンプラザリゾート安比高原','premium',
-LEFT('A large resort complex with pools, restaurants, and one of Tohoku’s biggest onsen facilities.', 200),
-'A large resort complex with pools, restaurants, and one of Tohoku’s biggest onsen facilities.',
-'117-17 Appi Kogen, Iwate',1),
-
-(9,'ANA Holiday Inn Appi','ANAホリデイ・インリゾート安比高原','standard',
-LEFT('Family-friendly hotel with direct slope access and spacious rooms.', 200),
-'Family-friendly hotel with direct slope access and spacious rooms.',
-'117-1 Appi Kogen, Iwate',0),
-
-(9,'Hachimantai Heights','八幡平ハイツ','premium',
-LEFT('A serene forest retreat known for outdoor baths and premium Wagyu dining.', 200),
-'A serene forest retreat known for outdoor baths and premium Wagyu dining.',
-'1-1 Hachimantai, Iwate',0),
-
-(9,'Pension Mutti','ペンション・ムッティ','standard',
-LEFT('A charming pension famous for homemade breads and jams.', 200),
-'A charming pension famous for homemade breads and jams.',
-'605-64 Appi Kogen, Iwate',0),
-
+(9,'ANA InterContinental Appi','ANAインターコンチネンタル安比高原','exclusive','Five-star ski resort with refined dining and a private club lounge.','117-46 Appi Kogen, Iwate',1),
+(9,'ANA Crowne Plaza Appi','ANAクラウンプラザリゾート安比高原','premium','Large resort with pools and one of Tohoku''s biggest onsen facilities.','117-17 Appi Kogen, Iwate',1),
+(9,'ANA Holiday Inn Appi','ANAホリデイ・インリゾート安比高原','standard','Family-friendly hotel with direct slope access and spacious rooms.','117-1 Appi Kogen, Iwate',0),
 -- ZAO
-(10,'Takamiya Ryokan Miyamaso','深山荘 高見屋','exclusive',
-LEFT('A 300-year-old ryokan showcasing traditional architecture and antique interiors.', 200),
-'A 300-year-old ryokan showcasing traditional architecture and antique interiors.',
-'54 Zao Onsen, Yamagata',1),
+(10,'Takamiya Ryokan Miyamaso','深山荘 高見屋','exclusive','300-year-old ryokan with traditional architecture and antique interiors.','54 Zao Onsen, Yamagata',1),
+(10,'Zao Kokusai Hotel','蔵王国際ホテル','premium','Famous for its all-wood hot spring building and milky sulfur baths.','933 Zao Onsen, Yamagata',0),
+(10,'Zao Astraea Hotel','蔵王アストリアホテル','standard','Mountain hotel offering first access to the slopes every morning.','801 Zao Onsen, Yamagata',0);
 
-(10,'Zao Meitoya So','蔵王温泉 名湯舎 創','exclusive',
-LEFT('A modern minimalist ryokan designed for relaxation and comfort.', 200),
-'A modern minimalist ryokan designed for relaxation and comfort.',
-'48 Zao Onsen, Yamagata',1),
-
-(10,'Zao Kokusai Hotel','蔵王国際ホテル','premium',
-LEFT('Famous for its all-wood hot spring building and milky sulfur baths.', 200),
-'Famous for its all-wood hot spring building and milky sulfur baths.',
-'933 Zao Onsen, Yamagata',0),
-
-(10,'Hotel Lucent Takamiya','ホテルルーセントタカミヤ','premium',
-LEFT('A convenient hotel at the base of the ropeway, ideal for night Snow Monster tours.', 200),
-'A convenient hotel at the base of the ropeway, ideal for night Snow Monster tours.',
-'942 Zao Onsen, Yamagata',0),
-
-(10,'Zao Astraea Hotel','蔵王アストリアホテル','standard',
-LEFT('A unique mountain hotel offering first access to the slopes every morning.', 200),
-'A unique mountain hotel offering first access to the slopes every morning.',
-'801 Zao Onsen, Yamagata',0);
-
-
--- ── HOTEL PRICES (Weekday / Weekend / Holiday Dates) ─────────────────────
--- Rebuild hotel rules so every hotel has all 3 schedule types.
+-- ── HOTEL PRICES ─────────────────────────────────────────────────────────
 DELETE FROM wp_spcu_prices WHERE category = 'hotel';
 
--- Weekday prices (Mon-Fri)
-INSERT INTO wp_spcu_prices (
-	category, hotel_id, days, price_type,
-	weekdays_json, dates_json, date_from, date_to,
-	currency, price_jpy, price_usd
-)
-SELECT
-	'hotel' AS category,
-	h.id AS hotel_id,
-	NULL AS days,
-	'selected_days' AS price_type,
-	'["monday","tuesday","wednesday","thursday","friday"]' AS weekdays_json,
-	NULL AS dates_json,
-	NULL AS date_from,
-	NULL AS date_to,
-	'JPY' AS currency,
-	ROUND(
-		(
-			CASE h.grade
-				WHEN 'standard' THEN 58000
-				WHEN 'premium' THEN 88000
-				WHEN 'exclusive' THEN 135000
-				ELSE 70000
-			END
-		)
-		*
-		(
-			CASE h.area_id
-				WHEN 1 THEN 1.08  -- Hakuba
-				WHEN 2 THEN 1.18  -- Niseko
-				WHEN 3 THEN 0.86  -- Yuzawa
-				WHEN 4 THEN 1.00  -- Nagano
-				WHEN 5 THEN 1.10  -- Rusutsu
-				WHEN 6 THEN 1.02  -- Nozawa
-				WHEN 7 THEN 1.06  -- Myoko
-				WHEN 8 THEN 1.12  -- Tomamu
-				WHEN 9 THEN 1.04  -- Appi
-				WHEN 10 THEN 0.98 -- Zao
-				ELSE 1.00
-			END
-		),
-		0
-	) AS price_jpy,
-	ROUND(
-		(
-			(
-				CASE h.grade
-					WHEN 'standard' THEN 58000
-					WHEN 'premium' THEN 88000
-					WHEN 'exclusive' THEN 135000
-					ELSE 70000
-				END
-			)
-			*
-			(
-				CASE h.area_id
-					WHEN 1 THEN 1.08
-					WHEN 2 THEN 1.18
-					WHEN 3 THEN 0.86
-					WHEN 4 THEN 1.00
-					WHEN 5 THEN 1.10
-					WHEN 6 THEN 1.02
-					WHEN 7 THEN 1.06
-					WHEN 8 THEN 1.12
-					WHEN 9 THEN 1.04
-					WHEN 10 THEN 0.98
-					ELSE 1.00
-				END
-			)
-		) * 0.0073,
-		0
-	) AS price_usd
+-- Weekday prices
+INSERT INTO wp_spcu_prices (category, hotel_id, price_type, weekdays_json, currency, price_jpy, price_usd)
+SELECT 'hotel', h.id, 'selected_days',
+ '["monday","tuesday","wednesday","thursday","friday"]',
+ 'JPY',
+ ROUND((CASE h.grade WHEN 'standard' THEN 58000 WHEN 'premium' THEN 88000 WHEN 'exclusive' THEN 135000 ELSE 70000 END)
+  * (CASE h.area_id WHEN 1 THEN 1.08 WHEN 2 THEN 1.18 WHEN 3 THEN 0.86 WHEN 4 THEN 1.02 WHEN 5 THEN 1.10 WHEN 6 THEN 1.02 WHEN 7 THEN 1.06 WHEN 8 THEN 1.12 WHEN 9 THEN 1.04 WHEN 10 THEN 0.98 ELSE 1.00 END), 0),
+ ROUND((CASE h.grade WHEN 'standard' THEN 58000 WHEN 'premium' THEN 88000 WHEN 'exclusive' THEN 135000 ELSE 70000 END)
+  * (CASE h.area_id WHEN 1 THEN 1.08 WHEN 2 THEN 1.18 WHEN 3 THEN 0.86 WHEN 4 THEN 1.02 WHEN 5 THEN 1.10 WHEN 6 THEN 1.02 WHEN 7 THEN 1.06 WHEN 8 THEN 1.12 WHEN 9 THEN 1.04 WHEN 10 THEN 0.98 ELSE 1.00 END) * 0.0073, 0)
 FROM wp_spcu_hotels h;
 
--- Weekend prices (Sat-Sun)
-INSERT INTO wp_spcu_prices (
-	category, hotel_id, days, price_type,
-	weekdays_json, dates_json, date_from, date_to,
-	currency, price_jpy, price_usd
-)
-SELECT
-	'hotel',
-	h.id,
-	NULL,
-	'weekend',
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	'JPY',
-	ROUND(
-		(
-			CASE h.grade
-				WHEN 'standard' THEN 58000
-				WHEN 'premium' THEN 88000
-				WHEN 'exclusive' THEN 135000
-				ELSE 70000
-			END
-		)
-		*
-		(
-			CASE h.area_id
-				WHEN 1 THEN 1.08
-				WHEN 2 THEN 1.18
-				WHEN 3 THEN 0.86
-				WHEN 4 THEN 1.00
-				WHEN 5 THEN 1.10
-				WHEN 6 THEN 1.02
-				WHEN 7 THEN 1.06
-				WHEN 8 THEN 1.12
-				WHEN 9 THEN 1.04
-				WHEN 10 THEN 0.98
-				ELSE 1.00
-			END
-		)
-		* 1.18,
-		0
-	),
-	ROUND(
-		(
-			(
-				CASE h.grade
-					WHEN 'standard' THEN 58000
-					WHEN 'premium' THEN 88000
-					WHEN 'exclusive' THEN 135000
-					ELSE 70000
-				END
-			)
-			*
-			(
-				CASE h.area_id
-					WHEN 1 THEN 1.08
-					WHEN 2 THEN 1.18
-					WHEN 3 THEN 0.86
-					WHEN 4 THEN 1.00
-					WHEN 5 THEN 1.10
-					WHEN 6 THEN 1.02
-					WHEN 7 THEN 1.06
-					WHEN 8 THEN 1.12
-					WHEN 9 THEN 1.04
-					WHEN 10 THEN 0.98
-					ELSE 1.00
-				END
-			)
-			* 1.18
-		) * 0.0073,
-		0
-	)
+-- Weekend prices (+18%)
+INSERT INTO wp_spcu_prices (category, hotel_id, price_type, currency, price_jpy, price_usd)
+SELECT 'hotel', h.id, 'weekend', 'JPY',
+ ROUND((CASE h.grade WHEN 'standard' THEN 58000 WHEN 'premium' THEN 88000 WHEN 'exclusive' THEN 135000 ELSE 70000 END)
+  * (CASE h.area_id WHEN 1 THEN 1.08 WHEN 2 THEN 1.18 WHEN 3 THEN 0.86 WHEN 4 THEN 1.02 WHEN 5 THEN 1.10 WHEN 6 THEN 1.02 WHEN 7 THEN 1.06 WHEN 8 THEN 1.12 WHEN 9 THEN 1.04 WHEN 10 THEN 0.98 ELSE 1.00 END) * 1.18, 0),
+ ROUND((CASE h.grade WHEN 'standard' THEN 58000 WHEN 'premium' THEN 88000 WHEN 'exclusive' THEN 135000 ELSE 70000 END)
+  * (CASE h.area_id WHEN 1 THEN 1.08 WHEN 2 THEN 1.18 WHEN 3 THEN 0.86 WHEN 4 THEN 1.02 WHEN 5 THEN 1.10 WHEN 6 THEN 1.02 WHEN 7 THEN 1.06 WHEN 8 THEN 1.12 WHEN 9 THEN 1.04 WHEN 10 THEN 0.98 ELSE 1.00 END) * 1.18 * 0.0073, 0)
 FROM wp_spcu_hotels h;
 
--- Holiday prices (specific high-season dates)
-INSERT INTO wp_spcu_prices (
-	category, hotel_id, days, price_type,
-	weekdays_json, dates_json, date_from, date_to,
-	currency, price_jpy, price_usd
-)
-SELECT
-	'hotel',
-	h.id,
-	NULL,
-	'specific_dates',
-	NULL,
-	'["2026-12-24","2026-12-25","2026-12-26","2026-12-27","2026-12-28","2026-12-29","2026-12-30","2026-12-31","2027-01-01","2027-01-02","2027-01-03","2027-02-11"]',
-	NULL,
-	NULL,
-	'JPY',
-	ROUND(
-		(
-			CASE h.grade
-				WHEN 'standard' THEN 58000
-				WHEN 'premium' THEN 88000
-				WHEN 'exclusive' THEN 135000
-				ELSE 70000
-			END
-		)
-		*
-		(
-			CASE h.area_id
-				WHEN 1 THEN 1.08
-				WHEN 2 THEN 1.18
-				WHEN 3 THEN 0.86
-				WHEN 4 THEN 1.00
-				WHEN 5 THEN 1.10
-				WHEN 6 THEN 1.02
-				WHEN 7 THEN 1.06
-				WHEN 8 THEN 1.12
-				WHEN 9 THEN 1.04
-				WHEN 10 THEN 0.98
-				ELSE 1.00
-			END
-		)
-		* 1.35,
-		0
-	),
-	ROUND(
-		(
-			(
-				CASE h.grade
-					WHEN 'standard' THEN 58000
-					WHEN 'premium' THEN 88000
-					WHEN 'exclusive' THEN 135000
-					ELSE 70000
-				END
-			)
-			*
-			(
-				CASE h.area_id
-					WHEN 1 THEN 1.08
-					WHEN 2 THEN 1.18
-					WHEN 3 THEN 0.86
-					WHEN 4 THEN 1.00
-					WHEN 5 THEN 1.10
-					WHEN 6 THEN 1.02
-					WHEN 7 THEN 1.06
-					WHEN 8 THEN 1.12
-					WHEN 9 THEN 1.04
-					WHEN 10 THEN 0.98
-					ELSE 1.00
-				END
-			)
-			* 1.35
-		) * 0.0073,
-		0
-	)
+-- Holiday prices (+35%)
+INSERT INTO wp_spcu_prices (category, hotel_id, price_type, dates_json, currency, price_jpy, price_usd)
+SELECT 'hotel', h.id, 'specific_dates',
+ '["2026-12-24","2026-12-25","2026-12-26","2026-12-27","2026-12-28","2026-12-29","2026-12-30","2026-12-31","2027-01-01","2027-01-02","2027-01-03","2027-02-11"]',
+ 'JPY',
+ ROUND((CASE h.grade WHEN 'standard' THEN 58000 WHEN 'premium' THEN 88000 WHEN 'exclusive' THEN 135000 ELSE 70000 END)
+  * (CASE h.area_id WHEN 1 THEN 1.08 WHEN 2 THEN 1.18 WHEN 3 THEN 0.86 WHEN 4 THEN 1.02 WHEN 5 THEN 1.10 WHEN 6 THEN 1.02 WHEN 7 THEN 1.06 WHEN 8 THEN 1.12 WHEN 9 THEN 1.04 WHEN 10 THEN 0.98 ELSE 1.00 END) * 1.35, 0),
+ ROUND((CASE h.grade WHEN 'standard' THEN 58000 WHEN 'premium' THEN 88000 WHEN 'exclusive' THEN 135000 ELSE 70000 END)
+  * (CASE h.area_id WHEN 1 THEN 1.08 WHEN 2 THEN 1.18 WHEN 3 THEN 0.86 WHEN 4 THEN 1.02 WHEN 5 THEN 1.10 WHEN 6 THEN 1.02 WHEN 7 THEN 1.06 WHEN 8 THEN 1.12 WHEN 9 THEN 1.04 WHEN 10 THEN 0.98 ELSE 1.00 END) * 1.35 * 0.0073, 0)
 FROM wp_spcu_hotels h;
 
-
--- ── ADDON PRICES (Lift, Gear, Transport) ────────────────────────────────
-
--- Hakuba Valley Addons
+-- ── ADDON PRICES (Lift, Gear, Transport) ─────────────────────────────────
+-- Hakuba
 INSERT INTO wp_spcu_addon_prices (area_id, category, grade, days, price_jpy, price_usd) VALUES
-(1, 'lift', 'standard', 5, 31000, 225),
-(1, 'lift', 'premium', 5, 31000, 225),
-(1, 'lift', 'exclusive', 5, 31000, 225),
-(1, 'gear', 'standard', 5, 42000, 305),
-(1, 'gear', 'premium', 5, 52000, 378),
-(1, 'gear', 'exclusive', 5, 62000, 451),
-(1, 'transport', 'standard', NULL, 24000, 174),
-(1, 'transport', 'premium', NULL, 28000, 204),
-(1, 'transport', 'exclusive', NULL, 32000, 233);
+(1,'lift','standard',5,31000,225),(1,'lift','premium',5,31000,225),(1,'lift','exclusive',5,31000,225),
+(1,'gear','standard',5,42000,305),(1,'gear','premium',5,52000,378),(1,'gear','exclusive',5,62000,451),
+(1,'transport','standard',NULL,24000,174),(1,'transport','premium',NULL,28000,204),(1,'transport','exclusive',NULL,32000,233);
 
--- Niseko Addons
+-- Niseko
 INSERT INTO wp_spcu_addon_prices (area_id, category, grade, days, price_jpy, price_usd) VALUES
-(2, 'lift', 'standard', 5, 33000, 240),
-(2, 'lift', 'premium', 5, 33000, 240),
-(2, 'lift', 'exclusive', 5, 33000, 240),
-(2, 'gear', 'standard', 5, 45000, 327),
-(2, 'gear', 'premium', 5, 55000, 400),
-(2, 'gear', 'exclusive', 5, 65000, 473),
-(2, 'transport', 'standard', NULL, 26000, 189),
-(2, 'transport', 'premium', NULL, 30000, 218),
-(2, 'transport', 'exclusive', NULL, 34000, 247);
+(2,'lift','standard',5,33000,240),(2,'lift','premium',5,33000,240),(2,'lift','exclusive',5,33000,240),
+(2,'gear','standard',5,45000,327),(2,'gear','premium',5,55000,400),(2,'gear','exclusive',5,65000,473),
+(2,'transport','standard',NULL,26000,189),(2,'transport','premium',NULL,30000,218),(2,'transport','exclusive',NULL,34000,247);
 
--- Yuzawa Snow Park Addons
+-- Yuzawa
 INSERT INTO wp_spcu_addon_prices (area_id, category, grade, days, price_jpy, price_usd) VALUES
-(3, 'lift', 'standard', 5, 28000, 204),
-(3, 'lift', 'premium', 5, 28000, 204),
-(3, 'lift', 'exclusive', 5, 28000, 204),
-(3, 'gear', 'standard', 5, 38000, 276),
-(3, 'gear', 'premium', 5, 48000, 349),
-(3, 'gear', 'exclusive', 5, 58000, 422),
-(3, 'transport', 'standard', NULL, 18000, 131),
-(3, 'transport', 'premium', NULL, 22000, 160),
-(3, 'transport', 'exclusive', NULL, 26000, 189);
+(3,'lift','standard',5,28000,204),(3,'lift','premium',5,28000,204),(3,'lift','exclusive',5,28000,204),
+(3,'gear','standard',5,38000,276),(3,'gear','premium',5,48000,349),(3,'gear','exclusive',5,58000,422),
+(3,'transport','standard',NULL,18000,131),(3,'transport','premium',NULL,22000,160),(3,'transport','exclusive',NULL,26000,189);
 
--- Nagano Addons
+-- Shiga Kogen
 INSERT INTO wp_spcu_addon_prices (area_id, category, grade, days, price_jpy, price_usd) VALUES
-(4, 'lift', 'standard', 5, 32000, 233),
-(4, 'lift', 'premium', 5, 32000, 233),
-(4, 'lift', 'exclusive', 5, 32000, 233),
-(4, 'gear', 'standard', 5, 40000, 291),
-(4, 'gear', 'premium', 5, 50000, 364),
-(4, 'gear', 'exclusive', 5, 60000, 436),
-(4, 'transport', 'standard', NULL, 20000, 145),
-(4, 'transport', 'premium', NULL, 25000, 182),
-(4, 'transport', 'exclusive', NULL, 30000, 218);
+(4,'lift','standard',5,32000,233),(4,'lift','premium',5,32000,233),(4,'lift','exclusive',5,32000,233),
+(4,'gear','standard',5,40000,291),(4,'gear','premium',5,50000,364),(4,'gear','exclusive',5,60000,436),
+(4,'transport','standard',NULL,20000,145),(4,'transport','premium',NULL,25000,182),(4,'transport','exclusive',NULL,30000,218);
+
+-- Rusutsu
+INSERT INTO wp_spcu_addon_prices (area_id, category, grade, days, price_jpy, price_usd) VALUES
+(5,'lift','standard',5,32000,233),(5,'lift','premium',5,32000,233),(5,'lift','exclusive',5,32000,233),
+(5,'gear','standard',5,43000,312),(5,'gear','premium',5,53000,385),(5,'gear','exclusive',5,63000,458),
+(5,'transport','standard',NULL,25000,182),(5,'transport','premium',NULL,29000,211),(5,'transport','exclusive',NULL,33000,240);
+
+-- Nozawa Onsen
+INSERT INTO wp_spcu_addon_prices (area_id, category, grade, days, price_jpy, price_usd) VALUES
+(6,'lift','standard',5,29000,211),(6,'lift','premium',5,29000,211),(6,'lift','exclusive',5,29000,211),
+(6,'gear','standard',5,39000,284),(6,'gear','premium',5,49000,356),(6,'gear','exclusive',5,59000,429),
+(6,'transport','standard',NULL,21000,152),(6,'transport','premium',NULL,26000,189),(6,'transport','exclusive',NULL,31000,225);
+
+-- Myoko
+INSERT INTO wp_spcu_addon_prices (area_id, category, grade, days, price_jpy, price_usd) VALUES
+(7,'lift','standard',5,30000,218),(7,'lift','premium',5,30000,218),(7,'lift','exclusive',5,30000,218),
+(7,'gear','standard',5,40000,291),(7,'gear','premium',5,50000,364),(7,'gear','exclusive',5,60000,436),
+(7,'transport','standard',NULL,22000,160),(7,'transport','premium',NULL,27000,196),(7,'transport','exclusive',NULL,32000,233);
+
+-- Tomamu
+INSERT INTO wp_spcu_addon_prices (area_id, category, grade, days, price_jpy, price_usd) VALUES
+(8,'lift','standard',5,30000,218),(8,'lift','premium',5,30000,218),(8,'lift','exclusive',5,30000,218),
+(8,'gear','standard',5,42000,305),(8,'gear','premium',5,52000,378),(8,'gear','exclusive',5,62000,451),
+(8,'transport','standard',NULL,24000,174),(8,'transport','premium',NULL,28000,204),(8,'transport','exclusive',NULL,32000,233);
+
+-- Appi
+INSERT INTO wp_spcu_addon_prices (area_id, category, grade, days, price_jpy, price_usd) VALUES
+(9,'lift','standard',5,28000,204),(9,'lift','premium',5,28000,204),(9,'lift','exclusive',5,28000,204),
+(9,'gear','standard',5,38000,276),(9,'gear','premium',5,48000,349),(9,'gear','exclusive',5,58000,422),
+(9,'transport','standard',NULL,22000,160),(9,'transport','premium',NULL,27000,196),(9,'transport','exclusive',NULL,32000,233);
+
+-- Zao
+INSERT INTO wp_spcu_addon_prices (area_id, category, grade, days, price_jpy, price_usd) VALUES
+(10,'lift','standard',5,27000,196),(10,'lift','premium',5,27000,196),(10,'lift','exclusive',5,27000,196),
+(10,'gear','standard',5,36000,261),(10,'gear','premium',5,46000,334),(10,'gear','exclusive',5,56000,407),
+(10,'transport','standard',NULL,19000,138),(10,'transport','premium',NULL,24000,174),(10,'transport','exclusive',NULL,29000,211);
 
 -- ── NOTES ────────────────────────────────────────────────────────────────
--- 1. Prices are examples based on typical Japanese ski resort rates
--- 2. Hotel prices are per night with schedule-based rule types
--- 3. Hotel price types included: weekday (selected_days), weekend, holiday (specific_dates)
--- 4. Lift & Gear prices are per 5-day period
--- 5. Transport is per person round trip
--- 6. Exclusive grades are typically 20-50% more expensive
--- 7. Niseko is premium (highest prices), Yuzawa is budget-friendly (lowest)
--- 8. All currency conversions at ~1¥ = 0.0073 USD (approximate)
+-- Prefectures: 1=Nagano, 2=Hokkaido, 3=Niigata, 4=Iwate, 5=Yamagata
+-- Areas: 1=Hakuba, 2=Niseko, 3=Yuzawa, 4=Shiga, 5=Rusutsu, 6=Nozawa, 7=Myoko, 8=Tomamu, 9=Appi, 10=Zao
+-- Hotel grades: standard / premium / exclusive
+-- Weekday = base, Weekend = +18%, Holiday = +35%
+-- Lift & Gear: per 5-day period. Transport: per person round trip.
