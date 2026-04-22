@@ -228,7 +228,7 @@ if($page_mode === 'hotel'){
 
 <?php if($page_mode === 'hotel' && !$selected_hotel): ?>
     <div class="spcu-table">
-        <table>
+        <table class="wp-list-table widefat fixed striped table-view-list">
             <tr><th>Hotel</th><th>Action</th></tr>
             <?php foreach($hotels as $h): ?>
                 <tr>
@@ -437,7 +437,7 @@ if($page_mode === 'hotel'){
 <!-- ── Price List ───────────────────────────────────────────────── -->
 <hr>
 <div class='spcu-table'>
-    <table>
+    <table class="wp-list-table widefat fixed striped table-view-list">
         <thead>
             <tr>
                 <th>ID</th>

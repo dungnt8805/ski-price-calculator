@@ -60,7 +60,7 @@ if($hotel_error === ''){
     <?php endif; ?>
 
     <div class='spcu-table'>
-        <table>
+        <table class="wp-list-table widefat fixed striped table-view-list">
             <tr>
                 <th>ID</th><th>Name</th><th>Name (JP)</th><th>Short Description</th><th>Address</th>
                 <th>Area</th><th>Difficulty</th><th>Featured</th><th>Action</th>

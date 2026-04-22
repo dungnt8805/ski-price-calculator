@@ -113,61 +113,59 @@ wp_enqueue_media();
     <?php if($area_error): ?>
         <div class="notice notice-error"><p><?= esc_html($area_error) ?></p></div>
         <div class="spcu-toast-source" data-type="error" data-message="<?= esc_attr($area_error) ?>"></div>
-    <?php endif; ?>
-
-    <div class="spcu-split spcu-split-areas">
-        <div class="spcu-col spcu-col-form">
-            <form method='post' action='<?= esc_url(admin_url('admin.php?page=spcu-areas')) ?>'>
-                <?php wp_nonce_field('spcu_save_area'); ?>
-                <?php if($edit_area): ?>
-                    <input type='hidden' name='area_id' value='<?= esc_attr($edit_area->id) ?>'>
-                <?php endif; ?>
-                <table class="form-table" role="presentation">
-                    <tr>
-                        <th scope="row"><label for="prefecture_id">Prefecture</label></th>
-                        <td>
+      <div id="col-container" class="wp-clearfix">
+        <div id="col-left">
+            <div class="col-wrap">
+                <div class="form-wrap">
+                    <h2><?= $edit_area ? 'Edit Area' : 'Add New Area' ?></h2>
+                    <form method='post' action='<?= esc_url(admin_url('admin.php?page=spcu-areas')) ?>'>
+                        <?php wp_nonce_field('spcu_save_area'); ?>
+                        <?php if($edit_area): ?>
+                            <input type='hidden' name='area_id' value='<?= esc_attr($edit_area->id) ?>'>
+                        <?php endif; ?>
+                        
+                        <div class="form-field form-required">
+                            <label for="prefecture_id">Prefecture</label>
                             <select name='prefecture_id' id='prefecture_id' required>
                                 <option value=''>-- Select Prefecture --</option>
                                 <?php foreach($prefectures as $pref): ?>
                                     <option value='<?= esc_attr($pref->id) ?>' <?= selected(($edit_area->prefecture_id ?? ''), $pref->id, false) ?>><?= esc_html($pref->name) ?></option>
                                 <?php endforeach; ?>
                             </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="type">Area Type</label></th>
-                        <td>
+                        </div>
+
+                        <div class="form-field form-required">
+                            <label for="type">Area Type</label>
                             <select name='type' id='type' required>
                                 <option value='City' <?= selected(($edit_area->type ?? ''), 'City', false) ?>>City</option>
                                 <option value='Town' <?= selected(($edit_area->type ?? ''), 'Town', false) ?>>Town</option>
                                 <option value='Village' <?= selected(($edit_area->type ?? ''), 'Village', false) ?>>Village</option>
                             </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="name">Area Name</label></th>
-                        <td><input name='name' id='name' class="regular-text" placeholder='Hakuba' required value='<?= esc_attr($edit_area->name ?? '') ?>'></td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="name_ja">Name (Japanese)</label></th>
-                        <td><input name='name_ja' id='name_ja' class="regular-text" placeholder='白馬' value='<?= esc_attr($edit_area->name_ja ?? '') ?>'></td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="short_description">Short Description</label></th>
-                        <td>
-                            <textarea name='short_description' id='short_description' class="large-text" rows="2" maxlength="255" placeholder='Compact overview for the area header'><?= esc_textarea($edit_area->short_description ?? '') ?></textarea>
-                            <p class="description">255 character limit.</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="description">Description</label></th>
-                        <td>
+                        </div>
+
+                        <div class="form-field form-required">
+                            <label for="name">Area Name</label>
+                            <input name='name' id='name' type="text" placeholder='Hakuba' required value='<?= esc_attr($edit_area->name ?? '') ?>'>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="name_ja">Name (Japanese)</label>
+                            <input name='name_ja' id='name_ja' type="text" placeholder='白馬' value='<?= esc_attr($edit_area->name_ja ?? '') ?>'>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="short_description">Short Description</label>
+                            <textarea name='short_description' id='short_description' rows="2" maxlength="255" placeholder='Compact overview for the area header'><?= esc_textarea($edit_area->short_description ?? '') ?></textarea>
+                            <p>255 character limit.</p>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="description">Description</label>
                             <?php wp_editor($edit_area->description ?? '', 'description', ['media_buttons' => true, 'teeny' => false, 'textarea_rows' => 10]); ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="spcu_area_featured_image_id">Featured Image</label></th>
-                        <td>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="spcu_area_featured_image_id">Featured Image</label>
                             <input type='hidden' name='featured_image' id='spcu_area_featured_image_id' value='<?= esc_attr(isset($edit_area->featured_image) ? intval($edit_area->featured_image) : 0) ?>'>
                             <div id="spcu-area-featured-image-preview" style="margin-bottom:10px;">
                                 <?php
@@ -182,11 +180,10 @@ wp_enqueue_media();
                             </div>
                             <button type='button' id='spcu-area-select-featured-image' class='button'>Select Featured Image</button>
                             <button type='button' id='spcu-area-remove-featured-image' class='button' <?= $featured_id ? '' : 'style="display:none;"' ?>>Remove</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label>Images</label></th>
-                        <td>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Images</label>
                             <input type='hidden' name='images' id='spcu_area_images_ids' value='<?= esc_attr($edit_area->images ?? '') ?>'>
                             <div id="spcu-area-image-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
                                 <?php
@@ -205,23 +202,24 @@ wp_enqueue_media();
                                 ?>
                             </div>
                             <button type='button' id='spcu-area-add-images' class='button'><?= $edit_area ? 'Manage Images' : 'Add Images' ?></button>
-                        </td>
-                    </tr>
-                </table>
-                <p class="submit">
-                    <?php if($edit_area): ?>
-                        <button name='edit_area' value='1' class="button button-primary">Update Area</button>
-                        <a href='?page=spcu-areas' class='button'>Cancel</a>
-                    <?php else: ?>
-                        <button name='add_area' class="button button-primary">Add Area</button>
-                    <?php endif; ?>
-                </p>
-            </form>
+                        </div>
+
+                        <p class="submit">
+                            <?php if($edit_area): ?>
+                                <button name='edit_area' value='1' class="button button-primary">Update Area</button>
+                                <a href='?page=spcu-areas' class='button'>Cancel</a>
+                            <?php else: ?>
+                                <button name='add_area' class="button button-primary">Add New Area</button>
+                            <?php endif; ?>
+                        </p>
+                    </form>
+                </div>
+            </div>
         </div>
 
-        <div class="spcu-col spcu-col-list">
-            <div class='spcu-table'>
-                <table>
+        <div id="col-right">
+            <div class="col-wrap">
+                <table class="wp-list-table widefat fixed striped table-view-list">
                     <tr><th>Prefecture</th><th>Name</th><th>Short Description</th><th>Featured Image</th><th>Action</th></tr>
                     <?php foreach($rows as $r): 
                         $pref_name = '';
@@ -236,7 +234,7 @@ wp_enqueue_media();
                         <td><?= esc_html($pref_name) ?></td>
                         <td>
                             <strong><?= esc_html($r->name) ?></strong>
-                            <?php if(!empty($r->name_ja)): ?><br><span style="color:#6f7f8f;font-size:0.9em;"><?= esc_html($r->name_ja) ?></span><?php endif; ?>
+                            <?php if(!empty($r->name_ja)): ?><br>(<span style="color:#6f7f8f;font-size:0.9em;"><?= esc_html($r->name_ja) ?></span>)<?php endif; ?>
                         </td>
                         <td><?= esc_html($r->short_description ?? '') ?></td>
                         <td>
@@ -253,6 +251,7 @@ wp_enqueue_media();
                 </table>
             </div>
         </div>
+    </div>        </div>
     </div>
 </div>
 
