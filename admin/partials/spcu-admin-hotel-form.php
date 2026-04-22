@@ -152,6 +152,17 @@ wp_enqueue_media();
                     </select>
                 </td>
             </tr>
+            <tr>
+                <th scope="row"><label for="grade">Grade</label></th>
+                <td>
+                    <select name='grade' id='grade' required>
+                        <option value=''>- Select Grade -</option>
+                        <option value='standard' <?= (($edit_hotel && $edit_hotel->grade === 'standard') || (isset($_POST['grade']) && $_POST['grade'] === 'standard')) ? 'selected' : '' ?>>Standard</option>
+                        <option value='premium' <?= (($edit_hotel && $edit_hotel->grade === 'premium') || (isset($_POST['grade']) && $_POST['grade'] === 'premium')) ? 'selected' : '' ?>>Premium</option>
+                        <option value='exclusive' <?= (($edit_hotel && $edit_hotel->grade === 'exclusive') || (isset($_POST['grade']) && $_POST['grade'] === 'exclusive')) ? 'selected' : '' ?>>Exclusive</option>
+                    </select>
+                </td>
+            </tr>
 
             <tr>
                 <th scope="row"><label for="is_featured">Featured</label></th>

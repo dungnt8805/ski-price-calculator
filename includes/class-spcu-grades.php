@@ -142,7 +142,6 @@ class SPCU_Grades {
 
         $total = 0;
         $tables = [
-            $wpdb->prefix . 'spcu_hotels' => 'grade',
             $wpdb->prefix . 'spcu_addon_prices' => 'grade',
         ];
 
@@ -169,7 +168,6 @@ class SPCU_Grades {
         }
 
         $tables = [
-            $wpdb->prefix . 'spcu_hotels' => 'grade',
             $wpdb->prefix . 'spcu_addon_prices' => 'grade',
         ];
 
@@ -185,7 +183,6 @@ class SPCU_Grades {
         global $wpdb;
 
         $tables = [
-            $wpdb->prefix . 'spcu_hotels' => 'grade',
             $wpdb->prefix . 'spcu_addon_prices' => 'grade',
         ];
 

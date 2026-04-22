@@ -63,7 +63,7 @@ if($hotel_error === ''){
         <table class="wp-list-table widefat fixed striped table-view-list">
             <tr>
                 <th>ID</th><th>Name</th><th>Name (JP)</th><th>Short Description</th><th>Address</th>
-                <th>Area</th><th>Featured</th><th>Action</th>
+                <th>Area</th><th>Grade</th><th>Featured</th><th>Action</th>
             </tr>
             <?php foreach($rows as $r): ?>
             <?php
@@ -85,7 +85,7 @@ if($hotel_error === ''){
                 <td style="max-width:220px;font-size:12px;"><?= esc_html($r->short_description ?: '-') ?></td>
                 <td style="max-width:220px;font-size:12px;"><?= nl2br(esc_html($r->address ?: '-')) ?></td>
                 <td><?= esc_html($r->area_name) ?></td>
-
+                <td><span style="display:inline-block;padding:3px 8px;border-radius:3px;background:#e2e8f0;color:#334155;font-size:12px;font-weight:600;text-transform:capitalize;"><?= esc_html($r->grade ?: '-') ?></span></td>
                 <td style="display:flex;align-items:center;gap:8px;">
                     <?= $featured_thumb ? "<img src='".esc_url($featured_thumb)."' style='width:40px;height:40px;object-fit:cover;border-radius:3px;'>" : '' ?>
                     <?= ($r->is_featured ? '<span style="background:#16a34a;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;white-space:nowrap;">★ Featured</span>' : '-') ?>
