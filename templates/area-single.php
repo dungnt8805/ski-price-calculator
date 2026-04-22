@@ -577,19 +577,23 @@ foreach($addon_prices as $p){
                         <thead>
                             <tr>
                                 <th>Service</th>
-                                <th>Standard</th>
-                                <th>Premium</th>
-                                <th>Exclusive</th>
+                                <?php foreach(SPCU_Grades::records() as $difficulty_record): ?>
+                                    <th>
+                                        <span style="display:inline-block;padding:4px 10px;border-radius:999px;background:<?= esc_attr($difficulty_record['color']) ?>;color:<?= esc_attr(SPCU_Grades::text_color($difficulty_record['slug'])) ?>;font-size:12px;font-weight:600;">
+                                            <?php echo esc_html($difficulty_record['name']); ?>
+                                        </span>
+                                    </th>
+                                <?php endforeach; ?>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach($price_data as $category => $grades): ?>
                                 <tr>
                                     <td class="spcu-addon-category"><?php echo esc_html(str_replace('_', ' ', $category)); ?></td>
-                                    <?php foreach(['standard', 'premium', 'exclusive'] as $grade): ?>
+                                    <?php foreach(SPCU_Grades::ordered_keys() as $grade): ?>
                                         <td>
                                             <?php
-                                            if(in_array($grade, $grades)){
+                                            if(in_array($grade, array_map(['SPCU_Grades', 'normalize'], $grades), true)){
                                                 $price = SPCU_Frontend::get_addon_price($area->id, $category, $grade);
                                                 if($price){
                                                     echo '<span class="spcu-addon-price">¥'.intval($price->price_jpy).' / $'.intval($price->price_usd).'</span>';

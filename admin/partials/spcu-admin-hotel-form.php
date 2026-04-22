@@ -77,7 +77,7 @@ wp_enqueue_media();
 
 <div class='wrap'>
     <?php spcu_admin_breadcrumb([
-        ['label' => 'Ski Calculator', 'url' => admin_url('admin.php?page=spcu-dashboard')],
+        ['label' => 'Ski Engine', 'url' => admin_url('admin.php?page=spcu-dashboard')],
         ['label' => 'Hotels', 'url' => admin_url('admin.php?page=spcu-hotels')],
         ['label' => $edit_hotel ? 'Edit Hotel' : 'Add Hotel']
     ]); ?>
@@ -154,14 +154,15 @@ wp_enqueue_media();
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label for="grade">Grade</label></th>
+                <th scope="row"><label for="grade">Difficulty</label></th>
                 <td>
                     <select name='grade' id='grade' required>
-                        <option value=''>- Select Grade -</option>
+                        <option value=''>- Select Difficulty -</option>
                         <?php foreach($grade_options as $grade_key => $grade_label): ?>
                             <option value="<?= esc_attr($grade_key) ?>" <?= (($edit_hotel && $edit_hotel->grade == $grade_key) || (isset($_POST['grade']) && SPCU_Grades::normalize($_POST['grade']) === $grade_key)) ? 'selected' : '' ?>><?= esc_html($grade_label) ?></option>
                         <?php endforeach; ?>
                     </select>
+                    <p class="description">Manage difficulty names and colors in <a href="<?= esc_url(admin_url('admin.php?page=spcu-difficulties')) ?>">Difficulties</a>.</p>
                 </td>
             </tr>
             <tr>

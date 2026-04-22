@@ -68,11 +68,22 @@ class SPCU_Frontend {
      */
     public static function get_area_addon_prices($area_id){
         global $wpdb;
-        
-        return $wpdb->get_results($wpdb->prepare(
-            "SELECT DISTINCT category, grade FROM {$wpdb->prefix}spcu_addon_prices WHERE area_id = %d ORDER BY category ASC, FIELD(grade, 'standard', 'premium', 'exclusive')",
+
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT DISTINCT category, grade FROM {$wpdb->prefix}spcu_addon_prices WHERE area_id = %d ORDER BY category ASC, grade ASC",
             $area_id
         ));
+
+        usort($rows, function($left, $right){
+            if($left->category !== $right->category){
+                return strcmp($left->category, $right->category);
+            }
+
+            $order = array_flip(SPCU_Grades::ordered_keys());
+            return ($order[SPCU_Grades::normalize($left->grade)] ?? PHP_INT_MAX) <=> ($order[SPCU_Grades::normalize($right->grade)] ?? PHP_INT_MAX);
+        });
+
+        return $rows;
     }
 
     /**

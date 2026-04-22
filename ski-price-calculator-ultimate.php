@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Ski Price Calculator Ultimate
- * Description: Manage ski resort areas, hotels (bilingual), grades and pricing with weekday/date/range schedules and JPY/USD support. Frontend calculator shortcode included.
+ * Plugin Name: Ski Engine
+ * Description: Manage ski resort areas, hotels (bilingual), difficulties, tags and pricing with weekday/date/range schedules and JPY/USD support. Frontend calculator shortcode included.
  * Version:     2.0
  * Author:      Dungnt
  * License:     GPLv2 or later
@@ -23,6 +23,9 @@ require_once SPCU_PATH.'includes/class-spcu-frontend.php';
 
 require_once SPCU_PATH.'admin/partials/spcu-admin-areas-post.php';
 add_action('admin_init', 'spcu_handle_areas_post');
+require_once SPCU_PATH.'admin/partials/spcu-admin-difficulties-post.php';
+add_action('admin_init', 'spcu_handle_difficulties_post');
+add_action('admin_init', 'spcu_handle_difficulties_delete');
 
 require_once SPCU_PATH.'admin/partials/spcu-admin-prices-post.php';
 add_action('admin_init', 'spcu_handle_prices_post');
@@ -44,14 +47,29 @@ add_action('init', function(){
         'capabilities' => ['delete' => 'do_not_allow'],
     ]);
     register_taxonomy('spcu_facility', 'spcu_hotel', [
-        'label' => 'Hotel Facilities',
+        'labels' => [
+            'name' => 'Tags',
+            'singular_name' => 'Tag',
+            'menu_name' => 'Tags',
+            'search_items' => 'Search Tags',
+            'popular_items' => 'Popular Tags',
+            'all_items' => 'All Tags',
+            'edit_item' => 'Edit Tag',
+            'view_item' => 'View Tag',
+            'update_item' => 'Update Tag',
+            'add_new_item' => 'Add New Tag',
+            'new_item_name' => 'New Tag Name',
+            'separate_items_with_commas' => 'Separate tags with commas',
+            'add_or_remove_items' => 'Add or remove tags',
+            'choose_from_most_used' => 'Choose from the most used tags',
+            'not_found' => 'No tags found',
+            'back_to_items' => 'Back to Tags',
+        ],
         'public' => false,
         'show_ui' => true,
-        'show_in_menu' => true,
-        'show_in_rest' => [
-            'show_in_rest' => true,
-            'rest_base' => 'spcu_facility',
-        ],
+        'show_in_menu' => false,
+        'show_in_rest' => true,
+        'rest_base' => 'spcu_facility',
         'hierarchical' => false,
         'rewrite' => false,
     ]);

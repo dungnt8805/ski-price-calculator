@@ -50,14 +50,10 @@
     font-family: inherit;
 }
 
-#wpcontent .wrap .wp-editor-wrap * {
-    font-family: inherit;
-}
-
 /* Restore WordPress icon fonts in editor */
 #wpcontent .wrap .mce-ico,
-.mce-ico {
-    font-family: Arial, sans-serif !important;
+#wpcontent .wrap i.mce-i-icon {
+    font-family: 'tinymce', dashicons, Arial, sans-serif !important;
 }
 
 .dashicons {

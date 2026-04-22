@@ -32,8 +32,8 @@ class SPCU_Admin {
     /* Create Admin Menu */
     public function menu(){
         add_menu_page(
-            'Ski Calculator',
-            'Ski Calculator',
+            'Ski Engine',
+            'Ski Engine',
             'manage_options',
             'spcu-dashboard',
             [$this,'dashboard'],
@@ -43,6 +43,8 @@ class SPCU_Admin {
 
         add_submenu_page('spcu-dashboard','Areas','Areas','manage_options','spcu-areas',[$this,'areas']);
         add_submenu_page('spcu-dashboard','Hotels','Hotels','manage_options','spcu-hotels',[$this,'hotels']);
+        add_submenu_page('spcu-dashboard','Difficulties','Difficulties','manage_options','spcu-difficulties',[$this,'difficulties']);
+        add_submenu_page('spcu-dashboard','Tags','Tags','manage_options','edit-tags.php?taxonomy=spcu_facility&post_type=spcu_hotel');
         add_submenu_page('spcu-dashboard','Hotel Form','Hotel Form','manage_options','spcu-hotel-form',[$this,'hotel_form']);
         add_submenu_page('spcu-dashboard','Hotel Prices','Hotel Prices','manage_options','spcu-hotel-prices',[$this,'prices']);
         add_submenu_page('spcu-dashboard','Addon Prices','Addon Prices','manage_options','spcu-addon-prices',[$this,'prices']);
@@ -70,7 +72,7 @@ class SPCU_Admin {
         }
 
         echo "<div class='wrap'>";
-        echo "<h1>Ski Calculator Ultimate</h1>";
+        echo "<h1>Ski Engine</h1>";
         echo "<p class='spcu-dashboard-intro'>Overview of your configured data.</p>";
 
         echo "<div class='spcu-dashboard-grid'>";
@@ -95,6 +97,10 @@ class SPCU_Admin {
 
     public function hotels(){
         require_once plugin_dir_path(__FILE__) . 'partials/spcu-admin-hotels.php';
+    }
+
+    public function difficulties(){
+        require_once plugin_dir_path(__FILE__) . 'partials/spcu-admin-difficulties.php';
     }
 
     public function hotel_form(){
@@ -122,8 +128,9 @@ class SPCU_Admin {
 
     public function set_active_admin_menu($parent_file){
         $page = sanitize_text_field($_GET['page'] ?? '');
+        $taxonomy = sanitize_key($_GET['taxonomy'] ?? '');
 
-        if(in_array($page, ['spcu-hotel-form', 'spcu-hotel-prices'], true)){
+        if(in_array($page, ['spcu-hotel-form', 'spcu-hotel-prices'], true) || $taxonomy === 'spcu_facility'){
             return 'spcu-dashboard';
         }
 
@@ -132,9 +139,14 @@ class SPCU_Admin {
 
     public function set_active_admin_submenu($submenu_file){
         $page = sanitize_text_field($_GET['page'] ?? '');
+        $taxonomy = sanitize_key($_GET['taxonomy'] ?? '');
 
         if(in_array($page, ['spcu-hotel-form', 'spcu-hotel-prices'], true)){
             return 'spcu-hotels';
+        }
+
+        if($taxonomy === 'spcu_facility'){
+            return 'edit-tags.php?taxonomy=spcu_facility&post_type=spcu_hotel';
         }
 
         return $submenu_file;

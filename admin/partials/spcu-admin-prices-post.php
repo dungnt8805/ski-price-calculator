@@ -100,7 +100,7 @@ function spcu_handle_prices_post(){
             spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'error', 'Lift and Gear prices require Days greater than 0.');
         }
         if($post_category === 'transport' && $addon_grade === ''){
-            spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'error', 'Transport prices require Grade selection.');
+            spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'error', 'Transport prices require Difficulty selection.');
         }
     }
 

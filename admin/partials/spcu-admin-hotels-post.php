@@ -91,8 +91,8 @@ function spcu_handle_hotels_post(){
 
     if($area_id <= 0 || $grade === ''){
         $msg = $is_add
-            ? 'Please choose both Area and Grade before saving a hotel.'
-            : 'Please choose both Area and Grade before updating a hotel.';
+            ? 'Please choose both Area and Difficulty before saving a hotel.'
+            : 'Please choose both Area and Difficulty before updating a hotel.';
         spcu_hotels_form_redirect('error', $msg, intval($_POST['hotel_id'] ?? 0));
     }
 

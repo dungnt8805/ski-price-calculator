@@ -55,7 +55,7 @@ wp_enqueue_media();
 
 <div class='wrap'>
     <?php spcu_admin_breadcrumb([
-        ['label' => 'Ski Calculator', 'url' => admin_url('admin.php?page=spcu-dashboard')],
+        ['label' => 'Ski Engine', 'url' => admin_url('admin.php?page=spcu-dashboard')],
         ['label' => 'Areas']
     ]); ?>
 

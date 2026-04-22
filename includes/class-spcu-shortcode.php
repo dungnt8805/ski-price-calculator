@@ -25,7 +25,7 @@ class SPCU_Shortcode {
 
 <div class="ski-calculator" id="spcu-app">
 
-    <h2>Ski Price Calculator</h2>
+    <h2>Ski Engine</h2>
 
     <!-- Step 1: Pick hotel -->
     <div class="spcu-step" id="spcu-step-1">
@@ -544,9 +544,17 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         
         // Get addon prices for this area
         $prices = $wpdb->get_results( $wpdb->prepare(
-            "SELECT DISTINCT category, grade FROM {$wpdb->prefix}spcu_addon_prices WHERE area_id = %d ORDER BY category ASC, FIELD(grade, 'standard', 'premium', 'exclusive') ASC",
+            "SELECT DISTINCT category, grade FROM {$wpdb->prefix}spcu_addon_prices WHERE area_id = %d ORDER BY category ASC, grade ASC",
             $area->id
         ));
+        usort($prices, function($left, $right){
+            if($left->category !== $right->category){
+                return strcmp($left->category, $right->category);
+            }
+
+            $order = array_flip(SPCU_Grades::ordered_keys());
+            return ($order[SPCU_Grades::normalize($left->grade)] ?? PHP_INT_MAX) <=> ($order[SPCU_Grades::normalize($right->grade)] ?? PHP_INT_MAX);
+        });
         
         // Group prices by category and grade
         $price_data = [];
@@ -612,9 +620,13 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                             <thead>
                                 <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
                                     <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Category</th>
-                                    <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Standard</th>
-                                    <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Premium</th>
-                                    <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">Exclusive</th>
+                                    <?php foreach( SPCU_Grades::records() as $difficulty_record ): ?>
+                                        <th style="padding: 10px; text-align: left; font-weight: 600; color: #333;">
+                                            <span style="display:inline-block;padding:4px 10px;border-radius:999px;background:<?= esc_attr($difficulty_record['color']) ?>;color:<?= esc_attr(SPCU_Grades::text_color($difficulty_record['slug'])) ?>;">
+                                                <?= esc_html($difficulty_record['name']) ?>
+                                            </span>
+                                        </th>
+                                    <?php endforeach; ?>
                                 </tr>
                             </thead>
                             <tbody>
@@ -623,10 +635,10 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                                         <td style="padding: 10px; font-weight: 500; color: #333; text-transform: capitalize;">
                                             <?php echo esc_html(str_replace('_', ' ', $category)); ?>
                                         </td>
-                                        <?php foreach( ['standard', 'premium', 'exclusive'] as $grade ): ?>
+                                        <?php foreach( SPCU_Grades::ordered_keys() as $grade ): ?>
                                             <td style="padding: 10px; color: #555;">
                                                 <?php
-                                                if( in_array($grade, $grades) ){
+                                                if( in_array($grade, array_map(['SPCU_Grades', 'normalize'], $grades), true) ){
                                                     $price_entry = $wpdb->get_row( $wpdb->prepare(
                                                         "SELECT price_jpy, price_usd FROM {$wpdb->prefix}spcu_addon_prices WHERE area_id = %d AND category = %s AND grade = %s LIMIT 1",
                                                         $area->id, $category, $grade
@@ -660,7 +672,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         // Get areas
         $areas = $wpdb->get_results("SELECT id, name, name_ja FROM {$wpdb->prefix}spcu_areas ORDER BY name ASC");
         
-        // Grades for package level
+        // Difficulties for package level
         $grades = SPCU_Grades::options();
         
         ob_start(); ?>

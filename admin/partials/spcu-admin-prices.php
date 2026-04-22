@@ -198,13 +198,13 @@ function spcu_schedule_summary($r){
 <?php
 if($page_mode === 'hotel'){
     spcu_admin_breadcrumb([
-        ['label' => 'Ski Calculator', 'url' => admin_url('admin.php?page=spcu-dashboard')],
+        ['label' => 'Ski Engine', 'url' => admin_url('admin.php?page=spcu-dashboard')],
         ['label' => 'Hotels', 'url' => admin_url('admin.php?page=spcu-hotels')],
         ['label' => $selected_hotel ? $selected_hotel->name : 'Hotel Prices']
     ]);
 } else {
     spcu_admin_breadcrumb([
-        ['label' => 'Ski Calculator', 'url' => admin_url('admin.php?page=spcu-dashboard')],
+        ['label' => 'Ski Engine', 'url' => admin_url('admin.php?page=spcu-dashboard')],
         ['label' => 'Addon Prices']
     ]);
 }
@@ -221,7 +221,7 @@ if($page_mode === 'hotel'){
 <div class="spcu-info-card">
     <h2><?= esc_html($selected_hotel->name) ?></h2>
     <p><strong>Area:</strong> <?= esc_html($selected_hotel->area_name ?: '-') ?></p>
-    <p><strong>Grade:</strong> <?= esc_html(SPCU_Grades::label($selected_hotel->grade) ?: '-') ?></p>
+    <p><strong>Difficulty:</strong> <?= esc_html(SPCU_Grades::label($selected_hotel->grade) ?: '-') ?></p>
     <?php if(!empty($selected_hotel->address)): ?><p><strong>Address:</strong> <?= esc_html($selected_hotel->address) ?></p><?php endif; ?>
 </div>
 <?php endif; ?>
@@ -287,12 +287,12 @@ if($page_mode === 'hotel'){
         </td>
     </tr>
 
-    <!-- Grade (Transport only) -->
+    <!-- Difficulty (Transport only) -->
     <tr id="wrap_grade">
-        <th scope="row"><label for="grade">Grade</label></th>
+        <th scope="row"><label for="grade">Difficulty</label></th>
         <td>
             <select name='grade' id="grade">
-                <option value=''>— Select Grade —</option>
+                <option value=''>— Select Difficulty —</option>
                 <?php foreach($grade_options as $grade_key => $grade_label) echo "<option value='".esc_attr($grade_key)."'>".esc_html($grade_label)."</option>"; ?>
             </select>
             <p class="description">Used for Transport prices.</p>
@@ -441,7 +441,7 @@ if($page_mode === 'hotel'){
         <thead>
             <tr>
                 <th>ID</th>
-                <?php if ($page_mode !== 'hotel'): ?><th>Category</th><th>Target (Hotel / Area / Grade)</th><?php endif; ?>
+                <?php if ($page_mode !== 'hotel'): ?><th>Category</th><th>Target (Hotel / Area / Difficulty)</th><?php endif; ?>
                 <th>Days</th>
                 <?php if ($page_mode === 'hotel'): ?><th>Schedule</th><?php endif; ?>
                 <th>Adult JPY</th><th>Adult USD</th><th>Child JPY</th><th>Child USD</th><th>Infant JPY</th><th>Infant USD</th><th>Action</th>
