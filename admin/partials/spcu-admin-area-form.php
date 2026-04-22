@@ -92,13 +92,10 @@ if ($edit_area && !empty($edit_area->difficulties_json)) {
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><label for="type">Area Type</label></th>
+                        <th scope="row"><label for="type">Banner Tag</label></th>
                         <td>
-                            <select name='type' id='type' required>
-                                <option value='City' <?= selected(($edit_area->type ?? ''), 'City', false) ?>>City</option>
-                                <option value='Town' <?= selected(($edit_area->type ?? ''), 'Town', false) ?>>Town</option>
-                                <option value='Village' <?= selected(($edit_area->type ?? ''), 'Village', false) ?>>Village</option>
-                            </select>
+                            <input name='type' id='type' class="regular-text" placeholder='e.g. MOST POPULAR' value='<?= esc_attr($edit_area->type ?? '') ?>'>
+                            <p class="description">This tag appears on the area image in the widgets.</p>
                         </td>
                     </tr>
                     <tr>
