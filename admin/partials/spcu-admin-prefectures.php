@@ -1,46 +1,9 @@
 <?php
-add_action('admin_enqueue_scripts', function($hook){
-
-    // DEBUG: xem hook name nếu cần
-    // error_log($hook);
-
-    // load editor cho toàn bộ page của plugin SPCU
-    if (strpos($hook, 'spcu') !== false) {
-
-        // LOAD TINYMCE (QUAN TRỌNG)
-        wp_enqueue_editor();
-
-        // LOAD ICON
-        wp_enqueue_style('dashicons');
-
-        // LOAD CSS toolbar editor
-        wp_enqueue_style('editor-buttons');
-    }
-
-    // đoạn cũ của bạn
-    if(strpos($hook, 'spcu-hotel-form') !== false){
-        wp_enqueue_script('jquery');
-        wp_enqueue_script(
-            'spcu-facilities',
-            SPCU_URL . 'admin/admin-facilities.js',
-            ['jquery'],
-            '1.0',
-            true
-        );
-
-        wp_localize_script('spcu-facilities', 'spcu_facilities_data', [
-            'nonce' => wp_create_nonce('wp_rest'),
-            'rest_url' => rest_url('wp/v2/'),
-            'ajax_url' => admin_url('admin-ajax.php'),
-        ]);
-    }
-});
-
 if (!defined('ABSPATH')) exit;
 
 global $wpdb;
-$table = $wpdb->prefix.'spcu_areas';
-$area_error = '';
+$table = $wpdb->prefix.'spcu_prefectures';
+$area_error = ''; // using same var name for simplicity
 
 if(!function_exists('spcu_admin_breadcrumb')){
     function spcu_admin_breadcrumb($items){
@@ -70,7 +33,6 @@ if(!$table_exists && class_exists('SPCU_Database')){
 }
 
 $schema_columns = [
-    'prefecture_id' => 'INT NULL',
     'short_description' => 'VARCHAR(200) NULL',
     'description' => 'TEXT NULL',
     'featured_image' => 'INT NULL',
@@ -88,28 +50,22 @@ if($table_exists){
 
 $rows = $wpdb->get_results("SELECT * FROM $table");
 
-$prefectures_table = $wpdb->prefix.'spcu_prefectures';
-$prefectures = [];
-if ((bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $prefectures_table))) {
-    $prefectures = $wpdb->get_results("SELECT id, name FROM $prefectures_table ORDER BY name ASC");
-}
-
 wp_enqueue_media();
 ?>
 
 <div class='wrap'>
     <?php spcu_admin_breadcrumb([
         ['label' => 'Ski Engine', 'url' => admin_url('admin.php?page=spcu-dashboard')],
-        ['label' => 'Areas']
+        ['label' => 'Prefectures']
     ]); ?>
 
     <?php if($edit_area): ?>
         <div style="background:#16a34a;color:#fff;padding:14px 18px;border-radius:8px;margin:16px 0 20px;font-size:18px;font-weight:600;box-shadow:0 6px 18px rgba(22,163,74,0.18);">
-            You are editing the <?= esc_html($edit_area->name) ?>
+            You are editing <?= esc_html($edit_area->name) ?>
         </div>
     <?php endif; ?>
 
-    <h1><?= $edit_area ? 'Edit Area' : 'Areas' ?></h1>
+    <h1><?= $edit_area ? 'Edit Prefecture' : 'Prefectures' ?></h1>
     <?php if($area_error): ?>
         <div class="notice notice-error"><p><?= esc_html($area_error) ?></p></div>
         <div class="spcu-toast-source" data-type="error" data-message="<?= esc_attr($area_error) ?>"></div>
@@ -117,45 +73,24 @@ wp_enqueue_media();
 
     <div class="spcu-split spcu-split-areas">
         <div class="spcu-col spcu-col-form">
-            <form method='post' action='<?= esc_url(admin_url('admin.php?page=spcu-areas')) ?>'>
-                <?php wp_nonce_field('spcu_save_area'); ?>
+            <form method='post' action='<?= esc_url(admin_url('admin.php?page=spcu-prefectures')) ?>'>
+                <?php wp_nonce_field('spcu_save_prefecture'); ?>
                 <?php if($edit_area): ?>
-                    <input type='hidden' name='area_id' value='<?= esc_attr($edit_area->id) ?>'>
+                    <input type='hidden' name='prefecture_id' value='<?= esc_attr($edit_area->id) ?>'>
                 <?php endif; ?>
                 <table class="form-table" role="presentation">
                     <tr>
-                        <th scope="row"><label for="prefecture_id">Prefecture</label></th>
-                        <td>
-                            <select name='prefecture_id' id='prefecture_id' required>
-                                <option value=''>-- Select Prefecture --</option>
-                                <?php foreach($prefectures as $pref): ?>
-                                    <option value='<?= esc_attr($pref->id) ?>' <?= selected(($edit_area->prefecture_id ?? ''), $pref->id, false) ?>><?= esc_html($pref->name) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="type">Area Type</label></th>
-                        <td>
-                            <select name='type' id='type' required>
-                                <option value='City' <?= selected(($edit_area->type ?? ''), 'City', false) ?>>City</option>
-                                <option value='Town' <?= selected(($edit_area->type ?? ''), 'Town', false) ?>>Town</option>
-                                <option value='Village' <?= selected(($edit_area->type ?? ''), 'Village', false) ?>>Village</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="name">Area Name</label></th>
-                        <td><input name='name' id='name' class="regular-text" placeholder='Hakuba' required value='<?= esc_attr($edit_area->name ?? '') ?>'></td>
+                        <th scope="row"><label for="name">Prefecture Name</label></th>
+                        <td><input name='name' id='name' class="regular-text" placeholder='Nagano' required value='<?= esc_attr($edit_area->name ?? '') ?>'></td>
                     </tr>
                     <tr>
                         <th scope="row"><label for="name_ja">Name (Japanese)</label></th>
-                        <td><input name='name_ja' id='name_ja' class="regular-text" placeholder='白馬' value='<?= esc_attr($edit_area->name_ja ?? '') ?>'></td>
+                        <td><input name='name_ja' id='name_ja' class="regular-text" placeholder='長野県' value='<?= esc_attr($edit_area->name_ja ?? '') ?>'></td>
                     </tr>
                     <tr>
                         <th scope="row"><label for="short_description">Short Description</label></th>
                         <td>
-                            <textarea name='short_description' id='short_description' class="large-text" rows="2" maxlength="255" placeholder='Compact overview for the area header'><?= esc_textarea($edit_area->short_description ?? '') ?></textarea>
+                            <textarea name='short_description' id='short_description' class="large-text" rows="2" maxlength="255" placeholder='Compact overview for the header'><?= esc_textarea($edit_area->short_description ?? '') ?></textarea>
                             <p class="description">255 character limit.</p>
                         </td>
                     </tr>
@@ -210,10 +145,10 @@ wp_enqueue_media();
                 </table>
                 <p class="submit">
                     <?php if($edit_area): ?>
-                        <button name='edit_area' value='1' class="button button-primary">Update Area</button>
-                        <a href='?page=spcu-areas' class='button'>Cancel</a>
+                        <button name='edit_area' value='1' class="button button-primary">Update Prefecture</button>
+                        <a href='?page=spcu-prefectures' class='button'>Cancel</a>
                     <?php else: ?>
-                        <button name='add_area' class="button button-primary">Add Area</button>
+                        <button name='add_area' class="button button-primary">Add Prefecture</button>
                     <?php endif; ?>
                 </p>
             </form>
@@ -222,23 +157,14 @@ wp_enqueue_media();
         <div class="spcu-col spcu-col-list">
             <div class='spcu-table'>
                 <table>
-                    <tr><th>Prefecture</th><th>Name</th><th>Short Description</th><th>Featured Image</th><th>Action</th></tr>
-                    <?php foreach($rows as $r): 
-                        $pref_name = '';
-                        foreach($prefectures as $p) {
-                            if($p->id == $r->prefecture_id) {
-                                $pref_name = $p->name;
-                                break;
-                            }
-                        }
-                    ?>
+                    <tr><th>ID</th><th>Name</th><th>Featured Image</th><th>Action</th></tr>
+                    <?php foreach($rows as $r): ?>
                     <tr>
-                        <td><?= esc_html($pref_name) ?></td>
+                        <td><?= esc_html($r->id) ?></td>
                         <td>
                             <strong><?= esc_html($r->name) ?></strong>
                             <?php if(!empty($r->name_ja)): ?><br><span style="color:#6f7f8f;font-size:0.9em;"><?= esc_html($r->name_ja) ?></span><?php endif; ?>
                         </td>
-                        <td><?= esc_html($r->short_description ?? '') ?></td>
                         <td>
                             <?php if(!empty($r->featured_image)):
                                 $thumb = wp_get_attachment_image_url(intval($r->featured_image), 'thumbnail');
@@ -247,7 +173,7 @@ wp_enqueue_media();
                                 <?php endif;
                             endif; ?>
                         </td>
-                        <td><a href='?page=spcu-areas&edit=<?= esc_html($r->id) ?>' class='button button-small'>Edit</a></td>
+                        <td><a href='?page=spcu-prefectures&edit=<?= esc_html($r->id) ?>' class='button button-small'>Edit</a></td>
                     </tr>
                     <?php endforeach; ?>
                 </table>
@@ -328,8 +254,8 @@ document.addEventListener('DOMContentLoaded', function(){
             e.preventDefault();
             if(mediaFrame){ mediaFrame.open(); return; }
             mediaFrame = wp.media({
-                title: 'Select Area Images',
-                button: { text: 'Add to Area' },
+                title: 'Select Images',
+                button: { text: 'Add Images' },
                 multiple: true,
                 library: { type: 'image' }
             });

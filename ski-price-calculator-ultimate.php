@@ -21,6 +21,8 @@ require_once SPCU_PATH.'includes/class-spcu-shortcode.php';
 require_once SPCU_PATH.'includes/class-spcu-api.php';
 require_once SPCU_PATH.'includes/class-spcu-frontend.php';
 
+require_once SPCU_PATH.'admin/partials/spcu-admin-prefectures-post.php';
+add_action('admin_init', 'spcu_handle_prefectures_post');
 require_once SPCU_PATH.'admin/partials/spcu-admin-areas-post.php';
 add_action('admin_init', 'spcu_handle_areas_post');
 require_once SPCU_PATH.'admin/partials/spcu-admin-difficulties-post.php';

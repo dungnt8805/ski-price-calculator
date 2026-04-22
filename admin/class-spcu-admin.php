@@ -41,6 +41,7 @@ class SPCU_Admin {
             26
         );
 
+        add_submenu_page('spcu-dashboard','Prefectures','Prefectures','manage_options','spcu-prefectures',[$this,'prefectures']);
         add_submenu_page('spcu-dashboard','Areas','Areas','manage_options','spcu-areas',[$this,'areas']);
         add_submenu_page('spcu-dashboard','Hotels','Hotels','manage_options','spcu-hotels',[$this,'hotels']);
         add_submenu_page('spcu-dashboard','Difficulties','Difficulties','manage_options','spcu-difficulties',[$this,'difficulties']);
@@ -89,6 +90,10 @@ class SPCU_Admin {
         echo "</div>";
         echo "</div>";
         echo "</div>";
+    }
+
+    public function prefectures(){
+        require_once plugin_dir_path(__FILE__) . 'partials/spcu-admin-prefectures.php';
     }
 
     public function areas(){

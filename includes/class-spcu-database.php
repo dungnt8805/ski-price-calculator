@@ -7,8 +7,19 @@ class SPCU_Database {
 
         require_once(ABSPATH.'wp-admin/includes/upgrade.php');
 
+        $prefectures = "CREATE TABLE {$wpdb->prefix}spcu_prefectures(
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(200) NOT NULL,
+            name_ja VARCHAR(200) NULL,
+            short_description VARCHAR(200) NULL,
+            description TEXT NULL,
+            featured_image INT NULL,
+            images TEXT NULL
+        ) $charset;";
+
         $areas = "CREATE TABLE {$wpdb->prefix}spcu_areas(
             id INT AUTO_INCREMENT PRIMARY KEY,
+            prefecture_id INT NULL,
             type VARCHAR(50) NOT NULL,
             name VARCHAR(200) NOT NULL,
             name_ja VARCHAR(200) NULL,
@@ -72,6 +83,7 @@ class SPCU_Database {
             price_usd DECIMAL(10,2) NULL
         ) $charset;";
 
+        dbDelta($prefectures);
         dbDelta($areas);
         dbDelta($hotels);
         dbDelta($prices);
