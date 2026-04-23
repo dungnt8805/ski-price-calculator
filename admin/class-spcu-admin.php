@@ -65,6 +65,7 @@ class SPCU_Admin {
             $inq_label .= ' <span class="awaiting-mod count-'.intval($new_count).'" style="background:#e74c3c;">'.intval($new_count).'</span>';
         }
         add_submenu_page('spcu-dashboard', 'Inquiries', $inq_label, 'manage_options', 'spcu-inquiries', [$this,'inquiries']);
+        add_submenu_page('spcu-dashboard', 'Settings', 'Settings', 'manage_options', 'spcu-settings', [$this,'settings']);
     }
 
     /* Dashboard */
@@ -147,6 +148,10 @@ class SPCU_Admin {
 
     public function inquiries(){
         require_once plugin_dir_path(__FILE__) . 'partials/spcu-admin-inquiries.php';
+    }
+
+    public function settings(){
+        require_once plugin_dir_path(__FILE__) . 'partials/spcu-admin-settings.php';
     }
 
     public function hide_internal_submenus(){

@@ -34,7 +34,7 @@ class SPCU_Inquiry {
         <div class="spcu-inquiry-wrap">
         <style>
         .spcu-inquiry-wrap{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1e293b;line-height:1.5;}
-        .spcu-inquiry-form{max-width:720px;margin:0 auto;background:#fff;padding:2.5rem;border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,.06);border:1px solid #e2e8f0;}
+        .spcu-inquiry-form{max-width:720px;margin:30px auto;background:#fff;padding:2.5rem;border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,.06);border:1px solid #e2e8f0;}
         .spcu-inquiry-form .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
         .spcu-inquiry-form .form-field{margin-bottom:1rem;}
         .spcu-inquiry-form .form-field label{display:block;font-size:.72rem;font-weight:600;color:#0f1b2d;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.5px;}
@@ -157,6 +157,14 @@ class SPCU_Inquiry {
                 </div>
 
                 <button type="submit" class="btn-submit" id="spcu-inq-submit">Send Enquiry</button>
+                <?php 
+                $footer_text = get_option('spcu_inquiry_footer_text', 'We typically respond within 24 hours &middot; ski@ourjapanmoments.com');
+                if ($footer_text) : 
+                ?>
+                <div class="spcu-inquiry-footer" style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: #64748b;">
+                    <?= wp_kses_post($footer_text) ?>
+                </div>
+                <?php endif; ?>
             </form>
 
             <div class="spcu-inquiry-success" id="spcu-inq-success">
@@ -284,22 +292,51 @@ class SPCU_Inquiry {
             wp_send_json_error('Could not save enquiry. Please try again.');
         }
 
-        // Optional: notify admin
-        $admin_email = get_option('admin_email');
-        $subject = 'New Ski Enquiry from ' . $first_name . ' ' . $last_name;
-        $body  = "Name: {$first_name} {$last_name}\n";
-        $body .= "Email: {$email}\n";
-        if($country)       $body .= "Country: {$country}\n";
-        if($phone)         $body .= "Phone: {$phone}\n";
-        if($resort)        $body .= "Resort: {$resort}\n";
-        if($package_level) $body .= "Package Level: {$package_level}\n";
-        if($check_in)      $body .= "Check-in: {$check_in}\n";
-        if($check_out)     $body .= "Check-out: {$check_out}\n";
-        if($num_guests)    $body .= "Guests: {$num_guests}\n";
-        if($experience)    $body .= "Experience: {$experience}\n";
-        if($message)       $body .= "\nMessage:\n{$message}\n";
-        $body .= "\nView in admin: " . admin_url('admin.php?page=spcu-inquiries');
-        wp_mail($admin_email, $subject, $body);
+        // Prepare placeholders
+        $placeholders = [
+            '{first_name}'    => $first_name,
+            '{last_name}'     => $last_name,
+            '{email}'         => $email,
+            '{country}'       => $country,
+            '{phone}'         => $phone,
+            '{resort}'        => $resort,
+            '{package_level}' => $package_level,
+            '{check_in}'      => $check_in,
+            '{check_out}'     => $check_out,
+            '{num_guests}'    => $num_guests,
+            '{experience}'    => $experience,
+            '{message}'       => $message,
+        ];
+
+        $replace_vars = function($string) use ($placeholders) {
+            foreach ($placeholders as $key => $val) {
+                $string = str_replace($key, esc_html($val), $string);
+            }
+            return $string;
+        };
+
+        // Send to Admin
+        $admin_email_to = get_option('spcu_admin_email_to', get_option('admin_email'));
+        if (empty($admin_email_to)) {
+            $admin_email_to = get_option('admin_email');
+        }
+        $admin_subject  = get_option('spcu_admin_email_subject', 'New Ski Enquiry from {first_name} {last_name}');
+        $admin_body     = get_option('spcu_admin_email_body', "New inquiry received!\n\nName: {first_name} {last_name}\nEmail: {email}\nCountry: {country}\nPhone: {phone}\nResort: {resort}\nPackage Level: {package_level}\nCheck-in: {check_in}\nCheck-out: {check_out}\nGuests: {num_guests}\nExperience: {experience}\n\nMessage:\n{message}");
+        
+        $admin_subject_parsed = $replace_vars($admin_subject);
+        $admin_body_parsed    = nl2br($replace_vars($admin_body));
+
+        $headers = ['Content-Type: text/html; charset=UTF-8'];
+        wp_mail($admin_email_to, $admin_subject_parsed, $admin_body_parsed, $headers);
+
+        // Send to Customer
+        $customer_subject = get_option('spcu_customer_email_subject', 'Thank you for your enquiry, {first_name}');
+        $customer_body    = get_option('spcu_customer_email_body', "Hi {first_name},\n\nThank you for reaching out to us! We have received your inquiry regarding {resort} and will get back to you within 24 hours.\n\nBest regards,\nThe Skiverse Team");
+        
+        $customer_subject_parsed = $replace_vars($customer_subject);
+        $customer_body_parsed    = nl2br($replace_vars($customer_body));
+
+        wp_mail($email, $customer_subject_parsed, $customer_body_parsed, $headers);
 
         wp_send_json_success('Enquiry submitted.');
     }
