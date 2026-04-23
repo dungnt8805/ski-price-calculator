@@ -672,6 +672,52 @@
     font-family: 'Inter', sans-serif;
 }
 
+.spcu-pref-menu {
+    background: #0f1b2d;
+    border-radius: 14px;
+    padding: 2rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.spcu-pref-menu__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+.spcu-pref-menu__col {
+    min-width: 0;
+}
+
+.spcu-pref-menu__title {
+    margin: 0 0 0.8rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.4;
+}
+
+.spcu-pref-menu__title-ja {
+    margin-left: 0.25rem;
+    color: #fbbf24;
+    font-weight: 600;
+}
+
+.spcu-pref-menu__link {
+    display: block;
+    color: rgba(255, 255, 255, 0.72);
+    text-decoration: none;
+    font-size: 0.84rem;
+    line-height: 1.4;
+    padding: 0.18rem 0;
+    transition: color 0.2s ease;
+}
+
+.spcu-pref-menu__link:hover {
+    color: #f59e0b;
+}
+
 .spcu-hotels-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -781,12 +827,25 @@
 }
 
 @media (max-width: 1024px) {
+    .spcu-pref-menu__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .spcu-hotels-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 640px) {
+    .spcu-pref-menu {
+        padding: 1.2rem;
+    }
+
+    .spcu-pref-menu__grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
     .spcu-hotels-grid {
         grid-template-columns: 1fr;
     }
