@@ -66,23 +66,39 @@ $hotel_grade_labels = [
 ];
 
 $hotel_grade_colors = [
-    'standard' => ['bg' => '#e2e8f0', 'text' => '#334155'],
-    'premium' => ['bg' => '#dbeafe', 'text' => '#1d4ed8'],
-    'exclusive' => ['bg' => '#fef3c7', 'text' => '#92400e'],
+    'standard' => ['bg' => '#ecfdf5', 'text' => '#059669'],
+    'premium' => ['bg' => '#fffbeb', 'text' => '#d97706'],
+    'exclusive' => ['bg' => '#f5f3ff', 'text' => '#7c3aed'],
 ];
+
+$terrain_image = $area_featured_image;
+if(!$terrain_image && !empty($area_gallery_images)){
+    $terrain_image = $area_gallery_images[0];
+}
+
+$hero_stats = [];
+if(!empty($area->total_runs)){
+    $hero_stats[] = ['value' => (string) $area->total_runs, 'label' => 'Runs'];
+}
+if(!empty($area->total_resorts)){
+    $hero_stats[] = ['value' => (string) $area->total_resorts, 'label' => 'Resorts'];
+}
+if(!empty($area->summit)){
+    $hero_stats[] = ['value' => number_format_i18n((int) $area->summit) . 'm', 'label' => 'Summit'];
+}
+if(!empty($area->distance)){
+    $hero_stats[] = ['value' => (string) $area->distance, 'label' => 'From Tokyo'];
+} elseif(!empty($area->max_vertical)){
+    $hero_stats[] = ['value' => number_format_i18n((int) $area->max_vertical) . 'm', 'label' => 'Vertical'];
+}
+if(count($hero_stats) < 4 && !empty($area->season)){
+    $hero_stats[] = ['value' => (string) $area->season, 'label' => 'Season'];
+}
+
+$hero_stats = array_slice($hero_stats, 0, 4);
 ?>
 
 <div class="spcu-area-detail">
-    <nav class="spcu-area-detail__breadcrumb" aria-label="Breadcrumb">
-        <div class="spcu-area-detail__shell">
-            <a href="<?php echo esc_url(home_url('/')); ?>">Home</a>
-            <span>/</span>
-            <span>Area</span>
-            <span>/</span>
-            <span><?php echo esc_html($area->name); ?></span>
-        </div>
-    </nav>
-
     <section class="spcu-area-detail__hero"<?php if($area_featured_image): ?> style="background-image: url('<?php echo esc_url($area_featured_image); ?>');"<?php endif; ?>>
         <div class="spcu-area-detail__hero-overlay"></div>
         <div class="spcu-area-detail__shell spcu-area-detail__hero-inner">
@@ -119,6 +135,17 @@ $hotel_grade_colors = [
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
+
+            <?php if(!empty($hero_stats)): ?>
+                <div class="spcu-area-detail__hero-stats">
+                    <?php foreach($hero_stats as $hero_stat): ?>
+                        <div class="spcu-area-detail__hero-stat">
+                            <div class="spcu-area-detail__hero-stat-value"><?php echo esc_html($hero_stat['value']); ?></div>
+                            <div class="spcu-area-detail__hero-stat-label"><?php echo esc_html($hero_stat['label']); ?></div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </section>
 
@@ -126,11 +153,10 @@ $hotel_grade_colors = [
         <?php if(!empty($area->description) || !empty($area->short_description)): ?>
             <section class="spcu-area-detail__section">
                 <div class="spcu-area-detail__section-head">
-                    <span class="spcu-area-detail__kicker">Overview</span>
                     <h2>About this area</h2>
                 </div>
 
-                <div class="spcu-area-detail__copy">
+                <div class="spcu-area-detail__copy spcu-area-detail__intro-copy">
                     <?php
                     if(!empty($area->description)){
                         echo wp_kses_post(wpautop($area->description));
@@ -151,43 +177,40 @@ $hotel_grade_colors = [
             !empty($area->distance) ||
             !empty($difficulty_breakdown)
         ): ?>
-            <section class="spcu-area-detail__section spcu-area-detail__section--split">
-                <div>
-                    <div class="spcu-area-detail__section-head">
-                        <span class="spcu-area-detail__kicker">Highlights</span>
-                        <h2>Mountain snapshot</h2>
-                    </div>
+            <section class="spcu-area-detail__section">
+                <div class="spcu-area-detail__section-head">
+                    <h2>Course Map &amp; Terrain</h2>
+                </div>
 
-                    <div class="spcu-area-detail__stats">
+                <div class="spcu-area-detail__terrain-panel">
+                    <?php if($terrain_image): ?>
+                        <div class="spcu-area-detail__terrain-image" style="background-image: url('<?php echo esc_url($terrain_image); ?>');">
+                            <div class="spcu-area-detail__terrain-overlay">
+                                <span>🗺 <?php echo esc_html($area->name); ?> terrain overview</span>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="spcu-area-detail__stats spcu-area-detail__stats--terrain">
                         <?php if(!empty($area->total_runs)): ?>
                             <div class="spcu-area-detail__stat-card"><strong><?php echo esc_html($area->total_runs); ?></strong><span>Total Runs</span></div>
                         <?php endif; ?>
                         <?php if(!empty($area->max_vertical)): ?>
                             <div class="spcu-area-detail__stat-card"><strong><?php echo esc_html(number_format_i18n((int) $area->max_vertical)); ?>m</strong><span>Max Vertical</span></div>
                         <?php endif; ?>
-                        <?php if(!empty($area->summit)): ?>
-                            <div class="spcu-area-detail__stat-card"><strong><?php echo esc_html(number_format_i18n((int) $area->summit)); ?>m</strong><span>Summit</span></div>
-                        <?php endif; ?>
                         <?php if(!empty($area->total_resorts)): ?>
                             <div class="spcu-area-detail__stat-card"><strong><?php echo esc_html($area->total_resorts); ?></strong><span>Resorts</span></div>
                         <?php endif; ?>
                         <?php if(!empty($area->season)): ?>
                             <div class="spcu-area-detail__stat-card"><strong><?php echo esc_html($area->season); ?></strong><span>Season</span></div>
-                        <?php endif; ?>
-                        <?php if(!empty($area->distance)): ?>
-                            <div class="spcu-area-detail__stat-card"><strong><?php echo esc_html($area->distance); ?></strong><span>From Tokyo</span></div>
+                        <?php elseif(!empty($area->summit)): ?>
+                            <div class="spcu-area-detail__stat-card"><strong><?php echo esc_html(number_format_i18n((int) $area->summit)); ?>m</strong><span>Summit</span></div>
                         <?php endif; ?>
                     </div>
-                </div>
 
-                <?php if(!empty($difficulty_breakdown)): ?>
-                    <div>
-                        <div class="spcu-area-detail__section-head">
-                            <span class="spcu-area-detail__kicker">Terrain</span>
-                            <h2>Difficulty mix</h2>
-                        </div>
-
-                        <div class="spcu-area-detail__difficulty-list">
+                    <?php if(!empty($difficulty_breakdown)): ?>
+                        <div class="spcu-area-detail__difficulty-bar">
+                            <span class="spcu-area-detail__difficulty-label">Difficulty:</span>
                             <?php foreach(SPCU_Grades::records() as $difficulty_record): ?>
                                 <?php
                                 $difficulty_slug = $difficulty_record['slug'];
@@ -196,30 +219,24 @@ $hotel_grade_colors = [
                                     continue;
                                 }
                                 ?>
-                                <div class="spcu-area-detail__difficulty-row">
-                                    <div class="spcu-area-detail__difficulty-meta">
-                                        <span><?php echo esc_html($difficulty_record['name']); ?></span>
-                                        <strong><?php echo esc_html($difficulty_value); ?>%</strong>
-                                    </div>
-                                    <div class="spcu-area-detail__difficulty-track">
-                                        <span style="width: <?php echo esc_attr(min(100, $difficulty_value)); ?>%; background: <?php echo esc_attr($difficulty_record['color']); ?>;"></span>
-                                    </div>
-                                </div>
+                                <span class="spcu-area-detail__difficulty-pill">
+                                    <span class="spcu-area-detail__difficulty-dot" style="background: <?php echo esc_attr($difficulty_record['color']); ?>;"></span>
+                                    <?php echo esc_html($difficulty_record['name']); ?> <?php echo esc_html($difficulty_value); ?>%
+                                </span>
                             <?php endforeach; ?>
                         </div>
-                    </div>
-                <?php endif; ?>
+                    <?php endif; ?>
+                </div>
             </section>
         <?php endif; ?>
 
         <?php if(!empty($area_gallery_images)): ?>
             <section class="spcu-area-detail__section">
                 <div class="spcu-area-detail__section-head">
-                    <span class="spcu-area-detail__kicker">Gallery</span>
                     <h2>See the area</h2>
                 </div>
 
-                <div class="spcu-area-detail__gallery">
+                <div class="spcu-area-detail__gallery spcu-area-detail__gallery--strip">
                     <?php foreach($area_gallery_images as $gallery_image): ?>
                         <figure class="spcu-area-detail__gallery-item">
                             <img src="<?php echo esc_url($gallery_image); ?>" alt="<?php echo esc_attr($area->name); ?>" loading="lazy">
@@ -231,7 +248,6 @@ $hotel_grade_colors = [
 
         <section class="spcu-area-detail__section">
             <div class="spcu-area-detail__section-head">
-                <span class="spcu-area-detail__kicker">Stay</span>
                 <h2>Hotels in <?php echo esc_html($area->name); ?></h2>
             </div>
 
@@ -295,6 +311,16 @@ $hotel_grade_colors = [
                                     <p class="spcu-area-hotel-card__title-ja"><?php echo esc_html($hotel->name_ja); ?></p>
                                 <?php endif; ?>
 
+                                <p class="spcu-area-hotel-card__meta">
+                                    <?php if(!empty($area->name)): ?>
+                                        <?php echo esc_html($area->name); ?>
+                                    <?php endif; ?>
+                                    <?php if(!empty($hotel->address)): ?>
+                                        <span class="spcu-area-hotel-card__meta-sep">·</span>
+                                        <?php echo esc_html($hotel->address); ?>
+                                    <?php endif; ?>
+                                </p>
+
                                 <?php if(!empty($hotel->short_description)): ?>
                                     <p class="spcu-area-hotel-card__desc"><?php echo esc_html($hotel->short_description); ?></p>
                                 <?php endif; ?>
@@ -313,10 +339,6 @@ $hotel_grade_colors = [
                                     </div>
                                 <?php endif; ?>
 
-                                <?php if(!empty($hotel->address)): ?>
-                                    <p class="spcu-area-hotel-card__address"><?php echo esc_html($hotel->address); ?></p>
-                                <?php endif; ?>
-
                                 <?php if(!empty($hotel->address_ja)): ?>
                                     <p class="spcu-area-hotel-card__address-ja"><?php echo esc_html($hotel->address_ja); ?></p>
                                 <?php endif; ?>
@@ -330,7 +352,6 @@ $hotel_grade_colors = [
         <?php if(!empty($price_data)): ?>
             <section class="spcu-area-detail__section">
                 <div class="spcu-area-detail__section-head">
-                    <span class="spcu-area-detail__kicker">Pricing</span>
                     <h2>Additional fees</h2>
                 </div>
 
