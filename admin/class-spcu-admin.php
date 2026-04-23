@@ -52,6 +52,19 @@ class SPCU_Admin {
         add_submenu_page('spcu-dashboard','Hotel Prices','Hotel Prices','manage_options','spcu-hotel-prices',[$this,'prices']);
         add_submenu_page('spcu-dashboard','Addon Prices','Addon Prices','manage_options','spcu-addon-prices',[$this,'prices']);
         add_submenu_page('spcu-dashboard','Import / Export','Import / Export','manage_options','spcu-io',[$this,'io']);
+
+        // Inquiries — show unread count badge
+        global $wpdb;
+        $inq_table = $wpdb->prefix . 'spcu_inquiries';
+        $new_count = 0;
+        if((bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $inq_table))){
+            $new_count = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$inq_table} WHERE status = 'new'");
+        }
+        $inq_label = 'Inquiries';
+        if($new_count > 0){
+            $inq_label .= ' <span class="awaiting-mod count-'.intval($new_count).'" style="background:#e74c3c;">'.intval($new_count).'</span>';
+        }
+        add_submenu_page('spcu-dashboard', 'Inquiries', $inq_label, 'manage_options', 'spcu-inquiries', [$this,'inquiries']);
     }
 
     /* Dashboard */
@@ -130,6 +143,10 @@ class SPCU_Admin {
         echo "<div class='wrap'><h1>Import / Export</h1>
         <p><a href='".rest_url('spc/v1/export')."' class='button button-primary'>Download CSV</a></p>
         </div>";
+    }
+
+    public function inquiries(){
+        require_once plugin_dir_path(__FILE__) . 'partials/spcu-admin-inquiries.php';
     }
 
     public function hide_internal_submenus(){

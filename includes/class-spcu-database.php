@@ -97,10 +97,29 @@ class SPCU_Database {
             price_usd DECIMAL(10,2) NULL
         ) $charset;";
 
+        $inquiries = "CREATE TABLE {$wpdb->prefix}spcu_inquiries(
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            first_name VARCHAR(100) NOT NULL,
+            last_name VARCHAR(100) NOT NULL,
+            email VARCHAR(200) NOT NULL,
+            country VARCHAR(100) NULL,
+            phone VARCHAR(50) NULL,
+            resort VARCHAR(200) NULL,
+            package_level VARCHAR(20) NULL,
+            check_in DATE NULL,
+            check_out DATE NULL,
+            num_guests TINYINT NULL,
+            experience VARCHAR(50) NULL,
+            message TEXT NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'new',
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ) $charset;";
+
         dbDelta($prefectures);
         dbDelta($areas);
         dbDelta($hotels);
         dbDelta($prices);
         dbDelta($addon_prices);
+        dbDelta($inquiries);
     }
 }
