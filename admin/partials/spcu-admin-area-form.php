@@ -256,6 +256,25 @@ if ($edit_area && !empty($edit_area->difficulties_json)) {
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><label for="spcu_area_coursemap_terrain_image_id">Course Map &amp; Terrain Image</label></th>
+                        <td>
+                            <input type='hidden' name='coursemap_terrain_image' id='spcu_area_coursemap_terrain_image_id' value='<?= esc_attr(isset($edit_area->coursemap_terrain_image) ? intval($edit_area->coursemap_terrain_image) : 0) ?>'>
+                            <div id="spcu-area-coursemap-terrain-image-preview" style="margin-bottom:10px;">
+                                <?php
+                                $terrain_id = isset($edit_area->coursemap_terrain_image) ? intval($edit_area->coursemap_terrain_image) : 0;
+                                if($terrain_id){
+                                    $terrain_thumb = wp_get_attachment_image_url($terrain_id, 'medium');
+                                    if($terrain_thumb){
+                                        echo "<img src='".esc_url($terrain_thumb)."' style='width:120px;height:120px;object-fit:cover;border-radius:6px;border:2px solid #ccc;'>";
+                                    }
+                                }
+                                ?>
+                            </div>
+                            <button type='button' id='spcu-area-select-coursemap-terrain-image' class='button'>Select Course Map &amp; Terrain Image</button>
+                            <button type='button' id='spcu-area-remove-coursemap-terrain-image' class='button' <?= $terrain_id ? '' : 'style="display:none;"' ?>>Remove</button>
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><label>Images</label></th>
                         <td>
                             <input type='hidden' name='images' id='spcu_area_images_ids' value='<?= esc_attr($edit_area->images ?? '') ?>'>
@@ -297,6 +316,7 @@ if ($edit_area && !empty($edit_area->difficulties_json)) {
 document.addEventListener('DOMContentLoaded', function(){
     var mediaFrame;
     var featuredMediaFrame;
+    var terrainMediaFrame;
     var idsField = document.getElementById('spcu_area_images_ids');
     var preview = document.getElementById('spcu-area-image-preview');
     var addBtn = document.getElementById('spcu-area-add-images');
@@ -304,6 +324,10 @@ document.addEventListener('DOMContentLoaded', function(){
     var featuredPreview = document.getElementById('spcu-area-featured-image-preview');
     var featuredSelectBtn = document.getElementById('spcu-area-select-featured-image');
     var featuredRemoveBtn = document.getElementById('spcu-area-remove-featured-image');
+    var terrainIdField = document.getElementById('spcu_area_coursemap_terrain_image_id');
+    var terrainPreview = document.getElementById('spcu-area-coursemap-terrain-image-preview');
+    var terrainSelectBtn = document.getElementById('spcu-area-select-coursemap-terrain-image');
+    var terrainRemoveBtn = document.getElementById('spcu-area-remove-coursemap-terrain-image');
 
     function getIds(){ return idsField && idsField.value ? idsField.value.split(',').filter(Boolean) : []; }
     function setIds(arr){ if(idsField) idsField.value = arr.join(','); }
@@ -317,6 +341,18 @@ document.addEventListener('DOMContentLoaded', function(){
         } else {
             featuredPreview.innerHTML = '';
             if(featuredRemoveBtn) featuredRemoveBtn.style.display = 'none';
+        }
+    }
+
+    function setTerrainImage(id, url){
+        if(!terrainIdField || !terrainPreview) return;
+        terrainIdField.value = id ? String(id) : '0';
+        if(url){
+            terrainPreview.innerHTML = '<img src="'+url+'" style="width:120px;height:120px;object-fit:cover;border-radius:6px;border:2px solid #ccc;">';
+            if(terrainRemoveBtn) terrainRemoveBtn.style.display = '';
+        } else {
+            terrainPreview.innerHTML = '';
+            if(terrainRemoveBtn) terrainRemoveBtn.style.display = 'none';
         }
     }
 
@@ -357,6 +393,36 @@ document.addEventListener('DOMContentLoaded', function(){
         featuredRemoveBtn.addEventListener('click', function(e){
             e.preventDefault();
             setFeaturedImage(0, '');
+        });
+    }
+
+    if(terrainSelectBtn){
+        terrainSelectBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            if(terrainMediaFrame){ terrainMediaFrame.open(); return; }
+            terrainMediaFrame = wp.media({
+                title: 'Select Course Map & Terrain Image',
+                button: { text: 'Use this image' },
+                multiple: false,
+                library: { type: 'image' }
+            });
+            terrainMediaFrame.on('select', function(){
+                var attachment = terrainMediaFrame.state().get('selection').first();
+                if(!attachment) return;
+                var id = attachment.attributes.id;
+                var previewUrl = attachment.attributes.sizes && attachment.attributes.sizes.medium
+                    ? attachment.attributes.sizes.medium.url
+                    : attachment.attributes.url;
+                setTerrainImage(id, previewUrl);
+            });
+            terrainMediaFrame.open();
+        });
+    }
+
+    if(terrainRemoveBtn){
+        terrainRemoveBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            setTerrainImage(0, '');
         });
     }
 

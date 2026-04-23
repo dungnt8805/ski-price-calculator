@@ -70,6 +70,7 @@ $schema_columns = [
     'short_description' => 'VARCHAR(200) NULL',
     'description' => 'TEXT NULL',
     'featured_image' => 'INT NULL',
+    'coursemap_terrain_image' => 'INT NULL',
     'images' => 'TEXT NULL',
     'total_runs' => 'INT NULL',
     'max_vertical' => 'INT NULL',

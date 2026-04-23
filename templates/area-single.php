@@ -43,6 +43,12 @@ if(!empty($area->images)){
     }
 }
 
+$area_slideshow_images = $area_gallery_images;
+if($area_featured_image){
+    array_unshift($area_slideshow_images, $area_featured_image);
+    $area_slideshow_images = array_values(array_unique($area_slideshow_images));
+}
+
 $price_data = [];
 foreach($addon_prices as $addon_price){
     if(!isset($price_data[$addon_price->category])){
@@ -104,7 +110,13 @@ $hotel_grade_colors = [
     'exclusive' => ['bg' => '#f5f3ff', 'text' => '#7c3aed'],
 ];
 
-$terrain_image = $area_featured_image;
+$terrain_image = '';
+if(!empty($area->coursemap_terrain_image)){
+    $terrain_image = wp_get_attachment_image_url((int) $area->coursemap_terrain_image, 'full');
+}
+if(!$terrain_image){
+    $terrain_image = $area_featured_image;
+}
 if(!$terrain_image && !empty($area_gallery_images)){
     $terrain_image = $area_gallery_images[0];
 }
@@ -263,18 +275,37 @@ $hero_stats = array_slice($hero_stats, 0, 4);
             </section>
         <?php endif; ?>
 
-        <?php if(!empty($area_gallery_images)): ?>
+        <?php if(!empty($area_slideshow_images)): ?>
             <section class="spcu-area-detail__section">
                 <div class="spcu-area-detail__section-head">
                     <h2>See the area</h2>
                 </div>
 
-                <div class="spcu-area-detail__gallery spcu-area-detail__gallery--strip">
-                    <?php foreach($area_gallery_images as $gallery_image): ?>
-                        <figure class="spcu-area-detail__gallery-item">
-                            <img src="<?php echo esc_url($gallery_image); ?>" alt="<?php echo esc_attr($area->name); ?>" loading="lazy">
-                        </figure>
-                    <?php endforeach; ?>
+                <div class="spcu-area-detail__slideshow" data-autoplay="true" data-interval="4200">
+                    <div class="spcu-area-detail__slides-track">
+                        <?php foreach($area_slideshow_images as $index => $gallery_image): ?>
+                            <figure class="spcu-area-detail__slide" aria-hidden="<?php echo $index === 0 ? 'false' : 'true'; ?>">
+                                <img src="<?php echo esc_url($gallery_image); ?>" alt="<?php echo esc_attr($area->name . ' photo ' . ($index + 1)); ?>" loading="lazy">
+                            </figure>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <?php if(count($area_slideshow_images) > 1): ?>
+                        <button type="button" class="spcu-area-detail__slide-btn spcu-area-detail__slide-btn--prev" data-direction="prev" aria-label="Previous image">&#10094;</button>
+                        <button type="button" class="spcu-area-detail__slide-btn spcu-area-detail__slide-btn--next" data-direction="next" aria-label="Next image">&#10095;</button>
+
+                        <div class="spcu-area-detail__slide-dots" role="tablist" aria-label="Area image navigation">
+                            <?php foreach($area_slideshow_images as $index => $gallery_image): ?>
+                                <button
+                                    type="button"
+                                    class="spcu-area-detail__slide-dot<?php echo $index === 0 ? ' is-active' : ''; ?>"
+                                    data-slide-index="<?php echo esc_attr((string) $index); ?>"
+                                    aria-label="Go to image <?php echo esc_attr((string) ($index + 1)); ?>"
+                                    aria-selected="<?php echo $index === 0 ? 'true' : 'false'; ?>"
+                                ></button>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </section>
         <?php endif; ?>
@@ -424,5 +455,88 @@ $hero_stats = array_slice($hero_stats, 0, 4);
 
     </main>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var sliders = document.querySelectorAll('.spcu-area-detail__slideshow');
+
+    sliders.forEach(function(slider){
+        var track = slider.querySelector('.spcu-area-detail__slides-track');
+        var slides = slider.querySelectorAll('.spcu-area-detail__slide');
+        var dots = slider.querySelectorAll('.spcu-area-detail__slide-dot');
+        var prevBtn = slider.querySelector('.spcu-area-detail__slide-btn--prev');
+        var nextBtn = slider.querySelector('.spcu-area-detail__slide-btn--next');
+        var total = slides.length;
+        var current = 0;
+        var autoplay = slider.dataset.autoplay === 'true';
+        var intervalMs = parseInt(slider.dataset.interval || '4200', 10);
+        var timerId = null;
+
+        if(!track || total <= 1){
+            return;
+        }
+
+        var render = function(index){
+            current = (index + total) % total;
+            track.style.transform = 'translateX(' + (-current * 100) + '%)';
+
+            slides.forEach(function(slide, slideIndex){
+                slide.setAttribute('aria-hidden', slideIndex === current ? 'false' : 'true');
+            });
+
+            dots.forEach(function(dot, dotIndex){
+                var active = dotIndex === current;
+                dot.classList.toggle('is-active', active);
+                dot.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+        };
+
+        var stopAutoplay = function(){
+            if(timerId !== null){
+                window.clearInterval(timerId);
+                timerId = null;
+            }
+        };
+
+        var startAutoplay = function(){
+            if(!autoplay){
+                return;
+            }
+            stopAutoplay();
+            timerId = window.setInterval(function(){
+                render(current + 1);
+            }, intervalMs);
+        };
+
+        if(prevBtn){
+            prevBtn.addEventListener('click', function(){
+                render(current - 1);
+                startAutoplay();
+            });
+        }
+
+        if(nextBtn){
+            nextBtn.addEventListener('click', function(){
+                render(current + 1);
+                startAutoplay();
+            });
+        }
+
+        dots.forEach(function(dot){
+            dot.addEventListener('click', function(){
+                var target = parseInt(dot.getAttribute('data-slide-index') || '0', 10);
+                render(target);
+                startAutoplay();
+            });
+        });
+
+        slider.addEventListener('mouseenter', stopAutoplay);
+        slider.addEventListener('mouseleave', startAutoplay);
+
+        render(0);
+        startAutoplay();
+    });
+});
+</script>
 
 <?php get_footer();
