@@ -98,6 +98,17 @@ if($price_form_error === '' && $page_mode === 'addon'){
 }
 
 $days_of_week = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+
+// ── Edit mode ─────────────────────────────────────────────────
+$edit_price_id = ($page_mode === 'addon' && isset($_GET['edit'])) ? intval($_GET['edit']) : 0;
+$editing_row   = null;
+if($edit_price_id > 0 && $price_form_error === ''){
+    $editing_row = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM {$db_table} WHERE id = %d AND area_id = %d",
+        $edit_price_id, $selected_area_id
+    ));
+    if(!$editing_row){ $edit_price_id = 0; }
+}
 $day_labels   = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
 /* ── Load rows ───────────────────────────────────────────────────── */
@@ -355,6 +366,9 @@ if($page_mode === 'hotel'){
 
 <form method='post' id="price-form">
 <?php wp_nonce_field('spcu_save_price_rule'); ?>
+<?php if($edit_price_id > 0): ?>
+    <input type="hidden" name="edit_price_id" value="<?= esc_attr($edit_price_id) ?>">
+<?php endif; ?>
 <table class="form-table" role="presentation">
 
     <!-- Category -->
@@ -365,9 +379,9 @@ if($page_mode === 'hotel'){
             <th scope="row"><label for="category">Category</label></th>
             <td>
                 <select name='category' id="category" required>
-                    <option value='lift'>Lift</option>
-                    <option value='gear'>Gear</option>
-                    <option value='transport'>Transport</option>
+                    <?php foreach(['lift'=>'Lift','gear'=>'Gear','transport'=>'Transport'] as $cv => $cl): ?>
+                        <option value="<?= esc_attr($cv) ?>"<?= ($editing_row && $editing_row->category === $cv) ? ' selected' : '' ?>><?= esc_html($cl) ?></option>
+                    <?php endforeach; ?>
                 </select>
             </td>
         </tr>
@@ -411,7 +425,9 @@ if($page_mode === 'hotel'){
         <td>
             <select name='grade' id="grade">
                 <option value=''>— Select Grade —</option>
-                <?php foreach($grade_options as $grade_key => $grade_label) echo "<option value='".esc_attr($grade_key)."'>".esc_html($grade_label)."</option>"; ?>
+                <?php foreach($grade_options as $grade_key => $grade_label): ?>
+                    <option value="<?= esc_attr($grade_key) ?>"<?= ($editing_row && SPCU_Grades::normalize($editing_row->grade ?? '') === $grade_key) ? ' selected' : '' ?>><?= esc_html($grade_label) ?></option>
+                <?php endforeach; ?>
             </select>
             <p class="description">Used for Transport prices.</p>
         </td>
@@ -508,48 +524,59 @@ if($page_mode === 'hotel'){
     <tr>
         <th scope="row">Currency</th>
         <td>
-            <label><input type='checkbox' id='currency_jpy' checked> JPY (¥)</label>
+            <?php
+            $edit_jpy = !$editing_row || in_array($editing_row->currency ?? 'JPY', ['JPY','BOTH']);
+            $edit_usd = $editing_row  &&  in_array($editing_row->currency ?? 'JPY', ['USD','BOTH']);
+            ?>
+            <label><input type='checkbox' id='currency_jpy'<?= $edit_jpy ? ' checked' : '' ?>> JPY (¥)</label>
             &nbsp;&nbsp;
-            <label><input type='checkbox' id='currency_usd'> USD ($)</label>
-            <input type='hidden' name='currency_jpy' id='currency_jpy_hidden' value='1'>
-            <input type='hidden' name='currency_usd' id='currency_usd_hidden' value=''>
+            <label><input type='checkbox' id='currency_usd'<?= $edit_usd ? ' checked' : '' ?>> USD ($)</label>
+            <input type='hidden' name='currency_jpy' id='currency_jpy_hidden' value='<?= $edit_jpy ? '1' : '' ?>'>
+            <input type='hidden' name='currency_usd' id='currency_usd_hidden' value='<?= $edit_usd ? '1' : '' ?>'>
         </td>
     </tr>
 
     <!-- Adult Prices -->
     <tr id="wrap_price_jpy">
         <th scope="row"><label for="price_jpy">Adult Price JPY (¥) / person<?php if($page_mode === 'addon'): ?> / day<?php endif; ?></label></th>
-        <td><input type='number' step='1' name='price_jpy' id="price_jpy" class="regular-text"></td>
+        <td><input type='number' step='1' name='price_jpy' id="price_jpy" class="regular-text" value="<?= esc_attr($editing_row ? intval($editing_row->price_jpy) : '') ?>"></td>
     </tr>
     <tr id="wrap_price_usd">
         <th scope="row"><label for="price_usd">Adult Price USD ($) / person<?php if($page_mode === 'addon'): ?> / day<?php endif; ?></label></th>
-        <td><input type='number' step='0.01' name='price_usd' id="price_usd" class="regular-text"></td>
+        <td><input type='number' step='0.01' name='price_usd' id="price_usd" class="regular-text" value="<?= esc_attr($editing_row && $editing_row->price_usd ? floatval($editing_row->price_usd) : '') ?>"></td>
     </tr>
 
     <!-- Child Prices -->
     <tr id="wrap_child_price_jpy">
         <th scope="row"><label for="child_price_jpy">Child Price JPY (¥) / person<?php if($page_mode === 'addon'): ?> / day<?php endif; ?></label></th>
-        <td><input type='number' step='1' name='child_price_jpy' id="child_price_jpy" class="regular-text"><p class="description">Optional. Leave empty to disable child pricing.</p></td>
+        <td><input type='number' step='1' name='child_price_jpy' id="child_price_jpy" class="regular-text" value="<?= esc_attr($editing_row && $editing_row->child_price_jpy ? intval($editing_row->child_price_jpy) : '') ?>"><p class="description">Optional. Leave empty to disable child pricing.</p></td>
     </tr>
     <tr id="wrap_child_price_usd">
         <th scope="row"><label for="child_price_usd">Child Price USD ($) / person<?php if($page_mode === 'addon'): ?> / day<?php endif; ?></label></th>
-        <td><input type='number' step='0.01' name='child_price_usd' id="child_price_usd" class="regular-text"></td>
+        <td><input type='number' step='0.01' name='child_price_usd' id="child_price_usd" class="regular-text" value="<?= esc_attr($editing_row && $editing_row->child_price_usd ? floatval($editing_row->child_price_usd) : '') ?>"></td>
     </tr>
 
     <!-- Infant Prices -->
     <tr id="wrap_infant_price_jpy">
         <th scope="row"><label for="infant_price_jpy">Infant Price JPY (¥) / person<?php if($page_mode === 'addon'): ?> / day<?php endif; ?></label></th>
-        <td><input type='number' step='1' name='infant_price_jpy' id="infant_price_jpy" class="regular-text"><p class="description">Optional. Leave empty to disable infant pricing.</p></td>
+        <td><input type='number' step='1' name='infant_price_jpy' id="infant_price_jpy" class="regular-text" value="<?= esc_attr($editing_row && $editing_row->infant_price_jpy ? intval($editing_row->infant_price_jpy) : '') ?>"><p class="description">Optional. Leave empty to disable infant pricing.</p></td>
     </tr>
     <tr id="wrap_infant_price_usd">
         <th scope="row"><label for="infant_price_usd">Infant Price USD ($) / person<?php if($page_mode === 'addon'): ?> / day<?php endif; ?></label></th>
-        <td><input type='number' step='0.01' name='infant_price_usd' id="infant_price_usd" class="regular-text"></td>
+        <td><input type='number' step='0.01' name='infant_price_usd' id="infant_price_usd" class="regular-text" value="<?= esc_attr($editing_row && $editing_row->infant_price_usd ? floatval($editing_row->infant_price_usd) : '') ?>"></td>
     </tr>
 
 </table>
 
 <p class="submit">
-    <button name='add_price' value='1' class="button button-primary">Add Price Rule</button>
+    <button name='add_price' value='1' class="button button-primary"><?= $edit_price_id > 0 ? 'Update Price Rule' : 'Add Price Rule' ?></button>
+    <?php if($edit_price_id > 0):
+        $cancel_url = add_query_arg(
+            array_filter(['page' => $page_mode === 'hotel' ? 'spcu-hotel-prices' : 'spcu-addon-prices', 'hotel' => $selected_hotel_id ?: null, 'area' => $selected_area_id ?: null]),
+            admin_url('admin.php')
+        ); ?>
+        <a href="<?= esc_url($cancel_url) ?>" class="button" style="margin-left:8px;">Cancel</a>
+    <?php endif; ?>
 </p>
 </form>
 <?php endif; ?>
@@ -619,6 +646,13 @@ if($page_mode === 'hotel'){
             <td><?= esc_html($infant_jpy_fixed ?: '—') ?></td>
             <td><?= esc_html($infant_usd_fixed ?: '—') ?></td>
             <td>
+                <?php
+                $edit_url = '';
+                if($page_mode === 'addon' && $selected_area_id){
+                    $edit_url = add_query_arg(['page' => 'spcu-addon-prices', 'area' => $selected_area_id, 'edit' => intval($r->id)], admin_url('admin.php'));
+                }
+                ?>
+                <?php if($edit_url): ?><a class='button button-small' href='<?= esc_url($edit_url) ?>'>Edit</a> <?php endif; ?>
                 <a class='spcu-delete' href='<?= esc_url($delete_url) ?>'>Delete</a>
             </td>
         </tr>
@@ -913,6 +947,11 @@ typeSel.addEventListener('change', toggle);
 jpyChk.addEventListener('change',  toggle);
 usdChk.addEventListener('change',  toggle);
 toggle();
+
+<?php if($edit_price_id > 0): ?>
+// Scroll form into view when editing
+$('price-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+<?php endif; ?>
 
 })();
 </script>

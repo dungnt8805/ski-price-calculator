@@ -21,6 +21,7 @@ function spcu_handle_prices_post(){
     $db_table = $page_mode === 'hotel' ? $wpdb->prefix.'spcu_prices' : $wpdb->prefix.'spcu_addon_prices';
     $selected_hotel_id = intval($_POST['hotel'] ?? ($_GET['hotel'] ?? 0));
     $selected_area_id  = intval($_POST['area']  ?? ($_GET['area']  ?? 0));
+    $edit_price_id     = intval($_POST['edit_price_id'] ?? 0);
 
     $table_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $db_table));
     if(!$table_exists){
@@ -152,6 +153,24 @@ function spcu_handle_prices_post(){
         $data['hotel_id'] = $hotel_id;
     } else {
         $data['grade'] = $addon_grade;
+    }
+
+    if($edit_price_id > 0){
+        // Verify the row belongs to the correct area/hotel before updating
+        if($page_mode === 'addon'){
+            $exists = (bool) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$db_table} WHERE id = %d AND area_id = %d", $edit_price_id, $area_id));
+        } else {
+            $exists = (bool) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$db_table} WHERE id = %d AND hotel_id = %d", $edit_price_id, $hotel_id));
+        }
+        if(!$exists){
+            spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, 'error', 'Price rule not found.');
+        }
+        $ok = $wpdb->update($db_table, $data, ['id' => $edit_price_id]);
+        if($ok === false){
+            $msg = 'Could not update price rule. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
+            spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, 'error', $msg);
+        }
+        spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, 'success', 'Price rule updated successfully.');
     }
 
     $ok = $wpdb->insert($db_table, $data);
