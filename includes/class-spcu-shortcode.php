@@ -1506,6 +1506,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                     <div class="price-label">Estimated Package Total Price</div>
                     <div class="price-pp" id="sim-pp-<?= $area_id ?>"></div>
                     <div class="price-sub" id="sim-sub-<?= $area_id ?>"></div>
+                    <div class="sim-breakdown" id="sim-breakdown-<?= $area_id ?>"></div>
                     <div class="sim-peak-note" id="sim-peak-<?= $area_id ?>">⚑ Peak season surcharge applied</div>
                     <button class="btn-primary" id="sim-inquire-<?= $area_id ?>" style="margin-top:0.5rem;padding:0.9rem 2rem;">Request a Quote →</button>
                     <div class="sim-note">* Estimate only. Final price confirmed after availability check.</div>
@@ -1548,6 +1549,26 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
             function hasPeak(ci, co) {
                 const s = new Date(ci), e = new Date(co);
                 return PEAK_RANGES.some(([a,b]) => s <= new Date(b) && e >= new Date(a));
+            }
+
+            function toSlashDate(isoDate) {
+                if (!isoDate) return '';
+                const parts = String(isoDate).split('-');
+                if (parts.length !== 3) return String(isoDate);
+                return parts[0] + '/' + parts[1] + '/' + parts[2];
+            }
+
+            function toLabel(value) {
+                return String(value || '').charAt(0).toUpperCase() + String(value || '').slice(1);
+            }
+
+            function escapeHtml(value) {
+                return String(value || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/\"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
             }
 
             function formatCurrency(amount, currency = SIM_CURRENCY) {
@@ -1597,6 +1618,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
 
                 const pax = parseInt($('sim-pax').value);
                 const transGrade = $('sim-trans').value;
+                const hotelName = $('sim-hotel').selectedOptions.length ? $('sim-hotel').selectedOptions[0].textContent : '';
 
                 let hotelCost = 0;
                 const cur = new Date(s);
@@ -1620,9 +1642,40 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                 const subtotal = (hotelCost + liftCost + gearCost + transCost);
                 const pricePP = Math.ceil(subtotal * MARGIN * (peak ? 1.25 : 1.0) / 1000) * 1000;
                 const groupTotal = pricePP * pax;
+                const summary = nights + ' nights (' + toSlashDate(ci) + '〜' + toSlashDate(co) + ') · '
+                    + pax + ' guests · ' + hotelName + ' · ' + toLabel(transGrade)
+                    + ' transport | ' + formatCurrency(pricePP, SIM_CURRENCY) + ' per person';
+
+                const breakdownRows = [
+                    { label: 'Hotel (' + nights + ' nights)', value: formatCurrency(hotelCost, SIM_CURRENCY) },
+                    { label: 'Lift pass (' + skiDays + ' days)', value: formatCurrency(liftCost, SIM_CURRENCY) },
+                    { label: 'Gear rental (' + skiDays + ' days)', value: formatCurrency(gearCost, SIM_CURRENCY) },
+                    { label: 'Transport (' + toLabel(transGrade) + ')', value: formatCurrency(transCost, SIM_CURRENCY) },
+                    { label: 'Base subtotal', value: formatCurrency(subtotal, SIM_CURRENCY) },
+                    { label: 'Estimated total per person', value: formatCurrency(pricePP, SIM_CURRENCY), strong: true },
+                    { label: 'Estimated total for group (' + pax + ' guests)', value: formatCurrency(groupTotal, SIM_CURRENCY), strong: true },
+                ];
+
+                if (peak) {
+                    breakdownRows.splice(5, 0, {
+                        label: 'Peak season factor',
+                        value: 'x1.25'
+                    });
+                }
+
+                $('sim-breakdown').innerHTML =
+                    '<ul>' +
+                    breakdownRows.map(function(item){
+                        return '<li class="' + (item.strong ? 'is-strong' : '') + '"><span>'
+                            + escapeHtml(item.label)
+                            + '</span><strong>'
+                            + escapeHtml(item.value)
+                            + '</strong></li>';
+                    }).join('') +
+                    '</ul>';
 
                 $('sim-pp').textContent = formatCurrency(groupTotal, SIM_CURRENCY);
-                $('sim-sub').textContent = nights + ' nights · ' + pax + ' guest' + (pax>1?'s':'') + ' | ' + formatCurrency(pricePP, SIM_CURRENCY) + ' per person';
+                $('sim-sub').textContent = summary;
                 $('sim-peak').style.display = peak ? 'block' : 'none';
                 $('sim-result').style.display = 'block';
             }

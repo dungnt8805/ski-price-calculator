@@ -638,6 +638,44 @@ document.addEventListener('DOMContentLoaded', function(){
     color: rgba(255,255,255,0.7);
     margin: 0.5rem 0 1.5rem;
 }
+.sim-breakdown {
+    margin: 0 auto 1.2rem;
+    max-width: 640px;
+    text-align: left;
+}
+.sim-breakdown ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.05);
+}
+.sim-breakdown li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.9rem;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.82);
+}
+.sim-breakdown li:last-child {
+    border-bottom: none;
+}
+.sim-breakdown li strong {
+    color: #f8fafc;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+.sim-breakdown li.is-strong {
+    background: rgba(245,158,11,0.16);
+}
+.sim-breakdown li.is-strong strong {
+    color: #fcd34d;
+    font-weight: 800;
+}
 .sim-peak-note {
     font-size: 0.75rem;
     color: #fbbf24;
