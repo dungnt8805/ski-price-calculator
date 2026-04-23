@@ -30,6 +30,7 @@ function spcu_handle_areas_post(){
 
     $schema_columns = [
         'prefecture_id' => 'INT NULL',
+        'slug' => 'VARCHAR(200) NULL',
         'short_description' => 'VARCHAR(200) NULL',
         'description' => 'TEXT NULL',
         'featured_image' => 'INT NULL',
@@ -54,11 +55,17 @@ function spcu_handle_areas_post(){
         }
     }
 
+    $slug = sanitize_text_field($_POST['slug'] ?? '');
+    if(empty($slug)){
+        $slug = sanitize_title($_POST['name'] ?? '');
+    }
+
     $data = [
         'prefecture_id' => ($pref_id = intval($_POST['prefecture_id'] ?? 0)) > 0 ? $pref_id : null,
         'type' => sanitize_text_field($_POST['type'] ?? ''),
         'name' => sanitize_text_field($_POST['name'] ?? ''),
         'name_ja' => sanitize_text_field($_POST['name_ja'] ?? ''),
+        'slug' => $slug,
         'short_description' => sanitize_textarea_field($_POST['short_description'] ?? ''),
         'description' => wp_kses_post($_POST['description'] ?? ''),
         'featured_image' => ($featured_image = absint($_POST['featured_image'] ?? 0)) > 0 ? $featured_image : null,

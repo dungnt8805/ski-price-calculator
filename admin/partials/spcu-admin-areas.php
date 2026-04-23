@@ -66,6 +66,7 @@ if(!$table_exists && class_exists('SPCU_Database')){
 
 $schema_columns = [
     'prefecture_id' => 'INT NULL',
+    'slug' => 'VARCHAR(200) NULL',
     'short_description' => 'VARCHAR(200) NULL',
     'description' => 'TEXT NULL',
     'featured_image' => 'INT NULL',
@@ -119,7 +120,7 @@ wp_enqueue_media();
 
     <div class='spcu-table'>
         <table class="wp-list-table widefat fixed striped table-view-list">
-            <tr><th>Prefecture</th><th>Name</th><th>Short Description</th><th>Featured Image</th><th>Action</th></tr>
+            <tr><th>Prefecture</th><th>Name</th><th>Slug</th><th>Short Description</th><th>Featured Image</th><th>Action</th></tr>
             <?php foreach($rows as $r): 
                 $pref_name = '';
                 foreach($prefectures as $p) {
@@ -135,6 +136,7 @@ wp_enqueue_media();
                     <strong><?= esc_html($r->name) ?></strong>
                     <?php if(!empty($r->name_ja)): ?><br>(<span style="color:#6f7f8f;font-size:0.9em;"><?= esc_html($r->name_ja) ?></span>)<?php endif; ?>
                 </td>
+                <td><?= esc_html($r->slug ?? '') ?></td>
                 <td><?= esc_html($r->short_description ?? '') ?></td>
                 <td>
                     <?php if(!empty($r->featured_image)):

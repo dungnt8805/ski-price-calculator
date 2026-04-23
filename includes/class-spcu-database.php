@@ -24,6 +24,7 @@ class SPCU_Database {
             type VARCHAR(50) NOT NULL,
             name VARCHAR(200) NOT NULL,
             name_ja VARCHAR(200) NULL,
+            slug VARCHAR(200) NULL,
             short_description VARCHAR(200) NULL,
             description TEXT NULL,
             featured_image INT NULL,

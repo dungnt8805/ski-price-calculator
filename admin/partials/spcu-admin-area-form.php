@@ -81,6 +81,13 @@ if ($edit_area && !empty($edit_area->difficulties_json)) {
                         <td><input name='name_ja' id='name_ja' class="regular-text" placeholder='白馬' value='<?= esc_attr($edit_area->name_ja ?? '') ?>'></td>
                     </tr>
                     <tr>
+                        <th scope="row"><label for="slug">URL Slug</label></th>
+                        <td>
+                            <input name='slug' id='slug' class="regular-text" placeholder='hakuba' value='<?= esc_attr($edit_area->slug ?? '') ?>'>
+                            <p class="description">Leave blank to auto-generate from Area Name.</p>
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><label for="prefecture_id">Prefecture</label></th>
                         <td>
                             <select name='prefecture_id' id='prefecture_id' required>
