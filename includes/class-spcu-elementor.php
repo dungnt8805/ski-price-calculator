@@ -19,6 +19,9 @@ class SPCU_Elementor {
 	public function register_widgets( $widgets_manager ) {
 		require_once SPCU_PATH . 'includes/elementor/widgets/class-spcu-prefecture-widget.php';
 		$widgets_manager->register( new \SPCU_Prefecture_Widget() );
+
+		require_once SPCU_PATH . 'includes/elementor/widgets/class-spcu-hotels-widget.php';
+		$widgets_manager->register( new \SPCU_Hotels_Widget() );
 	}
 }
 
