@@ -32,12 +32,24 @@ if(!$table_exists){
     $hotel_error = 'Hotels table is missing.';
 }
 
+// Handle hotel search
+$search_term = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
+$search_where = '';
+if($search_term !== ''){
+    $search_where = $wpdb->prepare(
+        " WHERE h.name LIKE %s OR h.name_ja LIKE %s",
+        '%' . $wpdb->esc_like($search_term) . '%',
+        '%' . $wpdb->esc_like($search_term) . '%'
+    );
+}
+
 $rows = [];
 if($hotel_error === ''){
     $rows = $wpdb->get_results("
         SELECT h.*, a.name as area_name, h.grade as grade_name
         FROM {$wpdb->prefix}spcu_hotels h
         LEFT JOIN {$wpdb->prefix}spcu_areas a ON h.area_id = a.id
+            {$search_where}
         ORDER BY h.name ASC
     ");
 }
@@ -59,17 +71,24 @@ if($hotel_error === ''){
         <div class="spcu-toast-source" data-type="error" data-message="<?= esc_attr($hotel_error) ?>"></div>
     <?php endif; ?>
 
+    <div style="margin:15px 0;display:flex;gap:10px;align-items:center;">
+        <form method="get" style="display:flex;gap:10px;align-items:center;">
+            <input type="hidden" name="page" value="spcu-hotels">
+            <input type="search" name="s" placeholder="Search by hotel name..." value="<?= esc_attr($search_term) ?>" style="padding:6px 12px;border:1px solid #ccc;border-radius:3px;">
+            <button type="submit" class="button">Search</button>
+            <?php if($search_term): ?>
+                <a href="?page=spcu-hotels" class="button">Clear</a>
+            <?php endif; ?>
+        </form>
+    </div>
+
     <div class='spcu-table'>
         <table class="wp-list-table widefat fixed striped table-view-list">
             <tr><th>Name</th>
-            <th>Address</th>
-                <th>Area</th><th>Grade</th><th>Featured</th><th>Action</th>
+                <th>Area</th><th>Grade</th><th>Featured</th><th>Images</th><th>Action</th>
             </tr>
             <?php foreach($rows as $r): ?>
             <?php
-                $featured_thumb = !empty($r->featured_image)
-                    ? wp_get_attachment_image_url(intval($r->featured_image), 'thumbnail')
-                    : '';
                 $delete_url = wp_nonce_url(
                     add_query_arg([
                         'page' => 'spcu-hotels',
@@ -80,14 +99,34 @@ if($hotel_error === ''){
             ?>
             <tr>
                 <td><strong><?= esc_html($r->name) ?></strong><?php if($r->name_ja) echo "<br><small>".esc_html($r->name_ja)."</small>"; ?></td>
-                <!-- <td><?= esc_html($r->name_ja ?: '-') ?></td> -->
-                
-                <td style="max-width:160px;font-size:12px;"><?= nl2br(esc_html($r->address ?: '-')) ?></td>
                 <td><?= esc_html($r->area_name) ?></td>
                 <td><span style="display:inline-block;padding:3px 8px;border-radius:3px;background:#e2e8f0;color:#334155;font-size:12px;font-weight:600;text-transform:capitalize;"><?= esc_html($r->grade ?: '-') ?></span></td>
-                <td style="display:flex;align-items:center;gap:8px;">
-                    <?= $featured_thumb ? "<img src='".esc_url($featured_thumb)."' style='width:40px;height:40px;object-fit:cover;border-radius:3px;'>" : '' ?>
-                    <?= ($r->is_featured ? '<span style="background:#16a34a;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;white-space:nowrap;">★ Featured</span>' : '-') ?>
+                <td>
+                    <?= ($r->is_featured ? '<span style="background:#16a34a;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:600;white-space:nowrap;">★ Featured</span>' : '<span style="color:#9ca3af;">-</span>') ?>
+                </td>
+                <td style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <?php
+                        // Display featured image
+                        if(!empty($r->featured_image)){
+                            $featured_thumb = wp_get_attachment_image_url(intval($r->featured_image), 'thumbnail');
+                            if($featured_thumb){
+                                echo "<img src='".esc_url($featured_thumb)."' style='width:40px;height:40px;object-fit:cover;border-radius:3px;' title='Featured image'>";
+                            }
+                        }
+                        // Display other images
+                        if(!empty($r->images)){
+                            $image_ids = array_filter(array_map('trim', explode(',', $r->images)));
+                            foreach($image_ids as $img_id){
+                                $img_url = wp_get_attachment_image_url(intval($img_id), 'thumbnail');
+                                if($img_url){
+                                    echo "<img src='".esc_url($img_url)."' style='width:40px;height:40px;object-fit:cover;border-radius:3px;'>";
+                                }
+                            }
+                        }
+                        if(empty($r->featured_image) && empty($r->images)){
+                            echo '<span style="color:#9ca3af;">-</span>';
+                        }
+                    ?>
                 </td>
                 <td style="white-space:nowrap;">
                     <a href='?page=spcu-hotel-prices&hotel=<?= esc_attr($r->id) ?>' class='button button-small'>Details</a>
@@ -99,3 +138,14 @@ if($hotel_error === ''){
         </table>
     </div>
 </div>
+
+    <div style="margin:15px 0;display:flex;gap:10px;align-items:center;">
+        <form method="get" style="display:flex;gap:10px;align-items:center;">
+            <input type="hidden" name="page" value="spcu-hotels">
+            <input type="search" name="s" placeholder="Search by hotel name..." value="<?= esc_attr($search_term) ?>" style="padding:6px 12px;border:1px solid #ccc;border-radius:3px;">
+            <button type="submit" class="button">Search</button>
+            <?php if($search_term): ?>
+                <a href="?page=spcu-hotels" class="button">Clear</a>
+            <?php endif; ?>
+        </div>
+    </div>

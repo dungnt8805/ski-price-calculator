@@ -90,8 +90,16 @@ if($table_exists){
         }
     }
 }
-
-$rows = $wpdb->get_results("SELECT * FROM $table ORDER BY name ASC");
+// Handle prefecture filter
+$selected_prefecture = isset($_GET['prefecture']) ? intval($_GET['prefecture']) : 0;
+if($table_exists && $selected_prefecture > 0){
+    $rows = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM $table WHERE prefecture_id = %d ORDER BY name ASC",
+        $selected_prefecture
+    ));
+} elseif($table_exists){
+    $rows = $wpdb->get_results("SELECT * FROM $table ORDER BY name ASC");
+}
 
 $prefectures_table = $wpdb->prefix.'spcu_prefectures';
 $prefectures = [];
@@ -117,6 +125,18 @@ wp_enqueue_media();
         <div class="notice notice-error"><p><?= esc_html($area_error) ?></p></div>
         <div class="spcu-toast-source" data-type="error" data-message="<?= esc_attr($area_error) ?>"></div>
     <?php endif; ?>
+
+    <div style="margin:15px 0;display:flex;gap:10px;align-items:center;">
+        <label for="prefecture-filter" style="font-weight:600;">Filter by Prefecture:</label>
+        <select id="prefecture-filter" onchange="window.location.href = this.value">
+            <option value="?page=spcu-areas">-- All --</option>
+            <?php foreach($prefectures as $p): ?>
+                <option value="?page=spcu-areas&prefecture=<?= esc_attr($p->id) ?>" <?= $selected_prefecture == $p->id ? 'selected' : '' ?>>
+                    <?= esc_html($p->name) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
 
     <div class='spcu-table'>
         <table class="wp-list-table widefat fixed striped table-view-list">
