@@ -7,6 +7,7 @@ class SPCU_Shortcode {
         add_shortcode('ski_calculator', [$this,'render']);
         add_shortcode('ski_areas_overview', [$this,'render_areas_overview']);
         add_shortcode('ski_quote_form', [$this,'render_quote_form']);
+        add_shortcode('ski_simulator', [$this,'render_simulator']);
         add_action('wp_enqueue_scripts', [$this,'enqueue_assets']);
     }
 
@@ -1398,6 +1399,256 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
 })();
 </script>
 
+        <?php
+        return ob_get_clean();
+    }
+
+    public function render_simulator($atts){
+        global $wpdb;
+        $atts = shortcode_atts([
+            'area_id' => 0,
+            'area'    => '', // slug
+        ], $atts);
+
+        $area_id = intval($atts['area_id']);
+        $area_slug = sanitize_title($atts['area']);
+
+        if (!$area_id && !$area_slug) {
+            // Try to detect from current query if on area page
+            $area_slug = get_query_var('area_slug');
+        }
+
+        $area = null;
+        if ($area_id) {
+            $area = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}spcu_areas WHERE id = %d", $area_id));
+        } elseif ($area_slug) {
+            $area = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}spcu_areas WHERE slug = %s", $area_slug));
+        }
+
+        if (!$area) return '<div class="area-simulator-error">Simulator Error: Area not found (ID: ' . esc_html($area_id) . ', Slug: ' . esc_html($area_slug) . ')</div>';
+
+        $area_id = $area->id;
+
+        // Fetch hotels
+        $hotels = $wpdb->get_results($wpdb->prepare("
+            SELECT id, name, name_ja, grade as grade_key
+            FROM {$wpdb->prefix}spcu_hotels
+            WHERE area_id = %d
+        ", $area_id));
+
+        // Fetch addon prices
+        $addons = $wpdb->get_results($wpdb->prepare("
+            SELECT category, grade as grade_key, price_jpy, price_usd
+            FROM {$wpdb->prefix}spcu_addon_prices
+            WHERE area_id = %d
+        ", $area_id));
+
+        // Fetch hotel prices
+        $hotel_prices = $wpdb->get_results($wpdb->prepare("
+            SELECT * FROM {$wpdb->prefix}spcu_prices
+            WHERE category = 'hotel' AND (area_id = %d OR hotel_id IN (SELECT id FROM {$wpdb->prefix}spcu_hotels WHERE area_id = %d))
+        ", $area_id, $area_id));
+
+        $hotel_data = [];
+        foreach($hotels as $h){
+            $h_prices = array_filter($hotel_prices, function($p) use ($h){ return intval($p->hotel_id) === intval($h->id); });
+            $h_formatted_prices = [];
+            foreach($h_prices as $hp){
+                $h_formatted_prices[] = [
+                    'price_type' => $hp->price_type,
+                    'weekdays'   => json_decode($hp->weekdays_json ?? '[]', true),
+                    'dates'      => json_decode($hp->dates_json    ?? '[]', true),
+                    'date_from'  => $hp->date_from,
+                    'date_to'    => $hp->date_to,
+                    'price_jpy'  => floatval($hp->price_jpy),
+                    'price_usd'  => floatval($hp->price_usd),
+                ];
+            }
+            $hotel_data[] = [
+                'id' => $h->id,
+                'name' => $h->name,
+                'name_ja' => $h->name_ja,
+                'grade' => $h->grade_key,
+                'prices' => $h_formatted_prices
+            ];
+        }
+
+        $addon_data = [];
+        foreach($addons as $a){
+            $addon_data[] = [
+                'category' => $a->category,
+                'grade' => $a->grade_key,
+                'price_jpy' => floatval($a->price_jpy),
+                'price_usd' => floatval($a->price_usd),
+            ];
+        }
+
+        $catalog = [
+            'area_name' => $area->name,
+            'hotels' => $hotel_data,
+            'addons' => $addon_data,
+        ];
+
+        ob_start(); ?>
+        <section class="area-simulator" id="area-simulator-<?= $area_id ?>">
+            <div class="sim-card">
+                <div class="sim-row three">
+                    <div class="sim-field"><label>Check-in</label><input type="date" id="sim-ci-<?= $area_id ?>"></div>
+                    <div class="sim-field"><label>Check-out</label><input type="date" id="sim-co-<?= $area_id ?>"></div>
+                    <div class="sim-field"><label>Guests</label><select id="sim-pax-<?= $area_id ?>"><option value="1">1 guest</option><option value="2" selected>2 guests</option><option value="3">3 guests</option><option value="4">4 guests</option><option value="5">5 guests</option><option value="6">6 guests</option><option value="7">7 guests</option><option value="8">8 guests</option></select></div>
+                </div>
+                <div class="sim-row three">
+                    <div class="sim-field"><label>Hotel Grade</label><select id="sim-grade-<?= $area_id ?>"><option value="standard" selected>Standard</option><option value="premium">Premium</option><option value="exclusive">Exclusive</option></select></div>
+                    <div class="sim-field"><label>Hotel</label><select id="sim-hotel-<?= $area_id ?>"></select></div>
+                    <div class="sim-field"><label>Transportation</label><select id="sim-trans-<?= $area_id ?>"><option value="standard" selected>Standard</option><option value="premium">Premium</option></select></div>
+                </div>
+                <div id="sim-result-<?= $area_id ?>" class="sim-result" style="display:none;">
+                    <div class="price-label">Estimated Package Total Price</div>
+                    <div class="price-pp" id="sim-pp-<?= $area_id ?>"></div>
+                    <div class="price-sub" id="sim-sub-<?= $area_id ?>"></div>
+                    <div class="sim-peak-note" id="sim-peak-<?= $area_id ?>">⚑ Peak season surcharge applied</div>
+                    <button class="btn-primary" id="sim-inquire-<?= $area_id ?>" style="margin-top:0.5rem;padding:0.9rem 2rem;">Request a Quote →</button>
+                    <div class="sim-note">* Estimate only. Final price confirmed after availability check.</div>
+                </div>
+            </div>
+        </section>
+
+        <script>
+        (function(){
+            const areaId = <?= $area_id ?>;
+            const data = <?= json_encode($catalog) ?>;
+            const MARGIN = 1.18;
+            const PEAK_RANGES = [['2026-12-26','2027-01-04'],['2027-01-09','2027-01-12'],['2027-02-20','2027-02-22'],['2027-03-20','2027-03-21']];
+
+            function $(id){ return document.getElementById(id + '-' + areaId); }
+
+            function populateHotels() {
+                const grade = $('sim-grade').value;
+                const sel = $('sim-hotel');
+                const list = data.hotels.filter(h => h.grade === grade);
+                sel.innerHTML = '';
+                if (list.length === 0) {
+                    sel.innerHTML = '<option value="">No hotels at this grade</option>';
+                } else {
+                    list.forEach(h => {
+                        const opt = document.createElement('option');
+                        opt.value = h.id;
+                        opt.textContent = h.name;
+                        sel.appendChild(opt);
+                    });
+                }
+                calcSim();
+            }
+
+            function hasPeak(ci, co) {
+                const s = new Date(ci), e = new Date(co);
+                return PEAK_RANGES.some(([a,b]) => s <= new Date(b) && e >= new Date(a));
+            }
+
+            function getHotelPrice(hotelId, dateStr) {
+                const hotel = data.hotels.find(h => h.id == hotelId);
+                if (!hotel || !hotel.prices) return 0;
+                const ts = new Date(dateStr);
+                const dow = ts.toLocaleDateString('en-US', {weekday:'long'}).toLowerCase();
+                
+                let matched = null;
+                for (const r of hotel.prices) {
+                    switch(r.price_type) {
+                        case 'specific_dates': if (r.dates.includes(dateStr)) matched = r; break;
+                        case 'date_range': if (dateStr >= r.date_from && dateStr <= r.date_to) matched = r; break;
+                        case 'weekend': if (dow === 'saturday' || dow === 'sunday') matched = r; break;
+                        case 'selected_days': if (r.weekdays.includes(dow)) matched = r; break;
+                    }
+                    if (matched) break;
+                }
+                if (!matched && hotel.prices.length) matched = hotel.prices[0];
+                return matched ? matched.price_jpy : 0;
+            }
+
+            function calcSim() {
+                const ci = $('sim-ci').value;
+                const co = $('sim-co').value;
+                if (!ci || !co) return;
+
+                const s = new Date(ci), e = new Date(co);
+                const nights = Math.round((e - s) / 86400000);
+                if (nights < 1) {
+                    $('sim-result').style.display = 'none';
+                    return;
+                }
+
+                const hotelId = $('sim-hotel').value;
+                if (!hotelId) return;
+
+                const pax = parseInt($('sim-pax').value);
+                const transGrade = $('sim-trans').value;
+
+                let hotelCost = 0;
+                const cur = new Date(s);
+                while (cur < e) {
+                    const curStr = cur.toISOString().split('T')[0];
+                    hotelCost += getHotelPrice(hotelId, curStr);
+                    cur.setDate(cur.getDate() + 1);
+                }
+
+                const skiDays = Math.max(1, nights); // Assuming 1 day lift/gear per night
+                
+                const liftAddon = data.addons.find(a => a.category === 'lift');
+                const gearAddon = data.addons.find(a => a.category === 'gear');
+                const transAddon = data.addons.find(a => a.category === 'transport' && a.grade === transGrade);
+
+                const liftCost = (liftAddon ? liftAddon.price_jpy : 15000) * skiDays;
+                const gearCost = (gearAddon ? gearAddon.price_jpy : 15000) * skiDays;
+                const transCost = (transAddon ? transAddon.price_jpy : (transGrade === 'premium' ? 20000 : 10000));
+
+                const peak = hasPeak(ci, co);
+                const subtotal = (hotelCost + liftCost + gearCost + transCost);
+                const pricePP = Math.ceil(subtotal * MARGIN * (peak ? 1.25 : 1.0) / 1000) * 1000;
+                const groupTotal = pricePP * pax;
+
+                $('sim-pp').textContent = '¥' + groupTotal.toLocaleString();
+                $('sim-sub').textContent = nights + ' nights · ' + pax + ' guest' + (pax>1?'s':'') + ' | ¥' + pricePP.toLocaleString() + ' per person';
+                $('sim-peak').style.display = peak ? 'block' : 'none';
+                $('sim-result').style.display = 'block';
+            }
+
+            $('sim-ci').addEventListener('change', calcSim);
+            $('sim-co').addEventListener('change', calcSim);
+            $('sim-pax').addEventListener('change', calcSim);
+            $('sim-grade').addEventListener('change', populateHotels);
+            $('sim-hotel').addEventListener('change', calcSim);
+            $('sim-trans').addEventListener('change', calcSim);
+
+            $('sim-inquire').addEventListener('click', function(){
+                const form = document.querySelector('.spcu-inquiry-form');
+                if (form) {
+                    form.scrollIntoView({behavior:'smooth'});
+                    // Pre-fill
+                    const ciInput = form.querySelector('[name="check_in"]');
+                    const coInput = form.querySelector('[name="check_out"]');
+                    const paxInput = form.querySelector('[name="num_guests"]');
+                    const resortInput = form.querySelector('[name="resort"]');
+                    const levelInput = form.querySelector('[name="package_level"]');
+                    if (ciInput) ciInput.value = $('sim-ci').value;
+                    if (coInput) coInput.value = $('sim-co').value;
+                    if (paxInput) paxInput.value = $('sim-pax').value;
+                    if (resortInput) {
+                        // The inquiry form uses area slug/name as value
+                        resortInput.value = data.area_name;
+                    }
+                    if (levelInput) levelInput.value = $('sim-grade').value;
+                }
+            });
+
+            // Set default dates
+            const d = new Date(); d.setDate(d.getDate() + 30);
+            $('sim-ci').value = d.toISOString().split('T')[0];
+            d.setDate(d.getDate() + 5);
+            $('sim-co').value = d.toISOString().split('T')[0];
+
+            populateHotels();
+        })();
+        </script>
         <?php
         return ob_get_clean();
     }

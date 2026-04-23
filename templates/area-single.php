@@ -453,6 +453,21 @@ $hero_stats = array_slice($hero_stats, 0, 4);
             <?php endif; ?>
         </section>
 
+        <!-- Price Simulator -->
+        <section class="spcu-area-detail__section" style="margin-top: 60px;">
+            <div class="section-header-sim" style="margin-bottom: 2rem;">
+                <div class="sim-overline" style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:var(--color-blue, #2563eb); margin-bottom:0.5rem;">Price Simulator</div>
+                <h2 style="font-family:'Playfair Display',serif; font-size:2rem; color:var(--color-navy, #0f1b2d); margin-bottom:0.8rem;">Calculate Your Package</h2>
+                <p style="color:var(--color-muted, #64748b); font-size:0.95rem;">Select dates, guests, hotel grade, hotel & transportation for an instant price estimate.</p>
+            </div>
+            <?= do_shortcode('[ski_simulator area_id="' . $area->id . '"]') ?>
+        </section>
+
+        <!-- Inquiry Form -->
+        <section class="spcu-area-detail__section" style="margin-top: 60px;">
+            <?= do_shortcode('[spcu_inquiry_form]') ?>
+        </section>
+
     </main>
 </div>
 
@@ -539,4 +554,107 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 
-<?php get_footer();
+<?php get_footer(); ?>
+
+<style>
+/* Simulator Styling */
+.area-simulator {
+    background: #0f1b2d;
+    padding: 3rem 2rem;
+    border-radius: 20px;
+    color: white;
+}
+.sim-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 2rem;
+}
+.sim-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.sim-field label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.sim-field input, .sim-field select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    background: rgba(255,255,255,0.08);
+    color: white;
+    font-family: inherit;
+    appearance: none;
+}
+.sim-field input:focus, .sim-field select:focus {
+    outline: none;
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+}
+.sim-field input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+.sim-field select option {
+    background: #1a2d4a;
+    color: white;
+}
+.sim-result {
+    background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05));
+    border: 1px solid rgba(245,158,11,0.3);
+    border-radius: 14px;
+    padding: 2rem;
+    margin-top: 1.5rem;
+    text-align: center;
+}
+.sim-result .price-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 0.8rem;
+}
+.sim-result .price-pp {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 800;
+    color: #f59e0b;
+    letter-spacing: -1px;
+}
+.sim-result .price-sub {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.7);
+    margin: 0.5rem 0 1.5rem;
+}
+.sim-peak-note {
+    font-size: 0.75rem;
+    color: #fbbf24;
+    background: rgba(251,191,36,0.1);
+    border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+}
+.sim-note {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.45);
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .sim-row { grid-template-columns: 1fr; gap: 1rem; }
+    .sim-result .price-pp { font-size: 2.2rem; }
+}
+</style>

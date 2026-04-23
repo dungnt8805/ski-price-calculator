@@ -132,3 +132,4 @@ register_activation_hook(__FILE__, 'flush_rewrite_rules');
 
 new SPCU_Admin();
 new SPCU_Shortcode();
+new SPCU_Inquiry();
