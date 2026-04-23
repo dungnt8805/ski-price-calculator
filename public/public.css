@@ -1263,6 +1263,24 @@
     margin: 0 0.35rem;
 }
 
+.spcu-area-hotel-card__from-price {
+    margin: 0.7rem 0 0;
+    padding-top: 0.6rem;
+    border-top: 1px dashed #e2e8f0;
+    color: #0f1b2d;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.spcu-area-hotel-card__amt {
+    margin: 0 0.1rem;
+    color: #f59e0b;
+    font-size: 1.05rem;
+    font-weight: 800;
+    font-family: 'Playfair Display', serif;
+}
+
 .spcu-area-hotel-card__desc,
 .spcu-area-hotel-card__address-ja {
     margin: 0;
@@ -1291,6 +1309,75 @@
     font-size: 0.68rem;
     font-weight: 500;
     border: 1px solid #e2e8f0;
+}
+
+.spcu-area-detail__transport-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.spcu-area-detail__transport-card {
+    padding: 1.2rem 1.5rem;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.spcu-area-detail__transport-card h4 {
+    margin: 0 0 0.4rem;
+    font-size: 0.88rem;
+    color: #0f1b2d;
+    font-weight: 600;
+}
+
+.spcu-area-detail__transport-route {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+.spcu-area-detail__transport-meta {
+    display: flex;
+    gap: 1.2rem;
+    align-items: center;
+    margin-top: 0.8rem;
+}
+
+.spcu-area-detail__transport-meta span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #0f1b2d;
+}
+
+.spcu-area-detail__transport-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.spcu-area-detail__transport-price {
+    margin: 0.7rem 0 0;
+    padding-top: 0.6rem;
+    border-top: 1px dashed #e2e8f0;
+    color: #0f1b2d;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.spcu-area-detail__transport-amount {
+    margin: 0 0.1rem;
+    color: #f59e0b;
+    font-size: 1.05rem;
+    font-weight: 800;
+    font-family: 'Playfair Display', serif;
 }
 
 .spcu-area-detail__table-wrap {
@@ -1379,6 +1466,10 @@
 
     .spcu-area-detail__hotel-grid,
     .spcu-area-detail__gallery {
+        grid-template-columns: 1fr;
+    }
+
+    .spcu-area-detail__transport-cards {
         grid-template-columns: 1fr;
     }
 

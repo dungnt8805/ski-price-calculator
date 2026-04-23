@@ -20,6 +20,7 @@ if(!$area){
 }
 
 $hotels = SPCU_Frontend::get_hotels_by_area($area->id);
+$hotel_min_prices = SPCU_Frontend::get_hotel_min_prices_by_area($area->id);
 $addon_prices = SPCU_Frontend::get_area_addon_prices($area->id);
 
 $area_featured_image = '';
@@ -49,6 +50,38 @@ foreach($addon_prices as $addon_price){
     }
 
     $price_data[$addon_price->category][] = $addon_price->grade;
+}
+
+$transport_cards = [];
+$transport_grade_labels = [
+    'standard' => 'Standard',
+    'premium' => 'Premium',
+    'exclusive' => 'Exclusive',
+    'beginner' => 'Standard',
+    'intermediate' => 'Premium',
+    'advanced' => 'Exclusive',
+    'expert' => 'Exclusive',
+];
+$transport_grades = array_values(array_unique(array_filter(array_map(['SPCU_Grades', 'normalize'], $price_data['transport'] ?? []))));
+
+foreach(SPCU_Grades::ordered_keys() as $grade){
+    if(!in_array($grade, $transport_grades, true)){
+        continue;
+    }
+
+    $transport_price = SPCU_Frontend::get_addon_price($area->id, 'transport', $grade);
+    if(!$transport_price){
+        continue;
+    }
+
+    $transport_cards[] = [
+        'grade' => $grade,
+        'label' => $transport_grade_labels[$grade] ?? ucfirst($grade),
+        'color' => SPCU_Grades::color($grade),
+        'text_color' => SPCU_Grades::text_color($grade),
+        'price_jpy' => (int) $transport_price->price_jpy,
+        'price_usd' => (int) $transport_price->price_usd,
+    ];
 }
 
 $difficulty_breakdown = [];
@@ -274,6 +307,7 @@ $hero_stats = array_slice($hero_stats, 0, 4);
                         $hotel_grade_key = strtolower((string) ($hotel->grade ?? 'standard'));
                         $hotel_grade_label = $hotel_grade_labels[$hotel_grade_key] ?? ucfirst($hotel_grade_key);
                         $hotel_grade_palette = $hotel_grade_colors[$hotel_grade_key] ?? $hotel_grade_colors['standard'];
+                        $hotel_min_price = $hotel_min_prices[(int) ($hotel->id ?? 0)] ?? null;
 
                         $facilities_list = [];
                         if(!empty($hotel->facilities)){
@@ -321,6 +355,14 @@ $hero_stats = array_slice($hero_stats, 0, 4);
                                     <p class="spcu-area-hotel-card__desc"><?php echo esc_html($hotel->short_description); ?></p>
                                 <?php endif; ?>
 
+                                <?php if(!empty($hotel_min_price) && !empty($hotel_min_price['price_jpy'])): ?>
+                                    <p class="spcu-area-hotel-card__from-price">
+                                        From
+                                        <span class="spcu-area-hotel-card__amt">¥<?php echo esc_html(number_format_i18n((int) $hotel_min_price['price_jpy'])); ?></span>
+                                        per night
+                                    </p>
+                                <?php endif; ?>
+
                                 <?php if(!empty($facilities_list)): ?>
                                     <div class="spcu-area-hotel-card__tags">
                                         <?php foreach($facilities_list as $facility): ?>
@@ -345,53 +387,41 @@ $hero_stats = array_slice($hero_stats, 0, 4);
             <?php endif; ?>
         </section>
 
-        <?php if(!empty($price_data)): ?>
-            <section class="spcu-area-detail__section">
-                <div class="spcu-area-detail__section-head">
-                    <h2>Additional fees</h2>
-                </div>
+        <section class="spcu-area-detail__section">
+            <div class="spcu-area-detail__section-head">
+                <h2>Choose your transportation</h2>
+            </div>
 
-                <div class="spcu-area-detail__table-wrap">
-                    <table class="spcu-area-detail__table">
-                        <thead>
-                            <tr>
-                                <th>Service</th>
-                                <?php foreach(SPCU_Grades::records() as $difficulty_record): ?>
-                                    <th>
-                                        <span class="spcu-area-detail__table-pill" style="background: <?php echo esc_attr($difficulty_record['color']); ?>; color: <?php echo esc_attr(SPCU_Grades::text_color($difficulty_record['slug'])); ?>;">
-                                            <?php echo esc_html($difficulty_record['name']); ?>
-                                        </span>
-                                    </th>
-                                <?php endforeach; ?>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach($price_data as $category => $grades): ?>
-                                <tr>
-                                    <td class="spcu-area-detail__service-name"><?php echo esc_html(str_replace('_', ' ', $category)); ?></td>
-                                    <?php foreach(SPCU_Grades::ordered_keys() as $grade): ?>
-                                        <td>
-                                            <?php
-                                            if(in_array($grade, array_map(['SPCU_Grades', 'normalize'], $grades), true)){
-                                                $price = SPCU_Frontend::get_addon_price($area->id, $category, $grade);
-                                                if($price){
-                                                    echo '<span class="spcu-area-detail__price">¥' . esc_html(number_format_i18n((int) $price->price_jpy)) . ' / $' . esc_html(number_format_i18n((int) $price->price_usd)) . '</span>';
-                                                } else {
-                                                    echo '—';
-                                                }
-                                            } else {
-                                                echo '—';
-                                            }
-                                            ?>
-                                        </td>
-                                    <?php endforeach; ?>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+            <?php if(empty($transport_cards)): ?>
+                <div class="spcu-area-detail__empty">Transportation options are being updated for this area.</div>
+            <?php else: ?>
+                <div class="spcu-area-detail__transport-cards">
+                    <?php foreach($transport_cards as $transport_card): ?>
+                        <article class="spcu-area-detail__transport-card">
+                            <h4><?php echo esc_html($transport_card['label']); ?> Grade Transfer</h4>
+
+                            <div class="spcu-area-detail__transport-meta">
+                                <span>
+                                    <span class="spcu-area-detail__transport-pill" style="background: <?php echo esc_attr($transport_card['color']); ?>; color: <?php echo esc_attr($transport_card['text_color']); ?>;">
+                                        <?php echo esc_html($transport_card['label']); ?>
+                                    </span>
+                                </span>
+                                <?php if(!empty($area->distance)): ?>
+                                    <span><?php echo esc_html($area->distance); ?></span>
+                                <?php endif; ?>
+                            </div>
+
+                            <p class="spcu-area-detail__transport-price">
+                                From
+                                <span class="spcu-area-detail__transport-amount">¥<?php echo esc_html(number_format_i18n($transport_card['price_jpy'])); ?></span>
+                                per person
+                            </p>
+                        </article>
+                    <?php endforeach; ?>
                 </div>
-            </section>
-        <?php endif; ?>
+            <?php endif; ?>
+        </section>
+
     </main>
 </div>
 

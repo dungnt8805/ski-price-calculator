@@ -109,6 +109,39 @@ class SPCU_Frontend {
     }
 
     /**
+     * Get minimum hotel prices keyed by hotel ID for an area.
+     */
+    public static function get_hotel_min_prices_by_area($area_id){
+        global $wpdb;
+
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT p.hotel_id,
+                    MIN(NULLIF(p.price_jpy, 0)) AS min_price_jpy,
+                    MIN(NULLIF(p.price_usd, 0)) AS min_price_usd
+             FROM {$wpdb->prefix}spcu_prices p
+             INNER JOIN {$wpdb->prefix}spcu_hotels h ON h.id = p.hotel_id
+             WHERE h.area_id = %d AND p.category = 'hotel'
+             GROUP BY p.hotel_id",
+            $area_id
+        ));
+
+        $result = [];
+        foreach($rows as $row){
+            $hotel_id = (int) ($row->hotel_id ?? 0);
+            if($hotel_id <= 0){
+                continue;
+            }
+
+            $result[$hotel_id] = [
+                'price_jpy' => isset($row->min_price_jpy) && $row->min_price_jpy !== null ? (int) round((float) $row->min_price_jpy) : 0,
+                'price_usd' => isset($row->min_price_usd) && $row->min_price_usd !== null ? (int) round((float) $row->min_price_usd) : 0,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
      * Get addon prices for area
      */
     public static function get_area_addon_prices($area_id){

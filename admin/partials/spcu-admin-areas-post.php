@@ -81,10 +81,10 @@ function spcu_handle_areas_post(){
 
     // Handle area tags
     if(isset($_POST['area_tags'])){
-        $tags_raw = sanitize_textarea_field($_POST['area_tags'] ?? '');
+        $tags_raw = sanitize_text_field($_POST['area_tags'] ?? '');
         if(!empty($tags_raw)){
-            $tags_array = array_filter(array_map('trim', explode("\n", $tags_raw)));
-            $data['area_tags'] = !empty($tags_array) ? wp_json_encode($tags_array) : null;
+            $tags_array = array_filter(array_map('trim', explode(",", $tags_raw)));
+            $data['area_tags'] = !empty($tags_array) ? wp_json_encode(array_values($tags_array)) : null;
         } else {
             $data['area_tags'] = null;
         }

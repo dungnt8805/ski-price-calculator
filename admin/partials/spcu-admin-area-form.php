@@ -171,10 +171,63 @@ if ($edit_area && !empty($edit_area->difficulties_json)) {
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><label for="area_tags">Area Tags (one per line)</label></th>
+                        <th scope="row"><label for="spcu_area_tags_input">Area Tags</label></th>
                         <td>
-                            <textarea name='area_tags' id='area_tags' class="large-text" rows="6" placeholder='e.g.&#10;10 Resorts&#10;Olympic Heritage&#10;Deep Powder'><?= isset($edit_area->area_tags) ? esc_textarea(str_replace('","', "\n", str_replace('["', '', str_replace('"]', '', $edit_area->area_tags)))) : '' ?></textarea>
-                            <p class="description">Enter one tag per line. These will display as pills on the area card.</p>
+                            <div class="spcu-tags-wrapper">
+                                <div id="spcu-tags-list" class="spcu-tags-list"></div>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <input type="text" id="spcu_area_tags_input" class="regular-text" placeholder="Add new tag">
+                                    <button type="button" id="spcu_add_tag_btn" class="button">Add</button>
+                                </div>
+                            </div>
+                            <?php 
+                                $existing_tags = [];
+                                if (isset($edit_area->area_tags) && !empty($edit_area->area_tags)) {
+                                    $decoded = json_decode($edit_area->area_tags, true);
+                                    if (is_array($decoded)) {
+                                        $existing_tags = $decoded;
+                                    }
+                                }
+                            ?>
+                            <input type="hidden" name="area_tags" id="spcu_area_tags_hidden" value="<?= esc_attr(implode(',', $existing_tags)) ?>">
+                            <p class="description">Type a tag and press Enter or click Add. Separate multiple tags with commas.</p>
+                            
+                            <style>
+                            .spcu-tags-list {
+                                display: flex;
+                                flex-wrap: wrap;
+                                gap: 8px;
+                                margin-bottom: 8px;
+                            }
+                            .spcu-tag-pill {
+                                background: #e5e7eb;
+                                border: 1px solid #d1d5db;
+                                border-radius: 4px;
+                                padding: 3px 8px 3px 10px;
+                                display: inline-flex;
+                                align-items: center;
+                                font-size: 13px;
+                                color: #374151;
+                            }
+                            .spcu-tag-remove {
+                                margin-left: 6px;
+                                color: #9ca3af;
+                                cursor: pointer;
+                                font-weight: bold;
+                                font-size: 14px;
+                                line-height: 1;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                width: 16px;
+                                height: 16px;
+                                border-radius: 50%;
+                            }
+                            .spcu-tag-remove:hover {
+                                color: #dc2626;
+                                background: #fee2e2;
+                            }
+                            </style>
                         </td>
                     </tr>
                     <tr>
@@ -347,5 +400,84 @@ document.addEventListener('DOMContentLoaded', function(){
             if(wrap) wrap.remove();
         });
     }
+
+    // Area Tags Logic
+    var tagsHidden = document.getElementById('spcu_area_tags_hidden');
+    var tagsInput = document.getElementById('spcu_area_tags_input');
+    var tagsList = document.getElementById('spcu-tags-list');
+    var addTagBtn = document.getElementById('spcu_add_tag_btn');
+
+    if (tagsHidden && tagsInput && tagsList) {
+        function getTags() {
+            return tagsHidden.value ? tagsHidden.value.split(',').map(function(t) { return t.trim(); }).filter(Boolean) : [];
+        }
+
+        function setTags(tags) {
+            tagsHidden.value = tags.join(',');
+            renderTags();
+        }
+
+        function renderTags() {
+            tagsList.innerHTML = '';
+            var tags = getTags();
+            tags.forEach(function(tag) {
+                var pill = document.createElement('span');
+                pill.className = 'spcu-tag-pill';
+                pill.textContent = tag;
+                
+                var rm = document.createElement('span');
+                rm.className = 'spcu-tag-remove';
+                rm.innerHTML = '&times;';
+                rm.dataset.tag = tag;
+                
+                pill.appendChild(rm);
+                tagsList.appendChild(pill);
+            });
+        }
+
+        function addTagsFromInput() {
+            var val = tagsInput.value.trim();
+            if (!val) return;
+            
+            var newTags = val.split(',').map(function(t) { return t.trim(); }).filter(Boolean);
+            var currentTags = getTags();
+            
+            newTags.forEach(function(t) {
+                if (currentTags.indexOf(t) === -1) {
+                    currentTags.push(t);
+                }
+            });
+            
+            setTags(currentTags);
+            tagsInput.value = '';
+        }
+
+        if (addTagBtn) {
+            addTagBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                addTagsFromInput();
+            });
+        }
+
+        tagsInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                addTagsFromInput();
+            }
+        });
+
+        tagsList.addEventListener('click', function(e) {
+            if (e.target.classList.contains('spcu-tag-remove')) {
+                var tagToRemove = e.target.dataset.tag;
+                var currentTags = getTags();
+                var newTags = currentTags.filter(function(t) { return t !== tagToRemove; });
+                setTags(newTags);
+            }
+        });
+
+        // Initial render
+        renderTags();
+    }
+
 });
 </script>
