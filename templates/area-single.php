@@ -295,10 +295,6 @@ $hero_stats = array_slice($hero_stats, 0, 4);
                                     <div class="spcu-area-hotel-card__placeholder">🏨</div>
                                 <?php endif; ?>
 
-                                <?php if(!empty($hotel->is_featured)): ?>
-                                    <span class="spcu-area-hotel-card__badge spcu-area-hotel-card__badge--featured">Featured</span>
-                                <?php endif; ?>
-
                                 <span class="spcu-area-hotel-card__badge spcu-area-hotel-card__badge--grade" style="background: <?php echo esc_attr($hotel_grade_palette['bg']); ?>; color: <?php echo esc_attr($hotel_grade_palette['text']); ?>;">
                                     <?php echo esc_html($hotel_grade_label); ?>
                                 </span>
