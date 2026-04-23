@@ -1518,6 +1518,11 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
             const areaId = <?= $area_id ?>;
             const data = <?= json_encode($catalog) ?>;
             const MARGIN = 1.18;
+            const SIM_CURRENCY = 'JPY';
+            const CURRENCY_CONFIG = {
+                JPY: { symbol: '¥', locale: 'ja-JP', decimals: 0 },
+                USD: { symbol: '$', locale: 'en-US', decimals: 2 },
+            };
             const PEAK_RANGES = [['2026-12-26','2027-01-04'],['2027-01-09','2027-01-12'],['2027-02-20','2027-02-22'],['2027-03-20','2027-03-21']];
 
             function $(id){ return document.getElementById(id + '-' + areaId); }
@@ -1543,6 +1548,16 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
             function hasPeak(ci, co) {
                 const s = new Date(ci), e = new Date(co);
                 return PEAK_RANGES.some(([a,b]) => s <= new Date(b) && e >= new Date(a));
+            }
+
+            function formatCurrency(amount, currency = SIM_CURRENCY) {
+                const cfg = CURRENCY_CONFIG[currency] || CURRENCY_CONFIG.JPY;
+                const value = Number(amount || 0);
+                const formatted = value.toLocaleString(cfg.locale, {
+                    minimumFractionDigits: cfg.decimals,
+                    maximumFractionDigits: cfg.decimals
+                });
+                return cfg.symbol + ' ' + formatted;
             }
 
             function getHotelPrice(hotelId, dateStr) {
@@ -1606,8 +1621,8 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                 const pricePP = Math.ceil(subtotal * MARGIN * (peak ? 1.25 : 1.0) / 1000) * 1000;
                 const groupTotal = pricePP * pax;
 
-                $('sim-pp').textContent = '¥' + groupTotal.toLocaleString();
-                $('sim-sub').textContent = nights + ' nights · ' + pax + ' guest' + (pax>1?'s':'') + ' | ¥' + pricePP.toLocaleString() + ' per person';
+                $('sim-pp').textContent = formatCurrency(groupTotal, SIM_CURRENCY);
+                $('sim-sub').textContent = nights + ' nights · ' + pax + ' guest' + (pax>1?'s':'') + ' | ' + formatCurrency(pricePP, SIM_CURRENCY) + ' per person';
                 $('sim-peak').style.display = peak ? 'block' : 'none';
                 $('sim-result').style.display = 'block';
             }

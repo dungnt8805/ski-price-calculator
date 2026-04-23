@@ -630,7 +630,8 @@ document.addEventListener('DOMContentLoaded', function(){
     font-size: 3rem;
     font-weight: 800;
     color: #f59e0b;
-    letter-spacing: -1px;
+    letter-spacing: 0;
+    white-space: nowrap;
 }
 .sim-result .price-sub {
     font-size: 1rem;
