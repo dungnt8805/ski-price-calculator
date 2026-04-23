@@ -1,5 +1,5 @@
 /* ── Ski Price Calculator – Frontend Styles ────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap'); */
 
 .ski-calculator {
     --spcu-brand: #0f766e;
@@ -436,20 +436,25 @@
 .spcu-prefecture-areas-wrapper {
     font-family: 'Inter', sans-serif;
     width: 100%;
-    margin: 20px 0;
+    margin: 8px 0;
     position: relative;
 }
 
 .spcu-prefecture-header {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 10px;
 }
 
 .spcu-prefecture-header__content {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    gap: 10px;
+}
+
+.spcu-prefecture-header__content::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
 }
 
 .spcu-prefecture-label {
@@ -468,10 +473,12 @@
 .spcu-prefecture-title {
     font-family: 'Playfair Display', serif;
     margin: 0;
-    font-size: 2rem;
+    font-size: 1rem;
     font-weight: 800;
     color: #0f172a;
     line-height: 1.2;
+    white-space: nowrap;
+    margin: 0 0 0 8px !important;
 }
 
 .spcu-areas-carousel-container {
@@ -527,22 +534,14 @@
     scroll-behavior: smooth;
     padding: 20px 0 30px 0;
     flex: 1;
-    scrollbar-width: thin;
-    scrollbar-color: #d97706 #f1f5f9;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .spcu-areas-horizontal::-webkit-scrollbar {
-    height: 6px;
-}
-
-.spcu-areas-horizontal::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 10px;
-}
-
-.spcu-areas-horizontal::-webkit-scrollbar-thumb {
-    background: #d97706;
-    border-radius: 10px;
+    display: none;
+    width: 0;
+    height: 0;
 }
 
 .spcu-area-card {

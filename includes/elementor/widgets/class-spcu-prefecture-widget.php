@@ -210,117 +210,128 @@ class SPCU_Prefecture_Widget extends \Elementor\Widget_Base {
 		global $wpdb;
 		$custom_title = ! empty( $settings['prefecture_title'] ) ? sanitize_text_field( $settings['prefecture_title'] ) : '';
 		$is_single_prefecture = count( $selected_prefecture_ids ) === 1;
-		$has_any_area = false;
+		$placeholders = implode( ',', array_fill( 0, count( $selected_prefecture_ids ), '%d' ) );
 
-		foreach ( $selected_prefecture_ids as $prefecture_id ) {
-			$prefecture = $wpdb->get_row( $wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}spcu_prefectures WHERE id = %d",
-				$prefecture_id
-			) );
+		$prefecture_rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id, name, name_ja FROM {$wpdb->prefix}spcu_prefectures WHERE id IN ($placeholders)",
+				$selected_prefecture_ids
+			)
+		);
 
-			if ( empty( $prefecture ) ) {
-				continue;
-			}
-
-			$areas = $wpdb->get_results( $wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}spcu_areas WHERE prefecture_id = %d ORDER BY name ASC",
-				$prefecture_id
-			) );
-
-			if ( empty( $areas ) ) {
-				continue;
-			}
-
-			$has_any_area = true;
-			$prefecture_title = ( $is_single_prefecture && $custom_title !== '' ) ? $custom_title : ( ! empty( $prefecture->name ) ? $prefecture->name : '' );
-			?>
-			<?php if ( $settings['show_prefecture_header'] === 'yes' ) : ?>
-				<div class="spcu-prefecture-header">
-					<div class="spcu-prefecture-header__content">
-						<?php if ( ! empty( $prefecture->name_ja ) ) : ?>
-							<span class="spcu-prefecture-label"><?php echo esc_html( $prefecture->name_ja ); ?></span>
-						<?php endif; ?>
-						<?php if ( ! empty( $prefecture_title ) ) : ?>
-							<h2 class="spcu-prefecture-title"><?php echo esc_html( $prefecture_title ); ?></h2>
-						<?php endif; ?>
-					</div>
-				</div>
-			<?php endif; ?>
-
-			<div class="spcu-prefecture-areas-wrapper" data-spcu-carousel-wrapper>
-				<div class="spcu-areas-carousel-container">
-					<?php if ( count( $areas ) > 3 ) : ?>
-						<button class="spcu-carousel-button spcu-carousel-prev" aria-label="Previous areas">‹</button>
-					<?php endif; ?>
-					<div class="spcu-areas-horizontal" data-carousel-container>
-						<?php foreach ( $areas as $area ) :
-							$img_url = wp_get_attachment_image_url( $area->featured_image, 'medium' );
-							if ( ! $img_url ) {
-								$img_url = 'https://via.placeholder.com/400x300?text=' . urlencode( $area->name );
-							}
-
-							$tags = [];
-							if ( ! empty( $area->area_tags ) ) {
-								$tags = json_decode( $area->area_tags, true ) ?: [];
-							}
-						?>
-							<div class="spcu-area-card">
-								<?php if ( ! empty( $area->featured_badge ) ) : ?>
-									<div class="spcu-area-card__badge"><?php echo esc_html( $area->featured_badge ); ?></div>
-								<?php endif; ?>
-
-								<div class="spcu-area-card__image">
-									<img src="<?php echo esc_url( $img_url ); ?>" alt="<?php echo esc_attr( $area->name ); ?>">
-								</div>
-
-								<div class="spcu-area-card__content">
-									<h4 class="spcu-area-card__title"><?php echo esc_html( $area->name ); ?></h4>
-
-									<?php if ( $settings['show_location_info'] === 'yes' && ! empty( $area->distance ) ) : ?>
-										<p class="spcu-area-card__location">
-											<?php if ( ! empty( $prefecture->name ) ) : ?>
-												<?php echo esc_html( $prefecture->name ); ?> ·
-											<?php endif; ?>
-											<?php echo esc_html( $area->distance ); ?>
-										</p>
-									<?php endif; ?>
-
-									<?php if ( $settings['show_description'] === 'yes' && ! empty( $area->short_description ) ) : ?>
-										<p class="spcu-area-card__short-description"><?php echo esc_html( $area->short_description ); ?></p>
-									<?php elseif ( $settings['show_description'] === 'yes' && ! empty( $area->description ) ) : ?>
-										<p class="spcu-area-card__short-description"><?php echo wp_kses_post( wp_trim_words( $area->description, 20 ) ); ?></p>
-									<?php endif; ?>
-
-									<?php if ( $settings['show_tags'] === 'yes' && ! empty( $tags ) ) : ?>
-										<div class="spcu-area-card__tags">
-											<?php foreach ( $tags as $tag ) : ?>
-												<span class="spcu-area-card__tag"><?php echo esc_html( $tag ); ?></span>
-											<?php endforeach; ?>
-										</div>
-									<?php endif; ?>
-
-									<?php if ( $settings['show_button'] === 'yes' ) : ?>
-										<a href="<?php echo esc_url( $settings['button_link'] ?: '#' ); ?>" class="spcu-area-card__button">
-											<?php echo esc_html( $settings['button_text'] ?: 'View & Quote →' ); ?>
-										</a>
-									<?php endif; ?>
-								</div>
-							</div>
-						<?php endforeach; ?>
-					</div>
-					<?php if ( count( $areas ) > 3 ) : ?>
-						<button class="spcu-carousel-button spcu-carousel-next" aria-label="Next areas">›</button>
-					<?php endif; ?>
-				</div>
-			</div>
-			<?php
+		$prefecture_map = [];
+		foreach ( $prefecture_rows as $row ) {
+			$prefecture_map[ intval( $row->id ) ] = $row;
 		}
 
-		if ( ! $has_any_area ) {
+		$areas = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT a.*, p.name AS prefecture_name FROM {$wpdb->prefix}spcu_areas a LEFT JOIN {$wpdb->prefix}spcu_prefectures p ON p.id = a.prefecture_id WHERE a.prefecture_id IN ($placeholders) ORDER BY a.name ASC",
+				$selected_prefecture_ids
+			)
+		);
+
+		if ( empty( $areas ) ) {
 			echo '<p>No areas found for selected prefectures.</p>';
 			return;
 		}
+
+		$single_prefecture = null;
+		if ( $is_single_prefecture ) {
+			$single_id = $selected_prefecture_ids[0];
+			$single_prefecture = isset( $prefecture_map[ $single_id ] ) ? $prefecture_map[ $single_id ] : null;
+		}
+
+		$prefecture_title = $custom_title;
+		if ( $prefecture_title === '' ) {
+			if ( $is_single_prefecture && ! empty( $single_prefecture ) ) {
+				$prefecture_title = $single_prefecture->name;
+			} else {
+				$prefecture_title = esc_html__( 'Selected Prefectures', 'ski-price-calculator' );
+			}
+		}
+
 		?>
+		<?php if ( $settings['show_prefecture_header'] === 'yes' ) : ?>
+			<div class="spcu-prefecture-header">
+				<div class="spcu-prefecture-header__content">
+					<?php if ( $is_single_prefecture && ! empty( $single_prefecture ) && ! empty( $single_prefecture->name_ja ) ) : ?>
+						<span class="spcu-prefecture-label"><?php echo esc_html( $single_prefecture->name_ja ); ?></span>
+					<?php endif; ?>
+					<?php if ( ! empty( $prefecture_title ) ) : ?>
+						<h2 class="spcu-prefecture-title"><?php echo esc_html( $prefecture_title ); ?></h2>
+					<?php endif; ?>
+				</div>
+			</div>
+		<?php endif; ?>
+
+		<div class="spcu-prefecture-areas-wrapper" data-spcu-carousel-wrapper>
+			<div class="spcu-areas-carousel-container">
+				<?php if ( count( $areas ) > 3 ) : ?>
+					<button class="spcu-carousel-button spcu-carousel-prev" aria-label="Previous areas">‹</button>
+				<?php endif; ?>
+				<div class="spcu-areas-horizontal" data-carousel-container>
+					<?php foreach ( $areas as $area ) :
+						$img_url = wp_get_attachment_image_url( $area->featured_image, 'medium' );
+						if ( ! $img_url ) {
+							$img_url = 'https://via.placeholder.com/400x300?text=' . urlencode( $area->name );
+						}
+
+						$tags = [];
+						if ( ! empty( $area->area_tags ) ) {
+							$tags = json_decode( $area->area_tags, true ) ?: [];
+						}
+					?>
+						<div class="spcu-area-card">
+							<?php if ( ! empty( $area->featured_badge ) ) : ?>
+								<div class="spcu-area-card__badge"><?php echo esc_html( $area->featured_badge ); ?></div>
+							<?php endif; ?>
+
+							<div class="spcu-area-card__image">
+								<img src="<?php echo esc_url( $img_url ); ?>" alt="<?php echo esc_attr( $area->name ); ?>">
+							</div>
+
+							<div class="spcu-area-card__content">
+								<h4 class="spcu-area-card__title"><?php echo esc_html( $area->name ); ?></h4>
+
+								<?php if ( $settings['show_location_info'] === 'yes' && ! empty( $area->distance ) ) : ?>
+									<p class="spcu-area-card__location">
+										<?php if ( ! empty( $area->prefecture_name ) ) : ?>
+											<?php echo esc_html( $area->prefecture_name ); ?> ·
+										<?php endif; ?>
+										<?php echo esc_html( $area->distance ); ?>
+									</p>
+								<?php endif; ?>
+
+								<?php if ( $settings['show_description'] === 'yes' && ! empty( $area->short_description ) ) : ?>
+									<p class="spcu-area-card__short-description"><?php echo esc_html( $area->short_description ); ?></p>
+								<?php elseif ( $settings['show_description'] === 'yes' && ! empty( $area->description ) ) : ?>
+									<p class="spcu-area-card__short-description"><?php echo wp_kses_post( wp_trim_words( $area->description, 20 ) ); ?></p>
+								<?php endif; ?>
+
+								<?php if ( $settings['show_tags'] === 'yes' && ! empty( $tags ) ) : ?>
+									<div class="spcu-area-card__tags">
+										<?php foreach ( $tags as $tag ) : ?>
+											<span class="spcu-area-card__tag"><?php echo esc_html( $tag ); ?></span>
+										<?php endforeach; ?>
+									</div>
+								<?php endif; ?>
+
+								<?php if ( $settings['show_button'] === 'yes' ) : ?>
+									<a href="<?php echo esc_url( $settings['button_link'] ?: '#' ); ?>" class="spcu-area-card__button">
+										<?php echo esc_html( $settings['button_text'] ?: 'View & Quote →' ); ?>
+									</a>
+								<?php endif; ?>
+							</div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<?php if ( count( $areas ) > 3 ) : ?>
+					<button class="spcu-carousel-button spcu-carousel-next" aria-label="Next areas">›</button>
+				<?php endif; ?>
+			</div>
+		</div>
+	
 		<script>
 		(function() {
 			const wrappers = document.querySelectorAll('[data-spcu-carousel-wrapper]');
