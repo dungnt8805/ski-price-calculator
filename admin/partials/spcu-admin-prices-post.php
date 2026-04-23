@@ -20,6 +20,7 @@ function spcu_handle_prices_post(){
     $page_mode = ($page === 'spcu-addon-prices') ? 'addon' : 'hotel';
     $db_table = $page_mode === 'hotel' ? $wpdb->prefix.'spcu_prices' : $wpdb->prefix.'spcu_addon_prices';
     $selected_hotel_id = intval($_POST['hotel'] ?? ($_GET['hotel'] ?? 0));
+    $selected_area_id  = intval($_POST['area']  ?? ($_GET['area']  ?? 0));
 
     $table_exists = (bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $db_table));
     if(!$table_exists){
@@ -30,7 +31,7 @@ function spcu_handle_prices_post(){
     }
 
     if(!$table_exists){
-        spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'error', 'Database table is missing for this page.');
+        spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, 'error', 'Database table is missing for this page.');
     }
 
     $required_columns_all = [
@@ -69,7 +70,7 @@ function spcu_handle_prices_post(){
                 if($wpdb->last_error){
                     $msg .= ' ' . $wpdb->last_error;
                 }
-                spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'error', $msg);
+                spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, 'error', $msg);
             }
         }
     }
@@ -83,24 +84,21 @@ function spcu_handle_prices_post(){
 
     if($page_mode === 'hotel'){
         if(!$hotel_id || $hotel_id <= 0){
-            spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'error', 'Please open Hotel Prices from a specific hotel in the Hotels list.');
+            spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, 'error', 'Please open Hotel Prices from a specific hotel in the Hotels list.');
         }
 
         $hotel_exists = (bool) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}spcu_hotels WHERE id = %d", $hotel_id));
         if(!$hotel_exists){
-            spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'error', 'Selected hotel was not found.');
+            spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, 'error', 'Selected hotel was not found.');
         }
     }
 
     if($page_mode === 'addon'){
         if(!$area_id || $area_id <= 0){
-            spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'error', 'Please select Area for add-on prices.');
-        }
-        if(in_array($post_category, ['lift','gear'], true) && (!$days || $days <= 0)){
-            spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'error', 'Lift and Gear prices require Days greater than 0.');
+            spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, 'error', 'Please select Area for add-on prices.');
         }
         if($post_category === 'transport' && $addon_grade === ''){
-            spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'error', 'Transport prices require Difficulty selection.');
+            spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, 'error', 'Transport prices require Grade selection.');
         }
     }
 
@@ -135,7 +133,7 @@ function spcu_handle_prices_post(){
     $data = [
         'category'      => $post_category,
         'area_id'       => $area_id,
-        'days'          => $days,
+        'days'          => $page_mode === 'hotel' ? $days : null,
         'price_type'    => $price_type,
         'weekdays_json' => $weekdays_json,
         'dates_json'    => $dates_json,
@@ -159,10 +157,10 @@ function spcu_handle_prices_post(){
     $ok = $wpdb->insert($db_table, $data);
     if($ok === false){
         $msg = 'Could not save price rule. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
-        spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'error', $msg);
+        spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, 'error', $msg);
     }
 
-    spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'success', 'Price rule saved successfully.');
+    spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, 'success', 'Price rule saved successfully.');
 }
 }
 
@@ -187,19 +185,20 @@ function spcu_handle_prices_delete(){
     $page_mode = ($page === 'spcu-addon-prices') ? 'addon' : 'hotel';
     $db_table = $page_mode === 'hotel' ? $wpdb->prefix.'spcu_prices' : $wpdb->prefix.'spcu_addon_prices';
     $selected_hotel_id = intval($_GET['hotel'] ?? 0);
+    $selected_area_id  = intval($_GET['area']  ?? 0);
 
     $ok = $wpdb->delete($db_table, ['id' => $delete_id]);
     if($ok === false){
         $msg = 'Could not delete price rule. ' . ($wpdb->last_error ? $wpdb->last_error : 'Please try again.');
-        spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'error', $msg);
+        spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, 'error', $msg);
     }
 
-    spcu_redirect_price_post_result($page_mode, $selected_hotel_id, 'success', 'Price rule deleted successfully.');
+    spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, 'success', 'Price rule deleted successfully.');
 }
 }
 
 if(!function_exists('spcu_redirect_price_post_result')){
-function spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $toast_type, $message){
+function spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $selected_area_id, $toast_type, $message){
     $redirect_args = [
         'page' => $page_mode === 'hotel' ? 'spcu-hotel-prices' : 'spcu-addon-prices',
         'spcu_toast' => $toast_type,
@@ -208,6 +207,10 @@ function spcu_redirect_price_post_result($page_mode, $selected_hotel_id, $toast_
 
     if($page_mode === 'hotel' && $selected_hotel_id){
         $redirect_args['hotel'] = intval($selected_hotel_id);
+    }
+
+    if($page_mode === 'addon' && $selected_area_id){
+        $redirect_args['area'] = intval($selected_area_id);
     }
 
     wp_safe_redirect(add_query_arg($redirect_args, admin_url('admin.php')));

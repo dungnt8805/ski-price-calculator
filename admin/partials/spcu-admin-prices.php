@@ -7,6 +7,7 @@ $page_mode     = (isset($_GET['page']) && $_GET['page'] === 'spcu-addon-prices')
 $page_title    = $page_mode === 'hotel' ? 'Hotel Prices' : 'Addon Prices (Lift, Gear, Transport)';
 $category_sql  = $page_mode === 'hotel' ? "p.category = 'hotel'" : "p.category != 'hotel'";
 $selected_hotel_id = ($page_mode === 'hotel' && isset($_GET['hotel'])) ? intval($_GET['hotel']) : 0;
+$selected_area_id  = ($page_mode === 'addon'  && isset($_GET['area']))  ? intval($_GET['area'])  : 0;
 
 if(!function_exists('spcu_admin_breadcrumb')){
     function spcu_admin_breadcrumb($items){
@@ -31,6 +32,21 @@ $grade_options = SPCU_Grades::options();
 $db_table = $page_mode === 'hotel' ? $wpdb->prefix.'spcu_prices' : $wpdb->prefix.'spcu_addon_prices';
 $price_form_error = '';
 $selected_hotel = null;
+$selected_area  = null;
+
+if($page_mode === 'addon'){
+    if($selected_area_id <= 0){
+        $price_form_error = 'Please open Addon Prices from a specific area in the Areas list.';
+    } else {
+        $selected_area = $wpdb->get_row($wpdb->prepare(
+            "SELECT a.*, p.name as prefecture_name FROM {$wpdb->prefix}spcu_areas a LEFT JOIN {$wpdb->prefix}spcu_prefectures p ON p.id = a.prefecture_id WHERE a.id = %d",
+            $selected_area_id
+        ));
+        if(!$selected_area){
+            $price_form_error = 'Selected area was not found.';
+        }
+    }
+}
 
 if($page_mode === 'hotel'){
     if($selected_hotel_id <= 0){
@@ -96,11 +112,12 @@ if ($page_mode === 'hotel') {
         ORDER BY p.category ASC, p.hotel_id ASC, p.id DESC
     ");
 } else {
+    $area_filter_sql = $selected_area_id ? $wpdb->prepare(" AND p.area_id = %d", $selected_area_id) : '';
     $rows = $wpdb->get_results("
         SELECT p.*, NULL as hotel_name, a.name as area_name, p.grade as grade_name
         FROM {$db_table} p
         LEFT JOIN {$wpdb->prefix}spcu_areas  a ON p.area_id  = a.id
-        WHERE {$category_sql}
+        WHERE {$category_sql} {$area_filter_sql}
         ORDER BY p.category ASC, p.area_id ASC, p.grade ASC, p.id DESC
     ");
 }
@@ -194,7 +211,94 @@ function spcu_schedule_summary($r){
 .spcu-range-lbl strong{color:#1a3a5c;}
 </style>
 
-<div class='wrap'>
+<?php if($page_mode === 'addon'): ?>
+<style>
+.spcu-prices-page--addon {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.spcu-prices-page--addon h1,
+.spcu-prices-page--addon h2,
+.spcu-prices-page--addon h3,
+.spcu-prices-page--addon th,
+.spcu-prices-page--addon td,
+.spcu-prices-page--addon label,
+.spcu-prices-page--addon input,
+.spcu-prices-page--addon select,
+.spcu-prices-page--addon textarea,
+.spcu-prices-page--addon p,
+.spcu-prices-page--addon .button {
+    font-family: inherit;
+}
+
+.spcu-prices-page--addon .form-table tr {
+    border-bottom: 0;
+}
+
+.spcu-prices-page--addon .form-table th {
+    color: #1d2327;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.spcu-prices-page--addon .form-table td {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.spcu-prices-page--addon .form-table td .description {
+    color: #646970;
+    font-size: 13px;
+}
+
+.spcu-prices-page--addon .form-table td input[type='text'],
+.spcu-prices-page--addon .form-table td input[type='number'],
+.spcu-prices-page--addon .form-table td input[type='date'],
+.spcu-prices-page--addon .form-table td select,
+.spcu-prices-page--addon .form-table td textarea,
+.spcu-prices-page--addon .form-table td .regular-text {
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    min-height: 30px;
+    padding: 0 8px;
+    box-shadow: none;
+    background: #fff;
+}
+
+.spcu-prices-page--addon .form-table td textarea,
+.spcu-prices-page--addon .form-table td textarea.regular-text {
+    padding: 8px;
+}
+
+.spcu-prices-page--addon .form-table td input:focus,
+.spcu-prices-page--addon .form-table td select:focus,
+.spcu-prices-page--addon .form-table td textarea:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: 2px solid transparent;
+    background: #fff;
+}
+
+.spcu-prices-page--addon .submit .button-primary {
+    border-radius: 3px !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    letter-spacing: 0;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.spcu-prices-page--addon .submit .button-primary:hover {
+    transform: none;
+    box-shadow: none !important;
+}
+</style>
+<?php endif; ?>
+
+<div class='wrap spcu-prices-page<?php echo $page_mode === 'addon' ? ' spcu-prices-page--addon' : ''; ?>'>
 <?php
 if($page_mode === 'hotel'){
     spcu_admin_breadcrumb([
@@ -205,7 +309,8 @@ if($page_mode === 'hotel'){
 } else {
     spcu_admin_breadcrumb([
         ['label' => 'Ski Engine', 'url' => admin_url('admin.php?page=spcu-dashboard')],
-        ['label' => 'Addon Prices']
+        ['label' => 'Areas', 'url' => admin_url('admin.php?page=spcu-areas')],
+        ['label' => $selected_area ? esc_html($selected_area->name).' — Addon Prices' : 'Addon Prices']
     ]);
 }
 ?>
@@ -221,8 +326,16 @@ if($page_mode === 'hotel'){
 <div class="spcu-info-card">
     <h2><?= esc_html($selected_hotel->name) ?></h2>
     <p><strong>Area:</strong> <?= esc_html($selected_hotel->area_name ?: '-') ?></p>
-    <p><strong>Difficulty:</strong> <?= esc_html(SPCU_Grades::label($selected_hotel->grade) ?: '-') ?></p>
+    <p><strong>Grade:</strong> <?= esc_html(SPCU_Grades::label($selected_hotel->grade) ?: '-') ?></p>
     <?php if(!empty($selected_hotel->address)): ?><p><strong>Address:</strong> <?= esc_html($selected_hotel->address) ?></p><?php endif; ?>
+</div>
+<?php endif; ?>
+
+<?php if($page_mode === 'addon' && $selected_area): ?>
+<div class="spcu-info-card">
+    <h2><?= esc_html($selected_area->name) ?></h2>
+    <?php if(!empty($selected_area->name_ja)): ?><p><strong>Name (JA):</strong> <?= esc_html($selected_area->name_ja) ?></p><?php endif; ?>
+    <p><strong>Prefecture:</strong> <?= esc_html($selected_area->prefecture_name ?: '-') ?></p>
 </div>
 <?php endif; ?>
 
@@ -280,30 +393,37 @@ if($page_mode === 'hotel'){
     <tr id="wrap_area">
         <th scope="row"><label for="area">Area</label></th>
         <td>
-            <select name='area' id="area">
-                <option value=''>— Select Area —</option>
-                <?php foreach($areas as $a) echo "<option value='".esc_attr($a->id)."'>".esc_html($a->name)."</option>"; ?>
-            </select>
+            <?php if($page_mode === 'addon' && $selected_area): ?>
+                <strong><?= esc_html($selected_area->name) ?></strong>
+                <input type="hidden" name="area" id="area" value="<?= esc_attr($selected_area->id) ?>">
+            <?php else: ?>
+                <select name='area' id="area">
+                    <option value=''>— Select Area —</option>
+                    <?php foreach($areas as $a) echo "<option value='".esc_attr($a->id)."'>".esc_html($a->name)."</option>"; ?>
+                </select>
+            <?php endif; ?>
         </td>
     </tr>
 
-    <!-- Difficulty (Transport only) -->
+    <!-- Grade (Transport only) -->
     <tr id="wrap_grade">
-        <th scope="row"><label for="grade">Difficulty</label></th>
+        <th scope="row"><label for="grade">Grade</label></th>
         <td>
             <select name='grade' id="grade">
-                <option value=''>— Select Difficulty —</option>
+                <option value=''>— Select Grade —</option>
                 <?php foreach($grade_options as $grade_key => $grade_label) echo "<option value='".esc_attr($grade_key)."'>".esc_html($grade_label)."</option>"; ?>
             </select>
             <p class="description">Used for Transport prices.</p>
         </td>
     </tr>
 
-    <!-- Days -->
+    <!-- Days (hotel only) -->
+    <?php if($page_mode === 'hotel'): ?>
     <tr id="wrap_days">
         <th scope="row"><label for="days">Number of Days</label></th>
         <td><input type='number' step='1' min='1' name='days' id="days" class="small-text"> days</td>
     </tr>
+    <?php endif; ?>
 
     <!-- Price Schedule (hotel only) -->
     <tr id="wrap_price_type">
@@ -398,31 +518,31 @@ if($page_mode === 'hotel'){
 
     <!-- Adult Prices -->
     <tr id="wrap_price_jpy">
-        <th scope="row"><label for="price_jpy">Adult Price JPY (¥) / person</label></th>
+        <th scope="row"><label for="price_jpy">Adult Price JPY (¥) / person<?php if($page_mode === 'addon'): ?> / day<?php endif; ?></label></th>
         <td><input type='number' step='1' name='price_jpy' id="price_jpy" class="regular-text"></td>
     </tr>
     <tr id="wrap_price_usd">
-        <th scope="row"><label for="price_usd">Adult Price USD ($) / person</label></th>
+        <th scope="row"><label for="price_usd">Adult Price USD ($) / person<?php if($page_mode === 'addon'): ?> / day<?php endif; ?></label></th>
         <td><input type='number' step='0.01' name='price_usd' id="price_usd" class="regular-text"></td>
     </tr>
 
     <!-- Child Prices -->
     <tr id="wrap_child_price_jpy">
-        <th scope="row"><label for="child_price_jpy">Child Price JPY (¥) / person</label></th>
+        <th scope="row"><label for="child_price_jpy">Child Price JPY (¥) / person<?php if($page_mode === 'addon'): ?> / day<?php endif; ?></label></th>
         <td><input type='number' step='1' name='child_price_jpy' id="child_price_jpy" class="regular-text"><p class="description">Optional. Leave empty to disable child pricing.</p></td>
     </tr>
     <tr id="wrap_child_price_usd">
-        <th scope="row"><label for="child_price_usd">Child Price USD ($) / person</label></th>
+        <th scope="row"><label for="child_price_usd">Child Price USD ($) / person<?php if($page_mode === 'addon'): ?> / day<?php endif; ?></label></th>
         <td><input type='number' step='0.01' name='child_price_usd' id="child_price_usd" class="regular-text"></td>
     </tr>
 
     <!-- Infant Prices -->
     <tr id="wrap_infant_price_jpy">
-        <th scope="row"><label for="infant_price_jpy">Infant Price JPY (¥) / person</label></th>
+        <th scope="row"><label for="infant_price_jpy">Infant Price JPY (¥) / person<?php if($page_mode === 'addon'): ?> / day<?php endif; ?></label></th>
         <td><input type='number' step='1' name='infant_price_jpy' id="infant_price_jpy" class="regular-text"><p class="description">Optional. Leave empty to disable infant pricing.</p></td>
     </tr>
     <tr id="wrap_infant_price_usd">
-        <th scope="row"><label for="infant_price_usd">Infant Price USD ($) / person</label></th>
+        <th scope="row"><label for="infant_price_usd">Infant Price USD ($) / person<?php if($page_mode === 'addon'): ?> / day<?php endif; ?></label></th>
         <td><input type='number' step='0.01' name='infant_price_usd' id="infant_price_usd" class="regular-text"></td>
     </tr>
 
@@ -440,10 +560,8 @@ if($page_mode === 'hotel'){
     <table class="wp-list-table widefat fixed striped table-view-list">
         <thead>
             <tr>
-                <th>ID</th>
-                <?php if ($page_mode !== 'hotel'): ?><th>Category</th><th>Target (Hotel / Area / Difficulty)</th><?php endif; ?>
-                <th>Days</th>
-                <?php if ($page_mode === 'hotel'): ?><th>Schedule</th><?php endif; ?>
+                <?php if ($page_mode !== 'hotel'): ?><th>Category</th><th>Area</th><?php endif; ?>
+                <?php if ($page_mode === 'hotel'): ?><th>Days</th><th>Schedule</th><?php endif; ?>
                 <th>Adult JPY</th><th>Adult USD</th><th>Child JPY</th><th>Child USD</th><th>Infant JPY</th><th>Infant USD</th><th>Action</th>
             </tr>
         </thead>
@@ -460,6 +578,9 @@ if($page_mode === 'hotel'){
             ];
             if($page_mode === 'hotel' && $selected_hotel_id){
                 $delete_args['hotel'] = intval($selected_hotel_id);
+            }
+            if($page_mode === 'addon' && $selected_area_id){
+                $delete_args['area'] = intval($selected_area_id);
             }
             $delete_url = wp_nonce_url(
                 add_query_arg($delete_args, admin_url('admin.php')),
@@ -486,13 +607,11 @@ if($page_mode === 'hotel'){
             }
         ?>
         <tr>
-            <td><?= esc_html($r->id) ?></td>
             <?php if ($page_mode !== 'hotel'): ?>
             <td><?= esc_html($r->category) ?></td>
             <td><?= esc_html($subject) ?></td>
             <?php endif; ?>
-            <td><?= esc_html($r->days ?: '—') ?></td>
-            <?php if ($page_mode === 'hotel'): ?><td><?= spcu_schedule_summary($r) ?></td><?php endif; ?>
+            <?php if ($page_mode === 'hotel'): ?><td><?= esc_html($r->days ?: '—') ?></td><td><?= spcu_schedule_summary($r) ?></td><?php endif; ?>
             <td><?= esc_html($jpy_col) ?></td>
             <td><?= esc_html($usd_col) ?></td>
             <td><?= esc_html($child_jpy_fixed ?: '—') ?></td>
@@ -777,9 +896,9 @@ function toggle(){
             setRequired('days', false);
             setRequired('grade', true);
         } else {
-            show('wrap_days');
+            hide('wrap_days');
             hide('wrap_grade');
-            setRequired('days', true);
+            setRequired('days', false);
             setRequired('grade', false);
         }
 

@@ -167,7 +167,10 @@ wp_enqueue_media();
                         <?php endif;
                     endif; ?>
                 </td>
-                <td><a href='?page=spcu-area-form&edit=<?= esc_html($r->id) ?>' class='button button-small'>Edit</a></td>
+                <td>
+                    <a href='?page=spcu-area-form&edit=<?= esc_attr($r->id) ?>' class='button button-small'>Edit</a>
+                    <a href='?page=spcu-addon-prices&area=<?= esc_attr($r->id) ?>' class='button button-small' style='margin-left:4px;'>Addon Prices</a>
+                </td>
             </tr>
             <?php endforeach; ?>
         </table>
