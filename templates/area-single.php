@@ -1,8 +1,7 @@
 <?php
 /**
  * Single Area Template
- * Displays area with hotels in card format + addon fees
- * URL: /area/[areaname]
+ * Displays the area details page.
  */
 
 get_header();
@@ -14,7 +13,7 @@ if(!$area){
     echo '<div style="text-align:center; padding: 60px 20px; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif;">';
     echo '<h1 style="font-size: 32px; margin-bottom: 20px;">Area Not Found</h1>';
     echo '<p style="color: #666; font-size: 16px;">The area you\'re looking for doesn\'t exist.</p>';
-    echo '<a href="'.home_url().'" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #0073aa; color: white; text-decoration: none; border-radius: 4px;">Back to Home</a>';
+    echo '<a href="' . esc_url(home_url('/')) . '" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #0073aa; color: white; text-decoration: none; border-radius: 4px;">Back to Home</a>';
     echo '</div>';
     get_footer();
     exit;
@@ -25,561 +24,324 @@ $addon_prices = SPCU_Frontend::get_area_addon_prices($area->id);
 
 $area_featured_image = '';
 if(!empty($area->featured_image)){
-    $area_featured_image = wp_get_attachment_image_url(intval($area->featured_image), 'full');
+    $area_featured_image = wp_get_attachment_image_url((int) $area->featured_image, 'full');
 }
 
 $area_gallery_images = [];
 if(!empty($area->images)){
     foreach(explode(',', $area->images) as $image_id){
-        $image_id = intval($image_id);
-        if($image_id){
-            $image_url = wp_get_attachment_image_url($image_id, 'large');
-            if($image_url){
-                $area_gallery_images[] = $image_url;
-            }
+        $image_id = (int) $image_id;
+        if($image_id <= 0){
+            continue;
+        }
+
+        $image_url = wp_get_attachment_image_url($image_id, 'large');
+        if($image_url){
+            $area_gallery_images[] = $image_url;
         }
     }
 }
 
-// Group addon prices by category
 $price_data = [];
-foreach($addon_prices as $p){
-    if(!isset($price_data[$p->category])){
-        $price_data[$p->category] = [];
+foreach($addon_prices as $addon_price){
+    if(!isset($price_data[$addon_price->category])){
+        $price_data[$addon_price->category] = [];
     }
-    $price_data[$p->category][] = $p->grade;
+
+    $price_data[$addon_price->category][] = $addon_price->grade;
 }
+
+$difficulty_breakdown = [];
+if(!empty($area->difficulties_json)){
+    $decoded_difficulties = json_decode($area->difficulties_json, true);
+    if(is_array($decoded_difficulties)){
+        $difficulty_breakdown = $decoded_difficulties;
+    }
+}
+
+$hotel_grade_labels = [
+    'standard' => 'Standard',
+    'premium' => 'Premium',
+    'exclusive' => 'Exclusive',
+];
+
+$hotel_grade_colors = [
+    'standard' => ['bg' => '#e2e8f0', 'text' => '#334155'],
+    'premium' => ['bg' => '#dbeafe', 'text' => '#1d4ed8'],
+    'exclusive' => ['bg' => '#fef3c7', 'text' => '#92400e'],
+];
 ?>
 
-<style>
-    * {
-        box-sizing: border-box;
-    }
-
-    .spcu-area-container {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
-        color: #1a1a1a;
-        line-height: 1.6;
-    }
-
-    /* Hero Section - Area Header */
-    .spcu-area-header {
-        background: linear-gradient(135deg, #0f5fa4 0%, #0073aa 50%, #005a87 100%);
-        color: white;
-        padding: 80px 20px;
-        text-align: center;
-        margin-bottom: 60px;
-        position: relative;
-        overflow: hidden;
-        background-size: cover;
-        background-position: center;
-    }
-
-    .spcu-area-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 400px;
-        height: 400px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        transform: translate(100px, -100px);
-    }
-
-    .spcu-area-header::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 300px;
-        height: 300px;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 50%;
-        transform: translate(-100px, 100px);
-    }
-
-    .spcu-area-header-content {
-        position: relative;
-        z-index: 2;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .spcu-area-header h1 {
-        font-size: 56px;
-        margin: 0 0 16px 0;
-        font-weight: 800;
-        letter-spacing: -1px;
-    }
-
-    .spcu-area-header .subtext {
-        font-size: 20px;
-        opacity: 0.95;
-        margin: 0;
-        font-weight: 300;
-        letter-spacing: 0.5px;
-    }
-
-    /* Main Container */
-    .spcu-area-content {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
-
-    .spcu-area-intro {
-        max-width: 920px;
-        margin: 0 auto 40px;
-        color: #334155;
-    }
-
-    .spcu-area-short-description {
-        font-size: 18px;
-        line-height: 1.7;
-        margin: 0 auto 24px;
-        text-align: center;
-        color: #0f172a;
-    }
-
-    .spcu-area-description {
-        font-size: 16px;
-        line-height: 1.8;
-    }
-
-    .spcu-area-gallery {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 16px;
-        margin: 0 0 40px;
-    }
-
-    .spcu-area-gallery img {
-        width: 100%;
-        height: 220px;
-        object-fit: cover;
-        border-radius: 12px;
-        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
-    }
-
-    /* Section Titles */
-    .spcu-section-title {
-        font-size: 32px;
-        font-weight: 800;
-        margin: 60px 0 32px 0;
-        padding-bottom: 16px;
-        border-bottom: 4px solid #0073aa;
-        display: inline-block;
-        letter-spacing: -0.5px;
-        position: relative;
-    }
-
-    .spcu-section-title::before {
-        content: '';
-        position: absolute;
-        bottom: -4px;
-        left: 0;
-        width: 60px;
-        height: 4px;
-        background: linear-gradient(90deg, #0073aa 0%, #00a8e8 100%);
-    }
-
-    /* Hotels Grid */
-    .spcu-hotels-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 28px;
-        margin-bottom: 60px;
-    }
-
-    .spcu-hotel-card {
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        cursor: pointer;
-    }
-
-    .spcu-hotel-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    /* Hotel Image Container */
-    .spcu-hotel-image {
-        width: 100%;
-        height: 260px;
-        background: #f5f5f5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .spcu-hotel-image::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.1) 100%);
-        z-index: 1;
-        pointer-events: none;
-    }
-
-    .spcu-hotel-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-
-    .spcu-hotel-card:hover .spcu-hotel-image img {
-        transform: scale(1.05);
-    }
-
-    .spcu-hotel-image-placeholder {
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #0073aa 0%, #00a8e8 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 64px;
-        position: relative;
-        z-index: 0;
-    }
-
-    /* Hotel Content */
-    .spcu-hotel-content {
-        padding: 28px;
-    }
-
-    .spcu-hotel-name {
-        font-size: 20px;
-        font-weight: 700;
-        margin: 0 0 6px 0;
-        color: #1a1a1a;
-        letter-spacing: -0.3px;
-    }
-
-    .spcu-hotel-name-ja {
-        font-size: 14px;
-        color: #0073aa;
-        margin: 0 0 16px 0;
-        font-weight: 500;
-    }
-
-    .spcu-hotel-address {
-        font-size: 14px;
-        color: #555;
-        line-height: 1.6;
-        margin: 0;
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .spcu-hotel-address::before {
-        content: '📍';
-        flex-shrink: 0;
-        font-size: 16px;
-    }
-
-    .spcu-hotel-address-ja {
-        font-size: 13px;
-        color: #888;
-        line-height: 1.6;
-        margin: 12px 0 0 26px;
-    }
-
-    /* Addon Prices Section */
-    .spcu-addon-prices {
-        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-        border-radius: 12px;
-        padding: 40px;
-        margin-bottom: 60px;
-        border: 1px solid #e9ecef;
-    }
-
-    .spcu-addon-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        font-size: 15px;
-        overflow: hidden;
-        border-radius: 8px;
-    }
-
-    .spcu-addon-table thead {
-        background: linear-gradient(90deg, #0f5fa4 0%, #0073aa 100%);
-        color: white;
-    }
-
-    .spcu-addon-table th {
-        padding: 16px;
-        text-align: left;
-        font-weight: 600;
-        border: none;
-        letter-spacing: 0.3px;
-    }
-
-    .spcu-addon-table td {
-        padding: 14px 16px;
-        border: none;
-        color: #333;
-        vertical-align: middle;
-    }
-
-    .spcu-addon-table tbody tr {
-        border-bottom: 1px solid #e9ecef;
-        transition: background-color 0.2s ease;
-    }
-
-    .spcu-addon-table tbody tr:hover {
-        background-color: #f0f7ff;
-    }
-
-    .spcu-addon-table tbody tr:last-child {
-        border-bottom: none;
-    }
-
-    .spcu-addon-table tbody tr:nth-child(even) {
-        background-color: #f8f9fa;
-    }
-
-    .spcu-addon-category {
-        font-weight: 700;
-        color: #0073aa;
-        text-transform: capitalize;
-        letter-spacing: 0.2px;
-    }
-
-    .spcu-addon-price {
-        color: #00a8e8;
-        font-weight: 700;
-        font-size: 16px;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 1024px) {
-        .spcu-area-header h1 {
-            font-size: 44px;
-        }
-
-        .spcu-section-title {
-            font-size: 26px;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .spcu-area-container {
-            padding: 0;
-        }
-
-        .spcu-area-header {
-            padding: 60px 20px;
-            margin-bottom: 40px;
-        }
-
-        .spcu-area-header h1 {
-            font-size: 36px;
-        }
-
-        .spcu-area-header .subtext {
-            font-size: 16px;
-        }
-
-        .spcu-area-content {
-            padding: 0 16px;
-        }
-
-        .spcu-hotels-grid {
-            grid-template-columns: 1fr;
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .spcu-section-title {
-            font-size: 22px;
-            margin: 40px 0 20px 0;
-        }
-
-        .spcu-hotel-image {
-            height: 220px;
-        }
-
-        .spcu-hotel-content {
-            padding: 20px;
-        }
-
-        .spcu-addon-prices {
-            padding: 24px;
-            margin-bottom: 40px;
-        }
-
-        .spcu-addon-table {
-            font-size: 13px;
-        }
-
-        .spcu-addon-table th,
-        .spcu-addon-table td {
-            padding: 12px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .spcu-area-header {
-            padding: 40px 16px;
-        }
-
-        .spcu-area-header h1 {
-            font-size: 28px;
-        }
-
-        .spcu-area-header .subtext {
-            font-size: 14px;
-        }
-
-        .spcu-section-title {
-            font-size: 18px;
-            border-bottom-width: 3px;
-        }
-
-        .spcu-addon-table th,
-        .spcu-addon-table td {
-            padding: 10px 8px;
-            font-size: 12px;
-        }
-
-        .spcu-addon-price {
-            font-size: 14px;
-        }
-    }
-</style>
-
-<div class="spcu-area-container">
-    <!-- Area Header -->
-    <div class="spcu-area-header"<?php if($area_featured_image): ?> style="background-image: linear-gradient(rgba(15,95,164,0.72), rgba(0,90,135,0.78)), url('<?php echo esc_url($area_featured_image); ?>');"<?php endif; ?>>
-        <div class="spcu-area-header-content">
-            <h1><?php echo esc_html($area->name); ?></h1>
-            <?php if(!empty($area->name_ja)): ?>
-                <p class="subtext"><?php echo esc_html($area->name_ja); ?></p>
-            <?php endif; ?>
-            <?php if(!empty($area->short_description)): ?>
-                <p class="subtext" style="max-width:760px;margin:18px auto 0;"><?php echo esc_html($area->short_description); ?></p>
-            <?php endif; ?>
+<div class="spcu-area-detail">
+    <nav class="spcu-area-detail__breadcrumb" aria-label="Breadcrumb">
+        <div class="spcu-area-detail__shell">
+            <a href="<?php echo esc_url(home_url('/')); ?>">Home</a>
+            <span>/</span>
+            <span>Area</span>
+            <span>/</span>
+            <span><?php echo esc_html($area->name); ?></span>
         </div>
-    </div>
+    </nav>
 
-    <div class="spcu-area-content">
-        <?php if(!empty($area->description) || !empty($area_gallery_images)): ?>
-            <div class="spcu-area-intro">
-                <?php if(!empty($area->description)): ?>
-                    <div class="spcu-area-description"><?php echo wp_kses_post(wpautop($area->description)); ?></div>
+    <section class="spcu-area-detail__hero"<?php if($area_featured_image): ?> style="background-image: url('<?php echo esc_url($area_featured_image); ?>');"<?php endif; ?>>
+        <div class="spcu-area-detail__hero-overlay"></div>
+        <div class="spcu-area-detail__shell spcu-area-detail__hero-inner">
+            <div class="spcu-area-detail__eyebrow">
+                <?php if(!empty($area->featured_badge)): ?>
+                    <span class="spcu-area-detail__pill spcu-area-detail__pill--accent"><?php echo esc_html($area->featured_badge); ?></span>
+                <?php endif; ?>
+                <?php if(!empty($area->type)): ?>
+                    <span class="spcu-area-detail__pill"><?php echo esc_html($area->type); ?></span>
                 <?php endif; ?>
             </div>
-            <?php if(!empty($area_gallery_images)): ?>
-                <div class="spcu-area-gallery">
+
+            <h1 class="spcu-area-detail__title"><?php echo esc_html($area->name); ?></h1>
+
+            <?php if(!empty($area->name_ja)): ?>
+                <p class="spcu-area-detail__title-ja"><?php echo esc_html($area->name_ja); ?></p>
+            <?php endif; ?>
+
+            <?php if(!empty($area->short_description)): ?>
+                <p class="spcu-area-detail__summary"><?php echo esc_html($area->short_description); ?></p>
+            <?php endif; ?>
+
+            <?php if(!empty($area->prefecture_name) || !empty($area->distance)): ?>
+                <div class="spcu-area-detail__location">
+                    <span>📍</span>
+                    <?php if(!empty($area->prefecture_name)): ?>
+                        <span><?php echo esc_html($area->prefecture_name); ?></span>
+                    <?php endif; ?>
+                    <?php if(!empty($area->prefecture_name) && !empty($area->distance)): ?>
+                        <span class="spcu-area-detail__dot">•</span>
+                    <?php endif; ?>
+                    <?php if(!empty($area->distance)): ?>
+                        <span><?php echo esc_html($area->distance); ?></span>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <main class="spcu-area-detail__shell spcu-area-detail__main">
+        <?php if(!empty($area->description) || !empty($area->short_description)): ?>
+            <section class="spcu-area-detail__section">
+                <div class="spcu-area-detail__section-head">
+                    <span class="spcu-area-detail__kicker">Overview</span>
+                    <h2>About this area</h2>
+                </div>
+
+                <div class="spcu-area-detail__copy">
+                    <?php
+                    if(!empty($area->description)){
+                        echo wp_kses_post(wpautop($area->description));
+                    } else {
+                        echo wp_kses_post(wpautop(esc_html($area->short_description)));
+                    }
+                    ?>
+                </div>
+            </section>
+        <?php endif; ?>
+
+        <?php if(
+            !empty($area->total_runs) ||
+            !empty($area->max_vertical) ||
+            !empty($area->summit) ||
+            !empty($area->total_resorts) ||
+            !empty($area->season) ||
+            !empty($area->distance) ||
+            !empty($difficulty_breakdown)
+        ): ?>
+            <section class="spcu-area-detail__section spcu-area-detail__section--split">
+                <div>
+                    <div class="spcu-area-detail__section-head">
+                        <span class="spcu-area-detail__kicker">Highlights</span>
+                        <h2>Mountain snapshot</h2>
+                    </div>
+
+                    <div class="spcu-area-detail__stats">
+                        <?php if(!empty($area->total_runs)): ?>
+                            <div class="spcu-area-detail__stat-card"><strong><?php echo esc_html($area->total_runs); ?></strong><span>Total Runs</span></div>
+                        <?php endif; ?>
+                        <?php if(!empty($area->max_vertical)): ?>
+                            <div class="spcu-area-detail__stat-card"><strong><?php echo esc_html(number_format_i18n((int) $area->max_vertical)); ?>m</strong><span>Max Vertical</span></div>
+                        <?php endif; ?>
+                        <?php if(!empty($area->summit)): ?>
+                            <div class="spcu-area-detail__stat-card"><strong><?php echo esc_html(number_format_i18n((int) $area->summit)); ?>m</strong><span>Summit</span></div>
+                        <?php endif; ?>
+                        <?php if(!empty($area->total_resorts)): ?>
+                            <div class="spcu-area-detail__stat-card"><strong><?php echo esc_html($area->total_resorts); ?></strong><span>Resorts</span></div>
+                        <?php endif; ?>
+                        <?php if(!empty($area->season)): ?>
+                            <div class="spcu-area-detail__stat-card"><strong><?php echo esc_html($area->season); ?></strong><span>Season</span></div>
+                        <?php endif; ?>
+                        <?php if(!empty($area->distance)): ?>
+                            <div class="spcu-area-detail__stat-card"><strong><?php echo esc_html($area->distance); ?></strong><span>From Tokyo</span></div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <?php if(!empty($difficulty_breakdown)): ?>
+                    <div>
+                        <div class="spcu-area-detail__section-head">
+                            <span class="spcu-area-detail__kicker">Terrain</span>
+                            <h2>Difficulty mix</h2>
+                        </div>
+
+                        <div class="spcu-area-detail__difficulty-list">
+                            <?php foreach(SPCU_Grades::records() as $difficulty_record): ?>
+                                <?php
+                                $difficulty_slug = $difficulty_record['slug'];
+                                $difficulty_value = isset($difficulty_breakdown[$difficulty_slug]) ? (int) $difficulty_breakdown[$difficulty_slug] : 0;
+                                if($difficulty_value <= 0){
+                                    continue;
+                                }
+                                ?>
+                                <div class="spcu-area-detail__difficulty-row">
+                                    <div class="spcu-area-detail__difficulty-meta">
+                                        <span><?php echo esc_html($difficulty_record['name']); ?></span>
+                                        <strong><?php echo esc_html($difficulty_value); ?>%</strong>
+                                    </div>
+                                    <div class="spcu-area-detail__difficulty-track">
+                                        <span style="width: <?php echo esc_attr(min(100, $difficulty_value)); ?>%; background: <?php echo esc_attr($difficulty_record['color']); ?>;"></span>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </section>
+        <?php endif; ?>
+
+        <?php if(!empty($area_gallery_images)): ?>
+            <section class="spcu-area-detail__section">
+                <div class="spcu-area-detail__section-head">
+                    <span class="spcu-area-detail__kicker">Gallery</span>
+                    <h2>See the area</h2>
+                </div>
+
+                <div class="spcu-area-detail__gallery">
                     <?php foreach($area_gallery_images as $gallery_image): ?>
-                        <img src="<?php echo esc_url($gallery_image); ?>" alt="<?php echo esc_attr($area->name); ?>" loading="lazy">
+                        <figure class="spcu-area-detail__gallery-item">
+                            <img src="<?php echo esc_url($gallery_image); ?>" alt="<?php echo esc_attr($area->name); ?>" loading="lazy">
+                        </figure>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+        <?php endif; ?>
+
+        <section class="spcu-area-detail__section">
+            <div class="spcu-area-detail__section-head">
+                <span class="spcu-area-detail__kicker">Stay</span>
+                <h2>Hotels in <?php echo esc_html($area->name); ?></h2>
+            </div>
+
+            <?php if(empty($hotels)): ?>
+                <div class="spcu-area-detail__empty">No hotels found in this area yet.</div>
+            <?php else: ?>
+                <div class="spcu-area-detail__hotel-grid">
+                    <?php foreach($hotels as $hotel): ?>
+                        <?php
+                        $primary_image = '';
+                        if(!empty($hotel->featured_image)){
+                            $primary_image = wp_get_attachment_image_url((int) $hotel->featured_image, 'large');
+                        }
+                        if(!$primary_image && !empty($hotel->images)){
+                            foreach(explode(',', $hotel->images) as $image_id){
+                                $candidate = wp_get_attachment_image_url((int) $image_id, 'large');
+                                if($candidate){
+                                    $primary_image = $candidate;
+                                    break;
+                                }
+                            }
+                        }
+
+                        $hotel_grade_key = strtolower((string) ($hotel->grade ?? 'standard'));
+                        $hotel_grade_label = $hotel_grade_labels[$hotel_grade_key] ?? ucfirst($hotel_grade_key);
+                        $hotel_grade_palette = $hotel_grade_colors[$hotel_grade_key] ?? $hotel_grade_colors['standard'];
+
+                        $facilities_list = [];
+                        if(!empty($hotel->facilities)){
+                            if(is_string($hotel->facilities)){
+                                $decoded_facilities = json_decode($hotel->facilities, true);
+                                if(is_array($decoded_facilities)){
+                                    $facilities_list = $decoded_facilities;
+                                }
+                            } elseif(is_array($hotel->facilities)){
+                                $facilities_list = $hotel->facilities;
+                            }
+                        }
+                        ?>
+                        <article class="spcu-area-hotel-card<?php echo !empty($hotel->is_featured) ? ' spcu-area-hotel-card--featured' : ''; ?>">
+                            <div class="spcu-area-hotel-card__media">
+                                <?php if($primary_image): ?>
+                                    <img src="<?php echo esc_url($primary_image); ?>" alt="<?php echo esc_attr($hotel->name); ?>" loading="lazy">
+                                <?php else: ?>
+                                    <div class="spcu-area-hotel-card__placeholder">🏨</div>
+                                <?php endif; ?>
+
+                                <?php if(!empty($hotel->is_featured)): ?>
+                                    <span class="spcu-area-hotel-card__badge spcu-area-hotel-card__badge--featured">Featured</span>
+                                <?php endif; ?>
+
+                                <span class="spcu-area-hotel-card__badge spcu-area-hotel-card__badge--grade" style="background: <?php echo esc_attr($hotel_grade_palette['bg']); ?>; color: <?php echo esc_attr($hotel_grade_palette['text']); ?>;">
+                                    <?php echo esc_html($hotel_grade_label); ?>
+                                </span>
+                            </div>
+
+                            <div class="spcu-area-hotel-card__body">
+                                <h3 class="spcu-area-hotel-card__title"><?php echo esc_html($hotel->name); ?></h3>
+
+                                <?php if(!empty($hotel->name_ja)): ?>
+                                    <p class="spcu-area-hotel-card__title-ja"><?php echo esc_html($hotel->name_ja); ?></p>
+                                <?php endif; ?>
+
+                                <?php if(!empty($hotel->short_description)): ?>
+                                    <p class="spcu-area-hotel-card__desc"><?php echo esc_html($hotel->short_description); ?></p>
+                                <?php endif; ?>
+
+                                <?php if(!empty($facilities_list)): ?>
+                                    <div class="spcu-area-hotel-card__tags">
+                                        <?php foreach($facilities_list as $facility): ?>
+                                            <?php
+                                            $facility_name = is_array($facility) ? ($facility['name'] ?? '') : $facility;
+                                            if($facility_name === ''){
+                                                continue;
+                                            }
+                                            ?>
+                                            <span><?php echo esc_html($facility_name); ?></span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if(!empty($hotel->address)): ?>
+                                    <p class="spcu-area-hotel-card__address"><?php echo esc_html($hotel->address); ?></p>
+                                <?php endif; ?>
+
+                                <?php if(!empty($hotel->address_ja)): ?>
+                                    <p class="spcu-area-hotel-card__address-ja"><?php echo esc_html($hotel->address_ja); ?></p>
+                                <?php endif; ?>
+                            </div>
+                        </article>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
-        <?php endif; ?>
+        </section>
 
-        <!-- Hotels Section -->
-        <?php if(!empty($hotels)): ?>
-            <h2 class="spcu-section-title">🏨 Hotels</h2>
-            <div class="spcu-hotels-grid">
-                <?php foreach($hotels as $hotel): 
-                    $primary_image = '';
-                    if(!empty($hotel->featured_image)){
-                        $primary_image = wp_get_attachment_image_url(intval($hotel->featured_image), 'large');
-                    }
-                    if(!$primary_image && !empty($hotel->images)){
-                        foreach(explode(',', $hotel->images) as $image_id){
-                            $candidate = wp_get_attachment_image_url(intval($image_id), 'large');
-                            if($candidate){
-                                $primary_image = $candidate;
-                                break;
-                            }
-                        }
-                    }
-                ?>
-                    <div class="spcu-hotel-card">
-                        <div class="spcu-hotel-image">
-                            <?php if($primary_image): ?>
-                                <img src="<?php echo esc_url($primary_image); ?>" alt="<?php echo esc_attr($hotel->name); ?>" loading="lazy">
-                            <?php else: ?>
-                                <div class="spcu-hotel-image-placeholder">🏨</div>
-                            <?php endif; ?>
-                        </div>
-                        <div class="spcu-hotel-content">
-                            <h3 class="spcu-hotel-name"><?php echo esc_html($hotel->name); ?></h3>
-                            <?php if(!empty($hotel->name_ja)): ?>
-                                <p class="spcu-hotel-name-ja"><?php echo esc_html($hotel->name_ja); ?></p>
-                            <?php endif; ?>
-
-                            <?php if(!empty($hotel->short_description)): ?>
-                                <p style="margin:0 0 14px 0;font-size:14px;color:#334155;line-height:1.55;"><?php echo esc_html($hotel->short_description); ?></p>
-                            <?php endif; ?>
-
-                            <?php if(!empty($hotel->facilities)): ?>
-                                <?php 
-                                $facilities_list = [];
-                                if(is_string($hotel->facilities)){
-                                    // Handle old JSON string format for backward compatibility
-                                    $decoded = json_decode($hotel->facilities, true);
-                                    if(is_array($decoded)){
-                                        $facilities_list = $decoded;
-                                    }
-                                } elseif(is_array($hotel->facilities)){
-                                    // New format from WordPress taxonomy
-                                    $facilities_list = $hotel->facilities;
-                                }
-                                if(!empty($facilities_list)):
-                                ?>
-                                <div style="margin:0 0 14px 0;display:flex;flex-wrap:wrap;gap:6px;">
-                                    <?php foreach($facilities_list as $facility): 
-                                        $facility_name = is_array($facility) ? ($facility['name'] ?? '') : $facility;
-                                        if(empty($facility_name)) continue;
-                                    ?>
-                                        <span style="display:inline-block;background:#e0f2fe;color:#0369a1;border:1px solid #06b6d4;border-radius:12px;padding:4px 12px;font-size:12px;font-weight:500;"><?php echo esc_html($facility_name); ?></span>
-                                    <?php endforeach; ?>
-                                </div>
-                                <?php endif; ?>
-                            <?php endif; ?>
-                            
-                            <?php if(!empty($hotel->address)): ?>
-                                <p class="spcu-hotel-address"><?php echo esc_html($hotel->address); ?></p>
-                            <?php endif; ?>
-                            
-                            <?php if(!empty($hotel->address_ja)): ?>
-                                <p class="spcu-hotel-address-ja"><?php echo esc_html($hotel->address_ja); ?></p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-
-        <!-- Addon Prices Section -->
         <?php if(!empty($price_data)): ?>
-            <div style="margin-top: 60px;">
-                <h2 class="spcu-section-title">💰 Additional Fees</h2>
-                <div class="spcu-addon-prices">
-                    <table class="spcu-addon-table">
+            <section class="spcu-area-detail__section">
+                <div class="spcu-area-detail__section-head">
+                    <span class="spcu-area-detail__kicker">Pricing</span>
+                    <h2>Additional fees</h2>
+                </div>
+
+                <div class="spcu-area-detail__table-wrap">
+                    <table class="spcu-area-detail__table">
                         <thead>
                             <tr>
                                 <th>Service</th>
                                 <?php foreach(SPCU_Grades::records() as $difficulty_record): ?>
                                     <th>
-                                        <span style="display:inline-block;padding:4px 10px;border-radius:999px;background:<?= esc_attr($difficulty_record['color']) ?>;color:<?= esc_attr(SPCU_Grades::text_color($difficulty_record['slug'])) ?>;font-size:12px;font-weight:600;">
+                                        <span class="spcu-area-detail__table-pill" style="background: <?php echo esc_attr($difficulty_record['color']); ?>; color: <?php echo esc_attr(SPCU_Grades::text_color($difficulty_record['slug'])); ?>;">
                                             <?php echo esc_html($difficulty_record['name']); ?>
                                         </span>
                                     </th>
@@ -589,14 +351,16 @@ foreach($addon_prices as $p){
                         <tbody>
                             <?php foreach($price_data as $category => $grades): ?>
                                 <tr>
-                                    <td class="spcu-addon-category"><?php echo esc_html(str_replace('_', ' ', $category)); ?></td>
+                                    <td class="spcu-area-detail__service-name"><?php echo esc_html(str_replace('_', ' ', $category)); ?></td>
                                     <?php foreach(SPCU_Grades::ordered_keys() as $grade): ?>
                                         <td>
                                             <?php
                                             if(in_array($grade, array_map(['SPCU_Grades', 'normalize'], $grades), true)){
                                                 $price = SPCU_Frontend::get_addon_price($area->id, $category, $grade);
                                                 if($price){
-                                                    echo '<span class="spcu-addon-price">¥'.intval($price->price_jpy).' / $'.intval($price->price_usd).'</span>';
+                                                    echo '<span class="spcu-area-detail__price">¥' . esc_html(number_format_i18n((int) $price->price_jpy)) . ' / $' . esc_html(number_format_i18n((int) $price->price_usd)) . '</span>';
+                                                } else {
+                                                    echo '—';
                                                 }
                                             } else {
                                                 echo '—';
@@ -609,9 +373,9 @@ foreach($addon_prices as $p){
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </section>
         <?php endif; ?>
-    </div>
+    </main>
 </div>
 
 <?php get_footer();

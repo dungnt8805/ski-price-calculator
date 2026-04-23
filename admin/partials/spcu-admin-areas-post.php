@@ -55,7 +55,7 @@ function spcu_handle_areas_post(){
         }
     }
 
-    $slug = sanitize_text_field($_POST['slug'] ?? '');
+    $slug = sanitize_title(wp_unslash($_POST['slug'] ?? ''));
     if(empty($slug)){
         $slug = sanitize_title($_POST['name'] ?? '');
     }

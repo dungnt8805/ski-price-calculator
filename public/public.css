@@ -850,3 +850,536 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ── Area Detail Page ───────────────────────────────────────────── */
+.spcu-area-detail {
+    color: #14324b;
+    background:
+        radial-gradient(900px 220px at -8% -4%, rgba(15, 118, 110, 0.1) 0%, transparent 55%),
+        radial-gradient(900px 240px at 105% 8%, rgba(14, 116, 144, 0.1) 0%, transparent 52%),
+        #f7fbfd;
+}
+
+.spcu-area-detail * {
+    box-sizing: border-box;
+}
+
+.spcu-area-detail__shell {
+    width: min(1200px, calc(100% - 32px));
+    margin: 0 auto;
+}
+
+.spcu-area-detail__breadcrumb {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.24);
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(10px);
+    font-size: 0.84rem;
+    color: #5f7286;
+}
+
+.spcu-area-detail__breadcrumb .spcu-area-detail__shell {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 14px 0;
+    flex-wrap: wrap;
+}
+
+.spcu-area-detail__breadcrumb a {
+    color: #0f766e;
+    text-decoration: none;
+}
+
+.spcu-area-detail__hero {
+    position: relative;
+    min-height: 420px;
+    background: linear-gradient(135deg, #0f3557 0%, #0c6d93 52%, #0f766e 100%);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
+.spcu-area-detail__hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(7, 20, 34, 0.14) 0%, rgba(7, 20, 34, 0.54) 58%, rgba(7, 20, 34, 0.84) 100%);
+}
+
+.spcu-area-detail__hero::before,
+.spcu-area-detail__hero::after {
+    content: '';
+    position: absolute;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+}
+
+.spcu-area-detail__hero::before {
+    width: 360px;
+    height: 360px;
+    top: -100px;
+    right: -90px;
+}
+
+.spcu-area-detail__hero::after {
+    width: 280px;
+    height: 280px;
+    bottom: -120px;
+    left: -70px;
+}
+
+.spcu-area-detail__hero-inner {
+    position: relative;
+    z-index: 1;
+    padding: 56px 0 48px;
+    display: grid;
+    gap: 12px;
+}
+
+.spcu-area-detail__eyebrow {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.spcu-area-detail__pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #0f3557;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.spcu-area-detail__pill--accent {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    color: #fff;
+}
+
+.spcu-area-detail__title {
+    margin: 0;
+    font-size: clamp(2.3rem, 5vw, 4.4rem);
+    line-height: 0.96;
+    letter-spacing: -0.04em;
+    color: #fff;
+}
+
+.spcu-area-detail__title-ja,
+.spcu-area-detail__summary,
+.spcu-area-detail__location {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.spcu-area-detail__title-ja {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.68);
+}
+
+.spcu-area-detail__summary {
+    max-width: 760px;
+    font-size: 1.05rem;
+    line-height: 1.75;
+}
+
+.spcu-area-detail__location {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 0.95rem;
+}
+
+.spcu-area-detail__dot {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.spcu-area-detail__main {
+    padding: 48px 0 84px;
+}
+
+.spcu-area-detail__section {
+    margin-bottom: 44px;
+}
+
+.spcu-area-detail__section--split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+    gap: 28px;
+    align-items: start;
+}
+
+.spcu-area-detail__section-head {
+    margin-bottom: 18px;
+}
+
+.spcu-area-detail__kicker {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: #0f766e;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.spcu-area-detail__section-head h2 {
+    margin: 0;
+    color: #0f3557;
+    font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+    line-height: 1.1;
+}
+
+.spcu-area-detail__copy {
+    max-width: 860px;
+    color: #41576d;
+    font-size: 1rem;
+    line-height: 1.82;
+}
+
+.spcu-area-detail__copy p {
+    margin: 0 0 1em;
+}
+
+.spcu-area-detail__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+}
+
+.spcu-area-detail__stat-card,
+.spcu-area-detail__difficulty-list,
+.spcu-area-detail__table-wrap,
+.spcu-area-detail__empty {
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(212, 224, 223, 0.9);
+    border-radius: 20px;
+    box-shadow: 0 18px 44px rgba(17, 39, 63, 0.08);
+}
+
+.spcu-area-detail__stat-card {
+    padding: 20px 18px;
+    display: grid;
+    gap: 6px;
+}
+
+.spcu-area-detail__stat-card strong {
+    font-size: 1.38rem;
+    line-height: 1.15;
+    color: #0f3557;
+}
+
+.spcu-area-detail__stat-card span {
+    font-size: 0.8rem;
+    color: #5f7286;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+.spcu-area-detail__difficulty-list {
+    padding: 22px;
+    display: grid;
+    gap: 16px;
+}
+
+.spcu-area-detail__difficulty-row {
+    display: grid;
+    gap: 8px;
+}
+
+.spcu-area-detail__difficulty-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: #26425d;
+    font-size: 0.92rem;
+}
+
+.spcu-area-detail__difficulty-track {
+    width: 100%;
+    height: 10px;
+    background: #dbe7ef;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.spcu-area-detail__difficulty-track span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+}
+
+.spcu-area-detail__gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px;
+}
+
+.spcu-area-detail__gallery-item {
+    margin: 0;
+    overflow: hidden;
+    border-radius: 18px;
+    box-shadow: 0 18px 36px rgba(17, 39, 63, 0.12);
+    aspect-ratio: 4 / 3;
+}
+
+.spcu-area-detail__gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+}
+
+.spcu-area-detail__gallery-item:hover img {
+    transform: scale(1.05);
+}
+
+.spcu-area-detail__hotel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 24px;
+}
+
+.spcu-area-hotel-card {
+    background: #fff;
+    border: 1px solid rgba(212, 224, 223, 0.95);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 18px 44px rgba(17, 39, 63, 0.08);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.spcu-area-hotel-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 54px rgba(17, 39, 63, 0.14);
+    border-color: #9fd5cc;
+}
+
+.spcu-area-hotel-card--featured {
+    border-color: rgba(245, 158, 11, 0.42);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.12), 0 18px 44px rgba(17, 39, 63, 0.08);
+}
+
+.spcu-area-hotel-card__media {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    background: linear-gradient(135deg, #0c6d93, #0f3557);
+    overflow: hidden;
+}
+
+.spcu-area-hotel-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+}
+
+.spcu-area-hotel-card:hover .spcu-area-hotel-card__media img {
+    transform: scale(1.05);
+}
+
+.spcu-area-hotel-card__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.42);
+    font-size: 3.6rem;
+}
+
+.spcu-area-hotel-card__badge {
+    position: absolute;
+    top: 14px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.spcu-area-hotel-card__badge--featured {
+    left: 14px;
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    color: #fff;
+}
+
+.spcu-area-hotel-card__badge--grade {
+    right: 14px;
+}
+
+.spcu-area-hotel-card__body {
+    padding: 22px;
+    display: grid;
+    gap: 10px;
+}
+
+.spcu-area-hotel-card__title {
+    margin: 0;
+    color: #0f3557;
+    font-size: 1.18rem;
+    line-height: 1.2;
+}
+
+.spcu-area-hotel-card__title-ja {
+    margin: 0;
+    color: #617689;
+    font-size: 0.88rem;
+}
+
+.spcu-area-hotel-card__desc,
+.spcu-area-hotel-card__address,
+.spcu-area-hotel-card__address-ja {
+    margin: 0;
+    color: #516679;
+    font-size: 0.92rem;
+    line-height: 1.7;
+}
+
+.spcu-area-hotel-card__address {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.spcu-area-hotel-card__address::before {
+    content: '📍';
+    flex-shrink: 0;
+}
+
+.spcu-area-hotel-card__address-ja {
+    color: #7b8c9b;
+    padding-left: 24px;
+}
+
+.spcu-area-hotel-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.spcu-area-hotel-card__tags span {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #edf7f6;
+    color: #0f766e;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.spcu-area-detail__table-wrap {
+    overflow-x: auto;
+    padding: 10px;
+}
+
+.spcu-area-detail__table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+}
+
+.spcu-area-detail__table th,
+.spcu-area-detail__table td {
+    padding: 16px 14px;
+    border-bottom: 1px solid #e5edf2;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.spcu-area-detail__table thead th {
+    color: #0f3557;
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.spcu-area-detail__table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.spcu-area-detail__table-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.spcu-area-detail__service-name {
+    color: #0f766e;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.spcu-area-detail__price {
+    color: #0f3557;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.spcu-area-detail__empty {
+    padding: 28px;
+    color: #5f7286;
+}
+
+@media (max-width: 900px) {
+    .spcu-area-detail__section--split {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .spcu-area-detail__shell {
+        width: min(100% - 24px, 1200px);
+    }
+
+    .spcu-area-detail__hero {
+        min-height: 360px;
+    }
+
+    .spcu-area-detail__hero-inner {
+        padding: 44px 0 36px;
+    }
+
+    .spcu-area-detail__main {
+        padding: 36px 0 64px;
+    }
+
+    .spcu-area-detail__stats,
+    .spcu-area-detail__hotel-grid,
+    .spcu-area-detail__gallery {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .spcu-area-detail__breadcrumb .spcu-area-detail__shell {
+        gap: 6px;
+        padding: 12px 0;
+    }
+
+    .spcu-area-detail__summary,
+    .spcu-area-detail__location,
+    .spcu-area-detail__copy,
+    .spcu-area-hotel-card__desc,
+    .spcu-area-hotel-card__address,
+    .spcu-area-hotel-card__address-ja {
+        font-size: 0.9rem;
+    }
+
+    .spcu-area-detail__table th,
+    .spcu-area-detail__table td {
+        padding: 14px 12px;
+    }
+}

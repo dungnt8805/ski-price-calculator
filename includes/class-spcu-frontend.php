@@ -4,7 +4,21 @@ class SPCU_Frontend {
     public function __construct(){
         add_action('init', [$this, 'register_rewrite_rules']);
         add_filter('query_vars', [$this, 'add_query_vars']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_assets']);
         add_action('template_redirect', [$this, 'load_area_template']);
+    }
+
+    public function enqueue_assets(){
+        if(get_query_var('area_name') === ''){
+            return;
+        }
+
+        wp_enqueue_style(
+            'spcu-public',
+            SPCU_URL . 'public/public.css',
+            [],
+            '2.3'
+        );
     }
 
     public function register_rewrite_rules(){
@@ -40,15 +54,46 @@ class SPCU_Frontend {
      */
     public static function get_area_by_slug($slug){
         global $wpdb;
-        
-        // Sanitize slug - replace hyphens/underscores with spaces for matching
-        $search_name = sanitize_text_field(str_replace(['-', '_'], ' ', $slug));
-        
-        return $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}spcu_areas WHERE LOWER(name) = %s OR LOWER(name_ja) = %s LIMIT 1",
+
+        $raw_slug = sanitize_text_field(rawurldecode((string) $slug));
+        $normalized_slug = sanitize_title($raw_slug);
+        $search_name = sanitize_text_field(str_replace(['-', '_'], ' ', $raw_slug));
+
+        $area = $wpdb->get_row($wpdb->prepare(
+            "SELECT a.*, p.name AS prefecture_name
+            FROM {$wpdb->prefix}spcu_areas a
+            LEFT JOIN {$wpdb->prefix}spcu_prefectures p ON p.id = a.prefecture_id
+            WHERE a.slug = %s OR a.slug = %s OR LOWER(a.name) = %s OR LOWER(a.name_ja) = %s
+            LIMIT 1",
+            $raw_slug,
+            $normalized_slug,
             strtolower($search_name),
             strtolower($search_name)
         ));
+
+        if($area){
+            return $area;
+        }
+
+        $areas = $wpdb->get_results(
+            "SELECT a.*, p.name AS prefecture_name
+            FROM {$wpdb->prefix}spcu_areas a
+            LEFT JOIN {$wpdb->prefix}spcu_prefectures p ON p.id = a.prefecture_id"
+        );
+
+        foreach($areas as $candidate_area){
+            $candidate_slug = !empty($candidate_area->slug) ? (string) $candidate_area->slug : (string) $candidate_area->name;
+
+            if(sanitize_title($candidate_slug) === $normalized_slug){
+                return $candidate_area;
+            }
+
+            if(!empty($candidate_area->name_ja) && sanitize_title((string) $candidate_area->name_ja) === $normalized_slug){
+                return $candidate_area;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -58,7 +103,7 @@ class SPCU_Frontend {
         global $wpdb;
         
         return $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}spcu_hotels WHERE area_id = %d ORDER BY name ASC",
+            "SELECT * FROM {$wpdb->prefix}spcu_hotels WHERE area_id = %d ORDER BY is_featured DESC, name ASC",
             $area_id
         ));
     }
