@@ -559,14 +559,14 @@ document.addEventListener('DOMContentLoaded', function(){
 <style>
 /* Simulator Styling */
 .area-simulator {
-    background: #0f1b2d;
+    /* background: #0f1b2d; */
     padding: 3rem 2rem;
     border-radius: 20px;
     color: white;
 }
 .sim-card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.12);
+    background: #0f1b2d;
+    border: 1px solid #0f1b2d;
     border-radius: 16px;
     padding: 2rem;
 }
@@ -580,7 +580,7 @@ document.addEventListener('DOMContentLoaded', function(){
     display: block;
     font-size: 0.72rem;
     font-weight: 600;
-    color: rgba(255,255,255,0.7);
+    color: #0f1b2d;
     margin-bottom: 0.6rem;
     text-transform: uppercase;
     letter-spacing: 1px;
