@@ -3,6 +3,9 @@ if (!defined('ABSPATH')) exit;
 
 if (isset($_POST['spcu_settings_submit']) && check_admin_referer('spcu_save_settings')) {
     // using wp_kses_post to allow simple HTML like <a>, <strong>, etc.
+    update_option('spcu_inquiry_page_overline',    sanitize_text_field($_POST['spcu_inquiry_page_overline'] ?? ''));
+    update_option('spcu_inquiry_page_heading',     sanitize_text_field($_POST['spcu_inquiry_page_heading'] ?? ''));
+    update_option('spcu_inquiry_page_subheading',  sanitize_textarea_field($_POST['spcu_inquiry_page_subheading'] ?? ''));
     update_option('spcu_inquiry_footer_text', wp_kses_post($_POST['spcu_inquiry_footer_text'] ?? ''));
     
     update_option('spcu_admin_email_to', sanitize_text_field($_POST['spcu_admin_email_to'] ?? ''));
@@ -21,7 +24,29 @@ $inquiry_footer_text = get_option('spcu_inquiry_footer_text', 'We typically resp
     <h1>Ski Engine Settings</h1>
     <form method="post" action="">
         <?php wp_nonce_field('spcu_save_settings'); ?>
+        <h2>Inquiry Page Content</h2>
         <table class="form-table">
+            <tr>
+                <th scope="row"><label for="spcu_inquiry_page_overline">Overline / Eyebrow Text</label></th>
+                <td>
+                    <input type="text" name="spcu_inquiry_page_overline" id="spcu_inquiry_page_overline" class="regular-text" value="<?php echo esc_attr(get_option('spcu_inquiry_page_overline', 'Contact Us')); ?>">
+                    <p class="description">Small uppercase label shown above the main heading (e.g. "Contact Us").</p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label for="spcu_inquiry_page_heading">Page Heading</label></th>
+                <td>
+                    <input type="text" name="spcu_inquiry_page_heading" id="spcu_inquiry_page_heading" class="large-text" value="<?php echo esc_attr(get_option('spcu_inquiry_page_heading', 'Get Your Custom Quote')); ?>">
+                    <p class="description">Main H1 heading on the inquiry page.</p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label for="spcu_inquiry_page_subheading">Subheading / Description</label></th>
+                <td>
+                    <textarea name="spcu_inquiry_page_subheading" id="spcu_inquiry_page_subheading" class="large-text" rows="3"><?php echo esc_textarea(get_option('spcu_inquiry_page_subheading', "Tell us about your trip and we'll send you a detailed, final quote within 24 hours.")); ?></textarea>
+                    <p class="description">Descriptive paragraph shown below the heading.</p>
+                </td>
+            </tr>
             <tr>
                 <th scope="row"><label for="spcu_inquiry_footer_text">Inquiry Form Footer Text</label></th>
                 <td>

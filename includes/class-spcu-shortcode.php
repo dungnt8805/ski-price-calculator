@@ -1696,6 +1696,18 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                 params.append('check_out', $('sim-co').value);
                 params.append('num_guests', $('sim-pax').value);
                 params.append('level', $('sim-grade').value);
+                // Extra simulator context
+                const hotelOpt = $('sim-hotel').selectedOptions[0];
+                params.append('hotel', hotelOpt ? hotelOpt.textContent : '');
+                params.append('transport', $('sim-trans').value);
+                const ppEl = $('sim-pp');
+                params.append('price_total', ppEl ? ppEl.textContent : '');
+                const subEl = $('sim-sub');
+                if (subEl) {
+                    // extract nights from summary text
+                    const m = subEl.textContent.match(/(\d+) nights/);
+                    if (m) params.append('nights', m[1]);
+                }
                 
                 // Use inquiry page URL
                 if (inquiryPageUrl) {

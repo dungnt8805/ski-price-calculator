@@ -85,7 +85,12 @@ class SPCU_Inquiry {
             'check_out'     => sanitize_text_field($_GET['check_out'] ?? ''),
             'num_guests'    => intval($_GET['num_guests'] ?? 0),
             'package_level' => sanitize_text_field($_GET['level'] ?? ''),
+            'hotel'         => sanitize_text_field($_GET['hotel'] ?? ''),
+            'transport'     => sanitize_text_field($_GET['transport'] ?? ''),
+            'price_total'   => sanitize_text_field($_GET['price_total'] ?? ''),
+            'nights'        => intval($_GET['nights'] ?? 0),
         ];
+        $has_sim_data = !empty($prefill['resort']) || !empty($prefill['check_in']) || !empty($prefill['hotel']);
 
         $areas = $wpdb->get_results("SELECT slug, name FROM {$wpdb->prefix}spcu_areas ORDER BY name ASC");
 
@@ -117,10 +122,45 @@ class SPCU_Inquiry {
         .spcu-inquiry-success{display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:1.5rem;text-align:center;margin-top:1rem;}
         .spcu-inquiry-success h3{color:#059669;margin-bottom:.5rem;}
         .spcu-inquiry-error{display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:1rem;font-size:.88rem;color:#dc2626;margin-bottom:1rem;}
+        .spcu-inq-prefill{background:linear-gradient(135deg,#0f1b2d,#1a2d4a);color:#fff;border-radius:14px;padding:1.3rem 1.6rem;margin-bottom:1.75rem;}
+        .spcu-inq-prefill__label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;opacity:.6;margin-bottom:.5rem;}
+        .spcu-inq-prefill__area{font-size:1.05rem;font-weight:700;margin-bottom:.25rem;line-height:1.4;}
+        .spcu-inq-prefill__grade{font-weight:400;opacity:.75;font-size:.9rem;}
+        .spcu-inq-prefill__details{font-size:.85rem;opacity:.75;margin-bottom:.4rem;}
+        .spcu-inq-prefill__price{font-size:1.25rem;font-weight:800;color:#f59e0b;margin-top:.5rem;font-family:'Playfair Display',Georgia,serif;}
         @media(max-width:640px){.spcu-inquiry-form .form-row{grid-template-columns:1fr;}}
         </style>
 
         <div class="spcu-inquiry-form">
+            <?php if ($has_sim_data): ?>
+            <div class="spcu-inq-prefill">
+                <div class="spcu-inq-prefill__label">Your Simulator Selection</div>
+                <?php if ($prefill['resort'] || $prefill['hotel']): ?>
+                <div class="spcu-inq-prefill__area"><?php
+                    $grade_labels = ['standard' => 'Standard', 'premium' => 'Premium', 'exclusive' => 'Exclusive'];
+                    $grade_label  = $grade_labels[$prefill['package_level']] ?? ucfirst($prefill['package_level']);
+                    $parts = array_filter([$prefill['resort'], $prefill['hotel']]);
+                    echo esc_html(implode(' — ', $parts));
+                    if ($grade_label) echo ' <span class="spcu-inq-prefill__grade">(' . esc_html($grade_label) . ')</span>';
+                ?></div>
+                <?php endif; ?>
+                <?php if ($prefill['check_in'] || $prefill['num_guests'] || $prefill['transport']): ?>
+                <div class="spcu-inq-prefill__details"><?php
+                    $detail_parts = [];
+                    if ($prefill['check_in'] && $prefill['check_out']) {
+                        $nights_str = $prefill['nights'] ? ' (' . $prefill['nights'] . ' nights)' : '';
+                        $detail_parts[] = esc_html($prefill['check_in'] . ' → ' . $prefill['check_out'] . $nights_str);
+                    }
+                    if ($prefill['num_guests']) $detail_parts[] = esc_html($prefill['num_guests'] . ' guest' . ($prefill['num_guests'] > 1 ? 's' : ''));
+                    if ($prefill['transport']) $detail_parts[] = esc_html(ucfirst($prefill['transport'])) . ' transport';
+                    echo implode(' · ', $detail_parts);
+                ?></div>
+                <?php endif; ?>
+                <?php if ($prefill['price_total']): ?>
+                <div class="spcu-inq-prefill__price">Est. Group Total: <?= esc_html($prefill['price_total']) ?></div>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
             <div class="spcu-inquiry-error" id="spcu-inq-error"></div>
             <form id="spcu-inquiry-form" novalidate>
                 <?php wp_nonce_field('spcu_inquiry_submit', 'spcu_inquiry_nonce'); ?>
