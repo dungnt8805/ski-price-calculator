@@ -6,7 +6,8 @@
 
 get_header();
 
-$area_name = get_query_var('area_name');
+// Support both plugin's area_name query var and theme's area_slug query var
+$area_name = get_query_var('area_name') ?: get_query_var('area_slug');
 $area = SPCU_Frontend::get_area_by_slug($area_name);
 
 if(!$area){

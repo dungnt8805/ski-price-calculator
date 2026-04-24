@@ -318,7 +318,9 @@ class SPCU_Prefecture_Widget extends \Elementor\Widget_Base {
 								<?php endif; ?>
 
 								<?php if ( $settings['show_button'] === 'yes' ) : 
-									$area_link = function_exists( 'skiverse_area_url' ) ? skiverse_area_url( $area ) : ( $settings['button_link'] ?: '#' );
+								// Always build area URL using area slug or name
+								$area_slug = ! empty( $area->slug ) ? $area->slug : sanitize_title( $area->name );
+								$area_link = home_url( '/area/' . $area_slug . '/' );
 								?>
 									<a href="<?php echo esc_url( $area_link ); ?>" class="spcu-area-card__button">
 										<?php echo esc_html( $settings['button_text'] ?: 'View & Quote →' ); ?>

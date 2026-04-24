@@ -31,11 +31,13 @@ class SPCU_Frontend {
 
     public function add_query_vars($vars){
         $vars[] = 'area_name';
+        $vars[] = 'area_slug';  // Also support theme's area_slug query var
         return $vars;
     }
 
     public function load_area_template(){
-        $area_name = get_query_var('area_name');
+        // Support both plugin's area_name query var and theme's area_slug query var
+        $area_name = get_query_var('area_name') ?: get_query_var('area_slug');
         
         if(!empty($area_name)){
             status_header(200);
