@@ -580,7 +580,7 @@ document.addEventListener('DOMContentLoaded', function(){
     display: block;
     font-size: 0.72rem;
     font-weight: 600;
-    color: #0f1b2d;
+    color: rgba(255,255,255,0.7);
     margin-bottom: 0.6rem;
     text-transform: uppercase;
     letter-spacing: 1px;
