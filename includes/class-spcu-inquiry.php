@@ -8,18 +8,84 @@ class SPCU_Inquiry {
         add_action('wp_ajax_spcu_submit_inquiry',        [$this, 'handle_submit']);
         add_action('wp_ajax_nopriv_spcu_submit_inquiry', [$this, 'handle_submit']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_assets']);
+        add_action('init', [$this, 'ensure_inquiry_page']);
+        add_action('wp_loaded', [$this, 'ensure_inquiry_page']);
+    }
+
+    public function ensure_inquiry_page(){
+        // Get or create inquiry page
+        $inquiry_page_id = get_option('spcu_inquiry_page_id');
+        $inquiry_page_url = '';
+        
+        if ($inquiry_page_id) {
+            $page = get_post($inquiry_page_id);
+            if ($page && $page->post_status === 'publish') {
+                $inquiry_page_url = get_permalink($page);
+            } else {
+                // Page ID stored but page doesn't exist or not published
+                delete_option('spcu_inquiry_page_id');
+                $inquiry_page_id = null;
+            }
+        }
+        
+        // If no valid page found, try to find one by title
+        if (!$inquiry_page_id) {
+            $inquiry_pages = get_posts([
+                'post_type' => 'page',
+                'post_title' => 'Inquiry',
+                'post_status' => 'publish',
+                'numberposts' => 1,
+            ]);
+            
+            if ($inquiry_pages) {
+                $inquiry_page_id = $inquiry_pages[0]->ID;
+                $inquiry_page_url = get_permalink($inquiry_pages[0]);
+                update_option('spcu_inquiry_page_id', $inquiry_page_id);
+            } else {
+                // No page found, create one
+                $page_id = wp_insert_post([
+                    'post_title' => 'Inquiry',
+                    'post_content' => '[spcu_inquiry_form]',
+                    'post_status' => 'publish',
+                    'post_type' => 'page',
+                    'post_name' => 'inquiry',
+                ]);
+                
+                if ($page_id && !is_wp_error($page_id)) {
+                    $inquiry_page_url = get_permalink($page_id);
+                    update_option('spcu_inquiry_page_id', $page_id);
+                }
+            }
+        }
+        
+        // Store URL for frontend use
+        if ($inquiry_page_url) {
+            update_option('spcu_inquiry_page_url', $inquiry_page_url);
+        }
     }
 
     public function enqueue_assets(){
+        $this->ensure_inquiry_page();
+        wp_enqueue_script('jquery');
         wp_localize_script('jquery', 'spcu_inquiry', [
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce'    => wp_create_nonce('spcu_inquiry_submit'),
+            'inquiry_page_url' => get_option('spcu_inquiry_page_url', ''),
         ]);
     }
 
     public function render_form($atts = []){
         global $wpdb;
         $atts = shortcode_atts(['resort' => ''], $atts);
+
+        // Read query parameters for pre-filling (when redirected from area page)
+        $prefill = [
+            'resort'        => sanitize_text_field($_GET['resort'] ?? $atts['resort'] ?? ''),
+            'check_in'      => sanitize_text_field($_GET['check_in'] ?? ''),
+            'check_out'     => sanitize_text_field($_GET['check_out'] ?? ''),
+            'num_guests'    => intval($_GET['num_guests'] ?? 0),
+            'package_level' => sanitize_text_field($_GET['level'] ?? ''),
+        ];
 
         $areas = $wpdb->get_results("SELECT slug, name FROM {$wpdb->prefix}spcu_areas ORDER BY name ASC");
 
@@ -102,16 +168,16 @@ class SPCU_Inquiry {
                         <select id="spcu_resort" name="resort">
                             <option value="">Not decided yet</option>
                             <?php foreach($areas as $a): ?>
-                                <option value="<?= esc_attr($a->slug ?: $a->name) ?>"<?= ($atts['resort'] && ($atts['resort'] === $a->slug || $atts['resort'] === $a->name)) ? ' selected' : '' ?>><?= esc_html($a->name) ?></option>
+                                <option value="<?= esc_attr($a->slug ?: $a->name) ?>"<?= ($prefill['resort'] && ($prefill['resort'] === $a->slug || $prefill['resort'] === $a->name)) ? ' selected' : '' ?>><?= esc_html($a->name) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="form-field">
                         <label for="spcu_package_level">Package Level</label>
                         <select id="spcu_package_level" name="package_level">
-                            <option value="standard">Standard</option>
-                            <option value="premium" selected>Premium</option>
-                            <option value="exclusive">Exclusive</option>
+                            <option value="standard"<?= $prefill['package_level'] === 'standard' ? ' selected' : '' ?>>Standard</option>
+                            <option value="premium"<?= $prefill['package_level'] === 'premium' || !$prefill['package_level'] ? ' selected' : '' ?>>Premium</option>
+                            <option value="exclusive"<?= $prefill['package_level'] === 'exclusive' ? ' selected' : '' ?>>Exclusive</option>
                         </select>
                     </div>
                 </div>
@@ -119,11 +185,11 @@ class SPCU_Inquiry {
                 <div class="form-row">
                     <div class="form-field">
                         <label for="spcu_check_in">Preferred Check-in</label>
-                        <input type="date" id="spcu_check_in" name="check_in">
+                        <input type="date" id="spcu_check_in" name="check_in" value="<?= esc_attr($prefill['check_in']) ?>">
                     </div>
                     <div class="form-field">
                         <label for="spcu_check_out">Preferred Check-out</label>
-                        <input type="date" id="spcu_check_out" name="check_out">
+                        <input type="date" id="spcu_check_out" name="check_out" value="<?= esc_attr($prefill['check_out']) ?>">
                     </div>
                 </div>
 
@@ -131,12 +197,12 @@ class SPCU_Inquiry {
                     <div class="form-field">
                         <label for="spcu_num_guests">Number of Guests</label>
                         <select id="spcu_num_guests" name="num_guests">
-                            <option value="1">1</option>
-                            <option value="2" selected>2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6+</option>
+                            <option value="1"<?= $prefill['num_guests'] === 1 ? ' selected' : '' ?>>1</option>
+                            <option value="2"<?= $prefill['num_guests'] === 2 || !$prefill['num_guests'] ? ' selected' : '' ?>>2</option>
+                            <option value="3"<?= $prefill['num_guests'] === 3 ? ' selected' : '' ?>>3</option>
+                            <option value="4"<?= $prefill['num_guests'] === 4 ? ' selected' : '' ?>>4</option>
+                            <option value="5"<?= $prefill['num_guests'] === 5 ? ' selected' : '' ?>>5</option>
+                            <option value="6"<?= $prefill['num_guests'] === 6 ? ' selected' : '' ?>>6+</option>
                         </select>
                     </div>
                     <div class="form-field">

@@ -1508,7 +1508,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                     <div class="price-sub" id="sim-sub-<?= $area_id ?>"></div>
                     <div class="sim-breakdown" id="sim-breakdown-<?= $area_id ?>"></div>
                     <div class="sim-peak-note" id="sim-peak-<?= $area_id ?>">⚑ Peak season surcharge applied</div>
-                    <button class="btn-primary" id="sim-inquire-<?= $area_id ?>" style="margin-top:0.5rem;padding:0.9rem 2rem;">Request a Quote →</button>
+                    <button type="button" class="btn-primary" id="sim-inquire-<?= $area_id ?>" style="margin-top:0.5rem;padding:0.9rem 2rem;">Request a Quote →</button>
                     <div class="sim-note">* Estimate only. Final price confirmed after availability check.</div>
                 </div>
             </div>
@@ -1518,6 +1518,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
         (function(){
             const areaId = <?= $area_id ?>;
             const data = <?= json_encode($catalog) ?>;
+            const inquiryPageUrl = <?= json_encode(get_option('spcu_inquiry_page_url', '')) ?>;
             const MARGIN = 1.18;
             const SIM_CURRENCY = 'JPY';
             const CURRENCY_CONFIG = {
@@ -1688,23 +1689,20 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
             $('sim-trans').addEventListener('change', calcSim);
 
             $('sim-inquire').addEventListener('click', function(){
-                const form = document.querySelector('.spcu-inquiry-form');
-                if (form) {
-                    form.scrollIntoView({behavior:'smooth'});
-                    // Pre-fill
-                    const ciInput = form.querySelector('[name="check_in"]');
-                    const coInput = form.querySelector('[name="check_out"]');
-                    const paxInput = form.querySelector('[name="num_guests"]');
-                    const resortInput = form.querySelector('[name="resort"]');
-                    const levelInput = form.querySelector('[name="package_level"]');
-                    if (ciInput) ciInput.value = $('sim-ci').value;
-                    if (coInput) coInput.value = $('sim-co').value;
-                    if (paxInput) paxInput.value = $('sim-pax').value;
-                    if (resortInput) {
-                        // The inquiry form uses area slug/name as value
-                        resortInput.value = data.area_name;
-                    }
-                    if (levelInput) levelInput.value = $('sim-grade').value;
+                // Build query parameters
+                const params = new URLSearchParams();
+                params.append('resort', data.area_name);
+                params.append('check_in', $('sim-ci').value);
+                params.append('check_out', $('sim-co').value);
+                params.append('num_guests', $('sim-pax').value);
+                params.append('level', $('sim-grade').value);
+                
+                // Use inquiry page URL
+                if (inquiryPageUrl) {
+                    window.location.href = inquiryPageUrl + '?' + params.toString();
+                } else {
+                    alert('Inquiry page is not configured. Please contact support or try again later.');
+                    console.error('Inquiry page URL not found. Set spcu_inquiry_page_url option or create an inquiry page.');
                 }
             });
 

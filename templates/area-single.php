@@ -463,11 +463,6 @@ $hero_stats = array_slice($hero_stats, 0, 4);
             <?= do_shortcode('[ski_simulator area_id="' . $area->id . '"]') ?>
         </section>
 
-        <!-- Inquiry Form -->
-        <section class="spcu-area-detail__section" style="margin-top: 60px;">
-            <?= do_shortcode('[spcu_inquiry_form]') ?>
-        </section>
-
     </main>
 </div>
 

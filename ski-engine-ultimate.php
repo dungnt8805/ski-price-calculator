@@ -134,3 +134,25 @@ register_activation_hook(__FILE__, 'flush_rewrite_rules');
 new SPCU_Admin();
 new SPCU_Shortcode();
 new SPCU_Inquiry();
+
+// Admin notice: Check if inquiry page is set up
+add_action('admin_notices', function(){
+    if (!current_user_can('manage_options')) return;
+    
+    $inquiry_page_url = get_option('spcu_inquiry_page_url', '');
+    if (!$inquiry_page_url) {
+        ?>
+        <div class="notice notice-error is-dismissible">
+            <p><strong>Ski Engine:</strong> The inquiry page is not configured. The "Request a Quote" button will not work. 
+            <br>Please create a new page with:
+            <ul style="margin-top:10px; margin-left:20px;">
+                <li><strong>Title:</strong> "Inquiry"</li>
+                <li><strong>Content:</strong> <code>[spcu_inquiry_form]</code></li>
+                <li><strong>Status:</strong> Publish</li>
+            </ul>
+            Or click here to <a href="<?= admin_url('post-new.php?post_type=page&post_title=Inquiry') ?>" class="button">create the Inquiry page</a></p>
+        </div>
+        <?php
+    }
+});
+new SPCU_Inquiry();
