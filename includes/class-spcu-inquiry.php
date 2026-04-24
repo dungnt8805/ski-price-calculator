@@ -119,8 +119,12 @@ class SPCU_Inquiry {
         .spcu-inquiry-form .btn-submit{background:#0f1b2d;color:#fff;border:none;padding:.9rem;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;width:100%;transition:background .2s;font-family:inherit;}
         .spcu-inquiry-form .btn-submit:hover{background:#3b82f6;}
         .spcu-inquiry-form .btn-submit:disabled{opacity:.6;cursor:not-allowed;}
-        .spcu-inquiry-success{display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:1.5rem;text-align:center;margin-top:1rem;}
-        .spcu-inquiry-success h3{color:#059669;margin-bottom:.5rem;}
+        .spcu-inquiry-success{display:none;max-width:720px;margin:40px auto;background:#fff;border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,.06);border:1px solid #e2e8f0;padding:3rem 2.5rem;text-align:center;}
+        .spcu-inquiry-success__icon{width:64px;height:64px;background:#ecfdf5;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:1.75rem;line-height:1;}
+        .spcu-inquiry-success h3{color:#0f1b2d;font-size:1.5rem;font-weight:700;margin:0 0 .75rem;}
+        .spcu-inquiry-success p{color:#64748b;font-size:.95rem;line-height:1.6;margin:0 0 .5rem;}
+        .spcu-inquiry-success .btn-home{display:inline-block;margin-top:1.75rem;background:#0f1b2d;color:#fff;text-decoration:none;padding:.75rem 2rem;border-radius:10px;font-size:.9rem;font-weight:700;transition:background .2s;}
+        .spcu-inquiry-success .btn-home:hover{background:#3b82f6;color:#fff;}
         .spcu-inquiry-error{display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:1rem;font-size:.88rem;color:#dc2626;margin-bottom:1rem;}
         .spcu-inq-prefill{background:linear-gradient(135deg,#0f1b2d,#1a2d4a);color:#fff;border-radius:14px;padding:1.3rem 1.6rem;margin-bottom:1.75rem;}
         .spcu-inq-prefill__label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;opacity:.6;margin-bottom:.5rem;}
@@ -274,8 +278,11 @@ class SPCU_Inquiry {
             </form>
 
             <div class="spcu-inquiry-success" id="spcu-inq-success">
-                <h3>✓ Enquiry Sent!</h3>
-                <p>Thank you! We'll get back to you within 24 hours.</p>
+                <div class="spcu-inquiry-success__icon">✓</div>
+                <h3>Enquiry Sent!</h3>
+                <p>Thank you for reaching out. We've received your enquiry and will send you a personalised quote within <strong>24 hours</strong>.</p>
+                <p style="font-size:.85rem;">A confirmation has been sent to your email address.</p>
+                <a href="<?= esc_url(home_url('/')) ?>" class="btn-home">← Back to Home</a>
             </div>
         </div>
         </div>
