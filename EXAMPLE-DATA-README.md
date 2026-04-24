@@ -122,7 +122,7 @@ In the admin or database, set `is_featured = 1` for featured hotels.
 2. Go to any page and add shortcode: `[ski_quote_form]`
 3. Select:
    - **Area**: Hakuba Valley
-    - **Grade**: Premium
+   - **Grade**: Premium
    - **Duration**: 5 nights
    - **Guests**: 2
    - **Season**: Regular
