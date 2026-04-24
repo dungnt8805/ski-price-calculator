@@ -74,6 +74,25 @@ class SPCU_Inquiry {
         ]);
     }
 
+    private function is_wp_mail_smtp_active(){
+        if (defined('WPMS_PLUGIN_VER') || defined('WP_MAIL_SMTP_VERSION') || class_exists('WPMailSMTP\\WP') || function_exists('wp_mail_smtp')) {
+            return true;
+        }
+
+        if (!function_exists('is_plugin_active')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+
+        if (!function_exists('is_plugin_active')) {
+            return false;
+        }
+
+        $plugin_file = 'wp-mail-smtp/wp_mail_smtp.php';
+        $is_active = is_plugin_active($plugin_file);
+        $is_network_active = function_exists('is_plugin_active_for_network') ? is_plugin_active_for_network($plugin_file) : false;
+        return $is_active || $is_network_active;
+    }
+
     public function render_form($atts = []){
         global $wpdb;
         $atts = shortcode_atts(['resort' => ''], $atts);
@@ -266,6 +285,11 @@ class SPCU_Inquiry {
                     <textarea id="spcu_message" name="message" placeholder="Tell us about your group, any special requirements, or questions..."></textarea>
                 </div>
 
+                <input type="hidden" name="hotel" value="<?= esc_attr($prefill['hotel']) ?>">
+                <input type="hidden" name="transport" value="<?= esc_attr($prefill['transport']) ?>">
+                <input type="hidden" name="price_total" value="<?= esc_attr($prefill['price_total']) ?>">
+                <input type="hidden" name="nights" value="<?= esc_attr($prefill['nights']) ?>">
+
                 <button type="submit" class="btn-submit" id="spcu-inq-submit">Send Enquiry</button>
                 <?php 
                 $footer_text = get_option('spcu_inquiry_footer_text', 'We typically respond within 24 hours &middot; ski@ourjapanmoments.com');
@@ -369,6 +393,10 @@ class SPCU_Inquiry {
         $num_guests    = intval($_POST['num_guests'] ?? 0);
         $experience    = sanitize_text_field($_POST['experience'] ?? '');
         $message       = sanitize_textarea_field($_POST['message'] ?? '');
+        $hotel         = sanitize_text_field($_POST['hotel'] ?? '');
+        $transport     = sanitize_text_field($_POST['transport'] ?? '');
+        $price_total   = sanitize_text_field($_POST['price_total'] ?? '');
+        $nights        = intval($_POST['nights'] ?? 0);
 
         if(!$first_name || !$last_name){
             wp_send_json_error('Please enter your name.');
@@ -413,6 +441,10 @@ class SPCU_Inquiry {
             '{country}'       => $country,
             '{phone}'         => $phone,
             '{resort}'        => $resort,
+            '{hotel}'         => $hotel,
+            '{transport}'     => $transport,
+            '{price_total}'   => $price_total,
+            '{nights}'        => $nights,
             '{package_level}' => $package_level,
             '{check_in}'      => $check_in,
             '{check_out}'     => $check_out,
@@ -433,23 +465,58 @@ class SPCU_Inquiry {
         if (empty($admin_email_to)) {
             $admin_email_to = get_option('admin_email');
         }
-        $admin_subject  = get_option('spcu_admin_email_subject', 'New Ski Enquiry from {first_name} {last_name}');
-        $admin_body     = get_option('spcu_admin_email_body', "New inquiry received!\n\nName: {first_name} {last_name}\nEmail: {email}\nCountry: {country}\nPhone: {phone}\nResort: {resort}\nPackage Level: {package_level}\nCheck-in: {check_in}\nCheck-out: {check_out}\nGuests: {num_guests}\nExperience: {experience}\n\nMessage:\n{message}");
+
+        $admin_recipients = array_filter(array_map('trim', explode(',', (string) $admin_email_to)));
+        $admin_recipients = array_values(array_filter($admin_recipients, 'is_email'));
+        if (empty($admin_recipients)) {
+            $fallback_admin = sanitize_email((string) get_option('admin_email'));
+            if ($fallback_admin && is_email($fallback_admin)) {
+                $admin_recipients = [$fallback_admin];
+            }
+        }
+        $admin_subject  = get_option('spcu_admin_email_subject', 'New Ski Enquiry: {first_name} {last_name} ({resort})');
+        $admin_body     = get_option('spcu_admin_email_body', "A new ski inquiry has been submitted.\n\n--- Contact ---\nName: {first_name} {last_name}\nEmail: {email}\nCountry: {country}\nPhone: {phone}\n\n--- Trip Details ---\nResort: {resort}\nHotel: {hotel}\nPackage Level: {package_level}\nTransport: {transport}\nCheck-in: {check_in}\nCheck-out: {check_out}\nNights: {nights}\nGuests: {num_guests}\nExperience: {experience}\nEstimated Group Total: {price_total}\n\n--- Customer Message ---\n{message}");
         
-        $admin_subject_parsed = $replace_vars($admin_subject);
+        $admin_subject_parsed = wp_strip_all_tags($replace_vars($admin_subject));
         $admin_body_parsed    = nl2br($replace_vars($admin_body));
 
-        $headers = ['Content-Type: text/html; charset=UTF-8'];
-        wp_mail($admin_email_to, $admin_subject_parsed, $admin_body_parsed, $headers);
+        $site_name   = wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES);
+        $from_email  = sanitize_email((string) get_option('admin_email'));
+        $email_headers = ['Content-Type: text/html; charset=UTF-8'];
+        if ($from_email && is_email($from_email)) {
+            $email_headers[] = 'From: ' . $site_name . ' <' . $from_email . '>';
+            $email_headers[] = 'Reply-To: ' . $first_name . ' ' . $last_name . ' <' . $email . '>';
+        }
+
+        $admin_sent = false;
+        if (!empty($admin_recipients)) {
+            $admin_sent = wp_mail($admin_recipients, $admin_subject_parsed, $admin_body_parsed, $email_headers);
+        }
 
         // Send to Customer
-        $customer_subject = get_option('spcu_customer_email_subject', 'Thank you for your enquiry, {first_name}');
-        $customer_body    = get_option('spcu_customer_email_body', "Hi {first_name},\n\nThank you for reaching out to us! We have received your inquiry regarding {resort} and will get back to you within 24 hours.\n\nBest regards,\nThe Skiverse Team");
+        $customer_subject = get_option('spcu_customer_email_subject', 'We received your ski inquiry for {resort}');
+        $customer_body    = get_option('spcu_customer_email_body', "Hi {first_name},\n\nThank you for your inquiry. We received your request and our team will send your detailed quote within 24 hours.\n\n--- Your submitted details ---\nResort: {resort}\nHotel: {hotel}\nPackage Level: {package_level}\nTransport: {transport}\nCheck-in: {check_in}\nCheck-out: {check_out}\nNights: {nights}\nGuests: {num_guests}\nExperience: {experience}\nEstimated Group Total: {price_total}\n\nIf anything needs updating, just reply to this email.\n\nBest regards,\nThe Skiverse Team");
         
-        $customer_subject_parsed = $replace_vars($customer_subject);
+        $customer_subject_parsed = wp_strip_all_tags($replace_vars($customer_subject));
         $customer_body_parsed    = nl2br($replace_vars($customer_body));
 
-        wp_mail($email, $customer_subject_parsed, $customer_body_parsed, $headers);
+        $customer_sent = wp_mail($email, $customer_subject_parsed, $customer_body_parsed, $email_headers);
+
+        if (!$admin_sent || !$customer_sent) {
+            error_log(sprintf(
+                '[SPCU Inquiry] Email send failed. admin_sent=%s customer_sent=%s admin_to=%s customer_to=%s',
+                $admin_sent ? '1' : '0',
+                $customer_sent ? '1' : '0',
+                implode(',', $admin_recipients),
+                $email
+            ));
+
+            if (!$this->is_wp_mail_smtp_active()) {
+                wp_send_json_error('Your enquiry was saved, but WP Mail SMTP is not active. Please ask site admin to activate WP Mail SMTP plugin.');
+            }
+
+            wp_send_json_error('Your enquiry was saved, but we could not send confirmation email right now. Please try again in a moment.');
+        }
 
         wp_send_json_success('Enquiry submitted.');
     }

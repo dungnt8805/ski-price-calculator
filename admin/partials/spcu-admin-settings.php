@@ -128,10 +128,26 @@ $tabs = [
 
         <?php elseif ($tab === 'email'): ?>
         <!-- ── EMAIL NOTIFICATIONS ──────────────────────────────── -->
+        <?php
+        if (!function_exists('is_plugin_active')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+        $spcu_wp_mail_smtp_active = function_exists('is_plugin_active')
+            && (is_plugin_active('wp-mail-smtp/wp_mail_smtp.php')
+            || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-mail-smtp/wp_mail_smtp.php')));
+        ?>
+        <?php if (!$spcu_wp_mail_smtp_active): ?>
+        <div class="notice notice-error" style="margin:0 0 1rem;padding:.75rem 1rem;">
+            <p><strong>WP Mail SMTP is required</strong> for inquiry email delivery. Please install and activate <em>WP Mail SMTP</em>.</p>
+            <p><a class="button button-secondary" href="<?= esc_url(admin_url('plugin-install.php?s=WP%20Mail%20SMTP&tab=search&type=term')) ?>">Install WP Mail SMTP</a>
+               <a class="button" href="<?= esc_url(admin_url('plugins.php')) ?>">Go to Plugins</a></p>
+        </div>
+        <?php endif; ?>
         <p class="description" style="margin-bottom:1.2rem;">
             Available placeholders:
             <code>{first_name}</code> <code>{last_name}</code> <code>{email}</code>
             <code>{country}</code> <code>{phone}</code> <code>{resort}</code>
+            <code>{hotel}</code> <code>{transport}</code> <code>{nights}</code> <code>{price_total}</code>
             <code>{package_level}</code> <code>{check_in}</code> <code>{check_out}</code>
             <code>{num_guests}</code> <code>{experience}</code> <code>{message}</code>
         </p>
@@ -156,7 +172,7 @@ $tabs = [
                 <td>
                     <input type="text" name="spcu_admin_email_subject" id="spcu_admin_email_subject"
                            class="large-text"
-                           value="<?= esc_attr(get_option('spcu_admin_email_subject', 'New Ski Enquiry from {first_name} {last_name}')) ?>">
+                           value="<?= esc_attr(get_option('spcu_admin_email_subject', 'New Ski Enquiry: {first_name} {last_name} ({resort})')) ?>">
                 </td>
             </tr>
             <tr>
@@ -167,7 +183,7 @@ $tabs = [
                     <textarea name="spcu_admin_email_body" id="spcu_admin_email_body"
                               class="large-text" rows="10"><?php
                         echo esc_textarea(get_option('spcu_admin_email_body',
-                            "New inquiry received!\n\nName: {first_name} {last_name}\nEmail: {email}\nCountry: {country}\nPhone: {phone}\nResort: {resort}\nPackage Level: {package_level}\nCheck-in: {check_in}\nCheck-out: {check_out}\nGuests: {num_guests}\nExperience: {experience}\n\nMessage:\n{message}"));
+                            "A new ski inquiry has been submitted.\n\n--- Contact ---\nName: {first_name} {last_name}\nEmail: {email}\nCountry: {country}\nPhone: {phone}\n\n--- Trip Details ---\nResort: {resort}\nHotel: {hotel}\nPackage Level: {package_level}\nTransport: {transport}\nCheck-in: {check_in}\nCheck-out: {check_out}\nNights: {nights}\nGuests: {num_guests}\nExperience: {experience}\nEstimated Group Total: {price_total}\n\n--- Customer Message ---\n{message}"));
                     ?></textarea>
                 </td>
             </tr>
@@ -184,7 +200,7 @@ $tabs = [
                 <td>
                     <input type="text" name="spcu_customer_email_subject" id="spcu_customer_email_subject"
                            class="large-text"
-                           value="<?= esc_attr(get_option('spcu_customer_email_subject', 'Thank you for your enquiry, {first_name}')) ?>">
+                           value="<?= esc_attr(get_option('spcu_customer_email_subject', 'We received your ski inquiry for {resort}')) ?>">
                 </td>
             </tr>
             <tr>
@@ -195,7 +211,7 @@ $tabs = [
                     <textarea name="spcu_customer_email_body" id="spcu_customer_email_body"
                               class="large-text" rows="10"><?php
                         echo esc_textarea(get_option('spcu_customer_email_body',
-                            "Hi {first_name},\n\nThank you for reaching out to us! We have received your inquiry regarding {resort} and will get back to you within 24 hours.\n\nBest regards,\nThe Skiverse Team"));
+                            "Hi {first_name},\n\nThank you for your inquiry. We received your request and our team will send your detailed quote within 24 hours.\n\n--- Your submitted details ---\nResort: {resort}\nHotel: {hotel}\nPackage Level: {package_level}\nTransport: {transport}\nCheck-in: {check_in}\nCheck-out: {check_out}\nNights: {nights}\nGuests: {num_guests}\nExperience: {experience}\nEstimated Group Total: {price_total}\n\nIf anything needs updating, just reply to this email.\n\nBest regards,\nThe Skiverse Team"));
                     ?></textarea>
                     <p class="description">HTML is supported in email bodies.</p>
                 </td>

@@ -154,5 +154,22 @@ add_action('admin_notices', function(){
         </div>
         <?php
     }
+
+    if (!function_exists('is_plugin_active')) {
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+    }
+
+    $smtp_active = function_exists('is_plugin_active')
+        && (is_plugin_active('wp-mail-smtp/wp_mail_smtp.php')
+        || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-mail-smtp/wp_mail_smtp.php')));
+
+    if (!$smtp_active) {
+        ?>
+        <div class="notice notice-error is-dismissible">
+            <p><strong>Ski Engine:</strong> WP Mail SMTP is required for inquiry email delivery.
+            <a href="<?= esc_url(admin_url('plugin-install.php?s=WP%20Mail%20SMTP&tab=search&type=term')) ?>">Install WP Mail SMTP</a> or
+            <a href="<?= esc_url(admin_url('plugins.php')) ?>">activate it in Plugins</a>.</p>
+        </div>
+        <?php
+    }
 });
-new SPCU_Inquiry();
