@@ -35,10 +35,43 @@ $tabs = [
 ];
 ?>
 <div class="wrap spcu-settings-wrap">
-    <h1 class="wp-heading-inline">Settings</h1>
+    <style>
+        .spcu-settings-wrap{max-width:1120px;margin-top:16px;}
+        .spcu-settings-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px;}
+        .spcu-settings-kicker{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin-bottom:2px;}
+        .spcu-settings-wrap .wp-heading-inline{font-size:24px;font-weight:700;color:#0f172a;line-height:1.25;}
+        .spcu-settings-sub{margin:6px 0 0;color:#64748b;font-size:13px;}
+        .spcu-settings-tabs{display:flex;gap:6px;padding:8px;border:1px solid #d0d7de;background:#fff;border-radius:12px;margin:0;}
+        .spcu-settings-tabs .nav-tab{float:none;border:none;background:transparent;border-radius:9px;padding:9px 14px;margin:0;color:#475569;font-weight:600;transition:all .16s ease;}
+        .spcu-settings-tabs .nav-tab:hover{background:#f1f5f9;color:#0f172a;}
+        .spcu-settings-tabs .nav-tab.nav-tab-active{background:#0f1b2d;color:#fff;box-shadow:0 2px 10px rgba(15,27,45,.15);}
+        .spcu-settings-card{background:#fff;border:1px solid #d0d7de;border-radius:14px;padding:20px 22px;box-shadow:0 1px 3px rgba(15,23,42,.05);margin-top:16px;}
+        .spcu-settings-card h2{margin:0 0 14px;font-size:16px;font-weight:700;color:#0f172a;}
+        .spcu-settings-card .description{color:#64748b;}
+        .spcu-settings-wrap .form-table th{width:240px;padding-top:14px;padding-bottom:14px;color:#1e293b;}
+        .spcu-settings-wrap .form-table td{padding-top:14px;padding-bottom:14px;}
+        .spcu-settings-wrap input.regular-text,
+        .spcu-settings-wrap input.large-text,
+        .spcu-settings-wrap textarea.large-text,
+        .spcu-settings-wrap select{border-radius:8px;border-color:#cbd5e1;}
+        .spcu-settings-wrap input:focus,
+        .spcu-settings-wrap textarea:focus,
+        .spcu-settings-wrap select:focus{border-color:#2563eb;box-shadow:0 0 0 1px #2563eb;}
+        .spcu-settings-wrap .submit{margin-top:16px;padding-top:0;}
+        .spcu-settings-wrap .button.button-primary{background:#0f1b2d;border-color:#0f1b2d;border-radius:8px;padding:0 16px;}
+        .spcu-settings-wrap .button.button-primary:hover{background:#1d3557;border-color:#1d3557;}
+    </style>
+
+    <div class="spcu-settings-head">
+        <div>
+            <div class="spcu-settings-kicker">Setup</div>
+            <h1 class="wp-heading-inline">Ski Engine Settings</h1>
+            <p class="spcu-settings-sub">Configure inquiry page content, email delivery, and response templates.</p>
+        </div>
+    </div>
     <hr class="wp-header-end">
 
-    <nav class="nav-tab-wrapper" style="margin-bottom:0;padding-bottom:0;border-bottom:1px solid #c3c4c7;">
+    <nav class="nav-tab-wrapper spcu-settings-tabs">
         <?php foreach ($tabs as $key => $t): ?>
         <a href="<?= esc_url(admin_url('admin.php?page=' . $t['page'])) ?>"
            class="nav-tab<?= $tab === $key ? ' nav-tab-active' : '' ?>">
@@ -52,6 +85,8 @@ $tabs = [
 
         <?php if ($tab === 'general'): ?>
         <!-- ── GENERAL ─────────────────────────────────────────── -->
+        <div class="spcu-settings-card">
+        <h2>General Setup</h2>
         <table class="form-table" role="presentation">
             <tr>
                 <th scope="row">
@@ -79,10 +114,13 @@ $tabs = [
                 </td>
             </tr>
         </table>
+        </div>
 
         <?php elseif ($tab === 'inquiry'): ?>
         <!-- ── INQUIRY PAGE ──────────────────────────────────────── -->
         <?php $inq_url = get_option('spcu_inquiry_page_url', ''); ?>
+        <div class="spcu-settings-card">
+        <h2>Inquiry Page Content</h2>
         <?php if ($inq_url): ?>
         <p class="description" style="margin-bottom:1rem;">
             These texts appear at the top of the <a href="<?= esc_url($inq_url) ?>" target="_blank">inquiry page ↗</a>.
@@ -125,9 +163,12 @@ $tabs = [
                 </td>
             </tr>
         </table>
+        </div>
 
         <?php elseif ($tab === 'email'): ?>
         <!-- ── EMAIL NOTIFICATIONS ──────────────────────────────── -->
+        <div class="spcu-settings-card">
+        <h2>Email Delivery & Templates</h2>
         <?php
         if (!function_exists('is_plugin_active')) {
             require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -151,7 +192,9 @@ $tabs = [
             <code>{package_level}</code> <code>{check_in}</code> <code>{check_out}</code>
             <code>{num_guests}</code> <code>{experience}</code> <code>{message}</code>
         </p>
+        </div>
 
+        <div class="spcu-settings-card">
         <h2>Admin Notification</h2>
         <table class="form-table" role="presentation">
             <tr>
@@ -188,9 +231,9 @@ $tabs = [
                 </td>
             </tr>
         </table>
+        </div>
 
-        <hr>
-
+        <div class="spcu-settings-card">
         <h2>Customer Auto-Responder</h2>
         <table class="form-table" role="presentation">
             <tr>
@@ -217,6 +260,7 @@ $tabs = [
                 </td>
             </tr>
         </table>
+        </div>
         <?php endif; ?>
 
         <p class="submit">
