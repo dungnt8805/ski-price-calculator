@@ -1,9 +1,9 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-$difficulty_records = SPCU_Grades::records();
+$difficulty_records = SPCU_Difficulties::records();
 $edit_slug = sanitize_key($_GET['edit'] ?? '');
-$edit_difficulty = SPCU_Grades::get($edit_slug);
+$edit_difficulty = SPCU_Difficulties::get($edit_slug);
 
 if(!function_exists('spcu_admin_breadcrumb')){
     function spcu_admin_breadcrumb($items){
@@ -32,7 +32,7 @@ if(!function_exists('spcu_admin_breadcrumb')){
         <h1>Difficulties</h1>
     </div>
 
-    <p>Manage difficulty names, slugs, and colors used by hotels and transport pricing.</p>
+    <p>Manage area slope difficulty names, slugs, and colors (beginner / intermediate / advanced).</p>
 
     <div id="col-container" class="wp-clearfix">
         <div id="col-left">
@@ -54,7 +54,7 @@ if(!function_exists('spcu_admin_breadcrumb')){
                         <div class="form-field form-required">
                             <label for="spcu_difficulty_slug">Slug</label>
                             <input type="text" id="spcu_difficulty_slug" name="slug" required value="<?= esc_attr($edit_difficulty['slug'] ?? '') ?>" placeholder="beginner">
-                            <p>Used internally for hotel and price records.</p>
+                            <p>Used internally for area difficulty breakdown percentages.</p>
                         </div>
 
                         <div class="form-field">
@@ -98,7 +98,7 @@ if(!function_exists('spcu_admin_breadcrumb')){
                         ?>
                         <tr>
                             <td>
-                                <span style="display:inline-block;padding:4px 10px;border-radius:999px;background:<?= esc_attr($difficulty_record['color']) ?>;color:<?= esc_attr(SPCU_Grades::text_color($difficulty_record['slug'])) ?>;font-size:12px;font-weight:600;">
+                                <span style="display:inline-block;padding:4px 10px;border-radius:999px;background:<?= esc_attr($difficulty_record['color']) ?>;color:<?= esc_attr(SPCU_Difficulties::text_color($difficulty_record['slug'])) ?>;font-size:12px;font-weight:600;">
                                     <?= esc_html($difficulty_record['name']) ?>
                                 </span>
                             </td>

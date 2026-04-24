@@ -15,6 +15,7 @@ define('SPCU_URL', plugin_dir_url(__FILE__));
 
 require_once SPCU_PATH.'includes/class-spcu-activator.php';
 require_once SPCU_PATH.'includes/class-spcu-database.php';
+require_once SPCU_PATH.'includes/class-spcu-difficulties.php';
 require_once SPCU_PATH.'includes/class-spcu-grades.php';
 require_once SPCU_PATH.'admin/class-spcu-admin.php';
 require_once SPCU_PATH.'includes/class-spcu-shortcode.php';

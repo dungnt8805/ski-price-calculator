@@ -4,6 +4,11 @@ This folder contains beautiful, realistic example data for testing and demonstra
 
 ## What's Included
 
+### Terminology
+
+- **Difficulty** (area terrain mix): `beginner` | `intermediate` | `advanced`
+- **Grade** (hotel/package/transport tier): `standard` | `premium` | `exclusive`
+
 ### 4 Ski Resort Areas
 
 - **Hakuba Valley** — Japan's largest interconnected ski resort
@@ -117,7 +122,7 @@ In the admin or database, set `is_featured = 1` for featured hotels.
 2. Go to any page and add shortcode: `[ski_quote_form]`
 3. Select:
    - **Area**: Hakuba Valley
-   - **Level**: Premium
+    - **Grade**: Premium
    - **Duration**: 5 nights
    - **Guests**: 2
    - **Season**: Regular
@@ -135,6 +140,7 @@ In the admin or database, set `is_featured = 1` for featured hotels.
 - `name_ja`: Japanese name
 - `short_description`: Area overview
 - `featured_image`: Attachment ID
+- `difficulties_json`: Terrain difficulty percentages by key (`beginner` | `intermediate` | `advanced`)
 
 ### Hotels Table
 

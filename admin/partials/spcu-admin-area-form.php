@@ -34,7 +34,7 @@ if ((bool) $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $prefectures_tab
 
 wp_enqueue_media();
 
-$difficulties_list = class_exists('SPCU_Grades') ? SPCU_Grades::records() : [];
+$difficulties_list = class_exists('SPCU_Difficulties') ? SPCU_Difficulties::records() : [];
 $area_difficulties = [];
 if ($edit_area && !empty($edit_area->difficulties_json)) {
     $area_difficulties = json_decode($edit_area->difficulties_json, true) ?: [];

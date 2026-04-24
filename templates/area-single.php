@@ -256,7 +256,7 @@ $hero_stats = array_slice($hero_stats, 0, 4);
                     <?php if(!empty($difficulty_breakdown)): ?>
                         <div class="spcu-area-detail__difficulty-bar">
                             <span class="spcu-area-detail__difficulty-label">Difficulty:</span>
-                            <?php foreach(SPCU_Grades::records() as $difficulty_record): ?>
+                            <?php foreach(SPCU_Difficulties::records() as $difficulty_record): ?>
                                 <?php
                                 $difficulty_slug = $difficulty_record['slug'];
                                 $difficulty_value = isset($difficulty_breakdown[$difficulty_slug]) ? (int) $difficulty_breakdown[$difficulty_slug] : 0;

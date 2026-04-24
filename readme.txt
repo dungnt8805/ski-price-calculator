@@ -17,6 +17,7 @@ Ski Price Calculator Ultimate is a WordPress plugin for managing and displaying 
 = Key Features =
 
 * **Areas** - Define ski destinations as City, Town, or Village with English and Japanese names.
+* **Area Difficulties** - Track terrain mix per area using slope difficulty levels (Beginner, Intermediate, Advanced).
 * **Hotels** - Manage hotels per area with grade classification, bilingual names and addresses, and multiple images via the WordPress Media Library.
 * **Grades** - Define hotel/package quality tiers (for example: Standard, Premium, Exclusive).
 * **Hotel Price Rules** - Configure hotel prices with schedule types:
@@ -55,21 +56,24 @@ The calculator widget collects customer name, area/hotel, grade, nights and days
 
 = Recommended Setup Order =
 
-1. **Grades** - Add grade tiers first (for example: Standard, Premium, Exclusive).
-2. **Areas** - Add ski areas (City / Town / Village), with English and Japanese names.
-3. **Hotels** - Add hotels and map each to an Area and Grade.
-4. **Prices (Hotel)** - Add hotel rules with schedule type and min/max prices in JPY/USD.
-5. **Prices (Add-on)** - Add Lift/Gear/Transport rows by area (and grade where needed), with day-based values.
+1. **Difficulties** - Configure area difficulty labels (Beginner / Intermediate / Advanced).
+2. **Grades** - Add hotel/package grade tiers (Standard / Premium / Exclusive).
+3. **Areas** - Add ski areas (City / Town / Village), with English and Japanese names and difficulty percentages.
+4. **Hotels** - Add hotels and map each to an Area and Grade.
+5. **Prices (Hotel)** - Add hotel rules with schedule type and min/max prices in JPY/USD.
+6. **Prices (Add-on)** - Add Lift/Gear/Transport rows by area (and grade where needed), with day-based values.
 
 == Database Tables ==
 
 The plugin creates the following tables (prefixed with your WordPress table prefix):
 
-* `spcu_areas` - Area definitions (type, name, name_ja)
-* `spcu_hotels` - Hotel listings (name, name_ja, address, address_ja, images, area_id, grade_id)
-* `spcu_grades` - Grade or tier definitions
+* `spcu_areas` - Area definitions (type, name, name_ja, difficulties_json)
+* `spcu_hotels` - Hotel listings (name, name_ja, address, address_ja, images, area_id, grade)
 * `spcu_prices` - Main price rules (hotel pricing with schedule and range fields)
 * `spcu_addon_prices` - Add-on price rules for lift/gear/transport
+
+Grade values are stored as keys (`standard`, `premium`, `exclusive`) in hotel and add-on rows.
+Area difficulties are stored in `spcu_areas.difficulties_json` as percentage keys (`beginner`, `intermediate`, `advanced`).
 
 == REST API Endpoints ==
 
@@ -122,3 +126,7 @@ Images are stored in the WordPress Media Library. The plugin saves a comma-separ
 
 = Does Transport pricing depend on grade? =
 It can. Transport add-on rows may be linked to a grade, and the calculator will try to match the selected hotel's grade.
+
+= What is the difference between Difficulty and Grade? =
+Difficulty is for area slope mix (Beginner / Intermediate / Advanced).
+Grade is for hotel/package tiering and addon pricing (Standard / Premium / Exclusive).

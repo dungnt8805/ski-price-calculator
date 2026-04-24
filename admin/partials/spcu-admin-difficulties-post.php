@@ -48,7 +48,7 @@ function spcu_handle_difficulties_post(){
         spcu_difficulties_redirect('error', 'Please select a valid hex color.', $original_slug ?: $slug);
     }
 
-    $records = SPCU_Grades::records();
+    $records = SPCU_Difficulties::records();
     $updated_records = [];
     $slug_exists = false;
     $edited = false;
@@ -91,10 +91,10 @@ function spcu_handle_difficulties_post(){
         spcu_difficulties_redirect('error', 'Difficulty not found.');
     }
 
-    SPCU_Grades::save_records($updated_records);
+    SPCU_Difficulties::save_records($updated_records);
 
     if($is_edit && $original_slug !== '' && $original_slug !== $slug){
-        SPCU_Grades::rename_references($original_slug, $slug);
+        SPCU_Difficulties::rename_references($original_slug, $slug);
     }
 
     spcu_difficulties_redirect('success', $is_add ? 'Difficulty added successfully.' : 'Difficulty updated successfully.');
@@ -116,13 +116,13 @@ function spcu_handle_difficulties_delete(){
         return;
     }
 
-    $records = SPCU_Grades::records();
+    $records = SPCU_Difficulties::records();
     if(count($records) <= 1){
         spcu_difficulties_redirect('error', 'At least one difficulty must remain.');
     }
 
-    if(SPCU_Grades::usage_count($delete_slug) > 0){
-        spcu_difficulties_redirect('error', 'This difficulty is currently used by hotels or addon prices. Edit those records first or rename the difficulty instead.');
+    if(SPCU_Difficulties::usage_count($delete_slug) > 0){
+        spcu_difficulties_redirect('error', 'This difficulty is currently used by one or more areas. Edit those area records first or rename the difficulty instead.');
     }
 
     $updated_records = [];
@@ -132,7 +132,7 @@ function spcu_handle_difficulties_delete(){
         }
     }
 
-    SPCU_Grades::save_records($updated_records);
+    SPCU_Difficulties::save_records($updated_records);
     spcu_difficulties_redirect('success', 'Difficulty deleted successfully.');
 }
 }
