@@ -50,7 +50,8 @@ class SPCU_Admin {
         add_submenu_page('spcu-dashboard','Tags','Tags','manage_options','edit-tags.php?taxonomy=spcu_facility&post_type=spcu_hotel');
         add_submenu_page('spcu-dashboard','Hotel Form','Hotel Form','manage_options','spcu-hotel-form',[$this,'hotel_form']);
         add_submenu_page('spcu-dashboard','Hotel Prices','Hotel Prices','manage_options','spcu-hotel-prices',[$this,'prices']);
-        add_submenu_page('spcu-dashboard','Addon Prices','Addon Prices','manage_options','spcu-addon-prices',[$this,'prices']);
+        // Hidden page: keep direct URL access from Areas, but do not show in sidebar menu.
+        add_submenu_page(null,'Addon Prices','Addon Prices','manage_options','spcu-addon-prices',[$this,'prices']);
         add_submenu_page('spcu-dashboard','Import / Export','Import / Export','manage_options','spcu-io',[$this,'io']);
 
         // Inquiries — show unread count badge
@@ -169,7 +170,7 @@ class SPCU_Admin {
         $page = sanitize_text_field($_GET['page'] ?? '');
         $taxonomy = sanitize_key($_GET['taxonomy'] ?? '');
 
-        if(in_array($page, ['spcu-hotel-form', 'spcu-area-form', 'spcu-prefecture-form', 'spcu-hotel-prices'], true) || $taxonomy === 'spcu_facility'){
+        if(in_array($page, ['spcu-hotel-form', 'spcu-area-form', 'spcu-prefecture-form', 'spcu-hotel-prices', 'spcu-addon-prices'], true) || $taxonomy === 'spcu_facility'){
             return 'spcu-dashboard';
         }
 
@@ -185,6 +186,10 @@ class SPCU_Admin {
         }
 
         if($page === 'spcu-area-form'){
+            return 'spcu-areas';
+        }
+
+        if($page === 'spcu-addon-prices'){
             return 'spcu-areas';
         }
 
