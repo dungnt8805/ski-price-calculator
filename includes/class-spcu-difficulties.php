@@ -14,6 +14,7 @@ class SPCU_Difficulties {
             ['name' => 'Beginner', 'slug' => 'beginner', 'description' => '', 'color' => '#16a34a'],
             ['name' => 'Intermediate', 'slug' => 'intermediate', 'description' => '', 'color' => '#2563eb'],
             ['name' => 'Advanced', 'slug' => 'advanced', 'description' => '', 'color' => '#dc2626'],
+            ['name' => 'Expert', 'slug' => 'expert', 'description' => '', 'color' => '#000000'],
         ];
     }
 
