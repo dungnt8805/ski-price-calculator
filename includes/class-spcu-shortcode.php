@@ -1500,7 +1500,7 @@ function hideError(){ document.getElementById('spcu_error').style.display='none'
                 <div class="sim-row three">
                     <div class="sim-field"><label>Hotel Grade</label><select id="sim-grade-<?= $area_id ?>"><option value="standard" selected>Standard</option><option value="premium">Premium</option><option value="exclusive">Exclusive</option></select></div>
                     <div class="sim-field"><label>Hotel</label><select id="sim-hotel-<?= $area_id ?>"></select></div>
-                    <div class="sim-field"><label>Transportation</label><select id="sim-trans-<?= $area_id ?>"><option value="standard" selected>Standard</option><option value="premium">Premium</option></select></div>
+                    <div class="sim-field"><label>Transportation</label><select id="sim-trans-<?= $area_id ?>"><option value="standard" selected>Standard</option><option value="premium">Premium</option><option value="exclusive">Exclusive</option></select></div>
                 </div>
                 <div id="sim-result-<?= $area_id ?>" class="sim-result" style="display:none;">
                     <div class="price-label">Estimated Package Total Price</div>
