@@ -12,6 +12,7 @@ class SPCU_Frontend {
         add_action('init', [$this, 'register_rewrite_rules']);
         add_filter('query_vars', [$this, 'add_query_vars']);
         add_filter('pre_get_document_title', [$this, 'filter_area_document_title']);
+        add_action('wp_head', [$this, 'output_meta_description'], 5);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_assets']);
         add_action('template_redirect', [$this, 'load_area_template']);
     }
@@ -33,14 +34,130 @@ class SPCU_Frontend {
         return $this->current_area;
     }
 
+    private function build_document_title($base_title){
+        $base_title = wp_strip_all_tags((string) $base_title);
+        $site_title = wp_strip_all_tags(wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES));
+
+        if($base_title === ''){
+            return $site_title;
+        }
+
+        if($site_title === ''){
+            return $base_title;
+        }
+
+        return $base_title . ' - ' . $site_title;
+    }
+
+    private function is_quote_form_page(){
+        if(!is_singular('page')){
+            return false;
+        }
+
+        $page_id = get_queried_object_id();
+        if(!$page_id){
+            return false;
+        }
+
+        $inquiry_page_id = (int) get_option('spcu_inquiry_page_id', 0);
+        if($inquiry_page_id > 0 && $inquiry_page_id === (int) $page_id){
+            return true;
+        }
+
+        $post = get_post($page_id);
+        if(!$post){
+            return false;
+        }
+
+        $content = (string) $post->post_content;
+
+        return has_shortcode($content, 'ski_quote_form') || has_shortcode($content, 'spcu_inquiry_form');
+    }
+
+    private function sanitize_meta_description($text){
+        $text = wp_strip_all_tags((string) $text);
+        $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+        $text = preg_replace('/\s+/', ' ', $text);
+        $text = trim((string) $text);
+
+        if($text === ''){
+            return '';
+        }
+
+        if(function_exists('mb_strlen') && function_exists('mb_substr')){
+            if(mb_strlen($text, 'UTF-8') > 160){
+                $text = mb_substr($text, 0, 157, 'UTF-8') . '...';
+            }
+        } elseif(strlen($text) > 160){
+            $text = substr($text, 0, 157) . '...';
+        }
+
+        return $text;
+    }
+
+    private function get_area_meta_description($area){
+        if(!$area){
+            return '';
+        }
+
+        $source = '';
+        if(!empty($area->short_description)){
+            $source = (string) $area->short_description;
+        } elseif(!empty($area->description)){
+            $source = (string) $area->description;
+        }
+
+        $description = $this->sanitize_meta_description($source);
+        if($description !== ''){
+            return $description;
+        }
+
+        if(empty($area->name)){
+            return '';
+        }
+
+        return $this->sanitize_meta_description(
+            sprintf('Explore %s ski area details, terrain, hotels, and package pricing.', (string) $area->name)
+        );
+    }
+
+    private function get_quote_meta_description(){
+        $site_title = wp_strip_all_tags(wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES));
+
+        return $this->sanitize_meta_description(
+            sprintf('Get quote now for your Japan ski trip with %s. Share your travel details to receive a personalized package estimate.', $site_title)
+        );
+    }
+
+    public function output_meta_description(){
+        $description = '';
+        $area = $this->get_current_area();
+
+        if($area){
+            $description = $this->get_area_meta_description($area);
+        } elseif($this->is_quote_form_page()){
+            $description = $this->get_quote_meta_description();
+        }
+
+        if($description === ''){
+            return;
+        }
+
+        echo '<meta name="description" content="' . esc_attr($description) . '" />' . "\n";
+    }
+
     public function filter_area_document_title($title){
         $area = $this->get_current_area();
 
-        if(!$area || empty($area->name)){
-            return $title;
+        if($area && !empty($area->name)){
+            return $this->build_document_title((string) $area->name);
         }
 
-        return wp_strip_all_tags((string) $area->name);
+        if($this->is_quote_form_page()){
+            return $this->build_document_title('Get quote now');
+        }
+
+        return $title;
     }
 
     public function enqueue_assets(){
