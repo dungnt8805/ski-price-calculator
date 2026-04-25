@@ -870,7 +870,6 @@
 .spcu-area-detail__hero {
     position: relative;
     min-height: 50vh;
-    margin-top: 58px;
     padding: 4rem 2rem 3rem;
     background: linear-gradient(135deg, #0f1b2d 0%, #1a2d4a 100%);
     background-size: cover;
@@ -1550,7 +1549,7 @@
     }
 
     .spcu-area-detail__main {
-        padding: 2.4rem 1.5rem 4rem;
+        padding: 2.4rem 0.8rem 2rem;
     }
 
     .spcu-area-detail__hotel-grid,

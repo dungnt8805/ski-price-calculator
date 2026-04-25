@@ -1,11 +1,46 @@
 <?php
 class SPCU_Frontend {
 
+    /**
+     * Cached area object for the current request.
+     *
+     * @var object|null|false
+     */
+    private $current_area = false;
+
     public function __construct(){
         add_action('init', [$this, 'register_rewrite_rules']);
         add_filter('query_vars', [$this, 'add_query_vars']);
+        add_filter('pre_get_document_title', [$this, 'filter_area_document_title']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_assets']);
         add_action('template_redirect', [$this, 'load_area_template']);
+    }
+
+    private function get_current_area(){
+        if($this->current_area !== false){
+            return $this->current_area;
+        }
+
+        $area_name = get_query_var('area_name') ?: get_query_var('area_slug');
+
+        if(empty($area_name)){
+            $this->current_area = null;
+            return $this->current_area;
+        }
+
+        $this->current_area = self::get_area_by_slug($area_name);
+
+        return $this->current_area;
+    }
+
+    public function filter_area_document_title($title){
+        $area = $this->get_current_area();
+
+        if(!$area || empty($area->name)){
+            return $title;
+        }
+
+        return wp_strip_all_tags((string) $area->name);
     }
 
     public function enqueue_assets(){
@@ -40,6 +75,16 @@ class SPCU_Frontend {
         $area_name = get_query_var('area_name') ?: get_query_var('area_slug');
         
         if(!empty($area_name)){
+            global $wp_query;
+
+            $area = $this->get_current_area();
+
+            if($area && isset($wp_query)){
+                $wp_query->is_404 = false;
+                $wp_query->queried_object = null;
+                $wp_query->queried_object_id = 0;
+            }
+
             status_header(200);
             
             // Load the area template

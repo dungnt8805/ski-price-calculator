@@ -689,7 +689,10 @@ document.addEventListener('DOMContentLoaded', function(){
 }
 
 @media (max-width: 768px) {
+    .area-simulator { padding: 0; }
+    .area-simulator .sim-card { padding: 0.6rem; }
     .sim-row { grid-template-columns: 1fr; gap: 1rem; }
+    .sim-result { padding: 0.6rem; }
     .sim-result .price-pp { font-size: 2.2rem; }
 }
 </style>
